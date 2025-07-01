@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>4D Image Recognition</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <h1>4D Image Recognition</h1>
+
+    <section id="verify">
+        <h2>Verify Identity</h2>
+        <input type="file" id="id_image" />
+        <input type="file" id="selfie" />
+        <button onclick="verifyId()">Verify</button>
+        <pre id="verify_result"></pre>
+    </section>
+
+    <section id="ingest">
+        <h2>Ingest Scan</h2>
+        <input type="text" id="user_id" placeholder="User ID" />
+        <input type="file" id="scan_files" multiple />
+        <button onclick="ingestScan()">Upload</button>
+        <pre id="ingest_result"></pre>
+    </section>
+
+    <section id="validate">
+        <h2>Validate Scan</h2>
+        <input type="text" id="val_user_id" placeholder="User ID" />
+        <input type="file" id="val_files" multiple />
+        <button onclick="validateScan()">Validate</button>
+        <pre id="validate_result"></pre>
+    </section>
+
+    <section>
+        <h2>Audit Log</h2>
+        <button onclick="loadAuditLog()">Refresh</button>
+        <pre id="audit_log"></pre>
+    </section>
+
+    <script src="app.js"></script>
+</body>
+</html>
