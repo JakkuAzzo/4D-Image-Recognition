@@ -19,22 +19,32 @@ async def verify_id(id_image: UploadFile = File(...), selfie: UploadFile = File(
     selfie_bytes = await selfie.read()
     img1 = utils.load_image(id_bytes)
     img2 = utils.load_image(selfie_bytes)
-    emb1 = models.extract_facenet_embedding(img1)
-    emb2 = models.extract_facenet_embedding(img2)
-    score = utils.cosine_similarity(emb1, emb2)
+
+    face_id = models.detect_face_region(img1)
+    face_selfie = models.detect_face_region(img2)
+
+    mesh_id = models.reconstruct_3d_mesh([face_id])
+    mesh_selfie = models.reconstruct_3d_mesh([face_selfie])
+
+    score = models.mesh_similarity(mesh_id, mesh_selfie)
     if score < utils.THRESHOLD_VERIFY:
         raise HTTPException(status_code=401, detail="ID verification failed")
+
+    merged = models.merge_meshes(mesh_id, mesh_selfie)
+    embedding = models.compute_4d_embedding(merged, [face_selfie])
+
     user_id = utils.sha256_bytes(selfie_bytes)[:16]
-    metadata = {"embedding_hash": models.embedding_hash(emb2), "timestamp": datetime.utcnow().isoformat()}
-    db.add(user_id, emb2, metadata)
+    metadata = {"embedding_hash": models.embedding_hash(embedding), "timestamp": datetime.utcnow().isoformat()}
+    db.add(user_id, embedding, metadata)
     return {"user_id": user_id, "similarity": score}
 
 
 @app.post("/ingest-scan")
 async def ingest_scan(user_id: str, files: List[UploadFile] = File(...)):
     images = [utils.load_image(await f.read()) for f in files]
-    mesh = models.reconstruct_3d_mesh(images)
-    embedding = models.compute_4d_embedding(mesh, images)
+    faces = [models.detect_face_region(img) for img in images]
+    mesh = models.reconstruct_3d_mesh(faces)
+    embedding = models.compute_4d_embedding(mesh, faces)
     metadata = {
         "embedding_hash": models.embedding_hash(embedding),
         "timestamp": datetime.utcnow().isoformat(),
@@ -48,8 +58,9 @@ async def ingest_scan(user_id: str, files: List[UploadFile] = File(...)):
 @app.post("/validate-scan")
 async def validate_scan(user_id: str, files: List[UploadFile] = File(...)):
     images = [utils.load_image(await f.read()) for f in files]
-    mesh = models.reconstruct_3d_mesh(images)
-    embedding = models.compute_4d_embedding(mesh, images)
+    faces = [models.detect_face_region(img) for img in images]
+    mesh = models.reconstruct_3d_mesh(faces)
+    embedding = models.compute_4d_embedding(mesh, faces)
     results = db.search(embedding, top_k=5)
     if not results:
         raise HTTPException(status_code=404, detail="No embeddings for user")
