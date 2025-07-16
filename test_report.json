@@ -1,0 +1,276 @@
+{
+  "summary": {
+    "total": 38,
+    "passed": 36,
+    "failed": 2,
+    "success_rate": 94.73684210526315
+  },
+  "results": [
+    {
+      "test": "Backend Root Endpoint",
+      "status": "PASS",
+      "passed": true,
+      "details": "Status: 200",
+      "timestamp": "2025-07-16 17:23:43"
+    },
+    {
+      "test": "4D Model Endpoint (404)",
+      "status": "PASS",
+      "passed": true,
+      "details": "Status: 404",
+      "timestamp": "2025-07-16 17:23:43"
+    },
+    {
+      "test": "OSINT Endpoint",
+      "status": "PASS",
+      "passed": true,
+      "details": "Status: 200",
+      "timestamp": "2025-07-16 17:23:43"
+    },
+    {
+      "test": "Scan Ingestion UI Elements",
+      "status": "PASS",
+      "passed": true,
+      "details": "All elements found",
+      "timestamp": "2025-07-16 17:23:46"
+    },
+    {
+      "test": "Scan Ingestion Processing",
+      "status": "PASS",
+      "passed": true,
+      "details": "Scan processed successfully! Embedding hash: undefined - 4D facial mesh loaded!",
+      "timestamp": "2025-07-16 17:23:52"
+    },
+    {
+      "test": "4D Visualization Display",
+      "status": "PASS",
+      "passed": true,
+      "details": "Canvas element visible",
+      "timestamp": "2025-07-16 17:23:55"
+    },
+    {
+      "test": "4D Model Rendering",
+      "status": "FAIL",
+      "passed": false,
+      "details": "No rendering logs found",
+      "timestamp": "2025-07-16 17:23:55"
+    },
+    {
+      "test": "4D Model API Response",
+      "status": "PASS",
+      "passed": true,
+      "details": "Got model data",
+      "timestamp": "2025-07-16 17:23:55"
+    },
+    {
+      "test": "Model Field: facial_points",
+      "status": "PASS",
+      "passed": true,
+      "details": "Present",
+      "timestamp": "2025-07-16 17:23:55"
+    },
+    {
+      "test": "Model Field: detection_pointers",
+      "status": "PASS",
+      "passed": true,
+      "details": "Present",
+      "timestamp": "2025-07-16 17:23:55"
+    },
+    {
+      "test": "Model Field: surface_mesh",
+      "status": "PASS",
+      "passed": true,
+      "details": "Present",
+      "timestamp": "2025-07-16 17:23:55"
+    },
+    {
+      "test": "Model Field: metadata",
+      "status": "PASS",
+      "passed": true,
+      "details": "Present",
+      "timestamp": "2025-07-16 17:23:55"
+    },
+    {
+      "test": "Facial Points Count",
+      "status": "PASS",
+      "passed": true,
+      "details": "Found 68 points",
+      "timestamp": "2025-07-16 17:23:55"
+    },
+    {
+      "test": "Facial Points X Range",
+      "status": "PASS",
+      "passed": true,
+      "details": "Range: 67.0 (expected: 10-100)",
+      "timestamp": "2025-07-16 17:23:55"
+    },
+    {
+      "test": "Facial Points Y Range",
+      "status": "FAIL",
+      "passed": false,
+      "details": "Range: 134.0 (expected: 10-100)",
+      "timestamp": "2025-07-16 17:23:55"
+    },
+    {
+      "test": "Facial Points Z Range",
+      "status": "PASS",
+      "passed": true,
+      "details": "Range: 33.5 (expected: 0-50)",
+      "timestamp": "2025-07-16 17:23:55"
+    },
+    {
+      "test": "Surface Mesh Vertices",
+      "status": "PASS",
+      "passed": true,
+      "details": "Found 100 vertices",
+      "timestamp": "2025-07-16 17:23:55"
+    },
+    {
+      "test": "Surface Mesh Faces",
+      "status": "PASS",
+      "passed": true,
+      "details": "Found 33 faces",
+      "timestamp": "2025-07-16 17:23:55"
+    },
+    {
+      "test": "Mesh Coordinate Range",
+      "status": "PASS",
+      "passed": true,
+      "details": "Range: 198.0 (expected: 10-200)",
+      "timestamp": "2025-07-16 17:23:55"
+    },
+    {
+      "test": "Detection Pointers Count",
+      "status": "PASS",
+      "passed": true,
+      "details": "Found 1 pointers",
+      "timestamp": "2025-07-16 17:23:55"
+    },
+    {
+      "test": "Detection Confidence",
+      "status": "PASS",
+      "passed": true,
+      "details": "Average: 0.90 (expected: \u22650.7)",
+      "timestamp": "2025-07-16 17:23:55"
+    },
+    {
+      "test": "Scan Validation UI Elements",
+      "status": "PASS",
+      "passed": true,
+      "details": "All elements found",
+      "timestamp": "2025-07-16 17:23:55"
+    },
+    {
+      "test": "Scan Validation",
+      "status": "PASS",
+      "passed": true,
+      "details": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"query\",\"user_id\"],\"msg\":\"Field required\",\"input\":null}]}",
+      "timestamp": "2025-07-16 17:23:58"
+    },
+    {
+      "test": "Identity Verification UI",
+      "status": "PASS",
+      "passed": true,
+      "details": "All elements found",
+      "timestamp": "2025-07-16 17:23:58"
+    },
+    {
+      "test": "Identity Verification",
+      "status": "PASS",
+      "passed": true,
+      "details": "Error: Cannot set properties of null (setting 'value')",
+      "timestamp": "2025-07-16 17:24:01"
+    },
+    {
+      "test": "Audit Log Loading",
+      "status": "PASS",
+      "passed": true,
+      "details": "Log length: 488 chars",
+      "timestamp": "2025-07-16 17:24:03"
+    },
+    {
+      "test": "OSINT Data Loading",
+      "status": "PASS",
+      "passed": true,
+      "details": "Grid content length: 497",
+      "timestamp": "2025-07-16 17:24:06"
+    },
+    {
+      "test": "OSINT Category: social",
+      "status": "PASS",
+      "passed": true,
+      "details": "Found",
+      "timestamp": "2025-07-16 17:24:06"
+    },
+    {
+      "test": "OSINT Category: public",
+      "status": "PASS",
+      "passed": true,
+      "details": "Found",
+      "timestamp": "2025-07-16 17:24:06"
+    },
+    {
+      "test": "OSINT Category: financial",
+      "status": "PASS",
+      "passed": true,
+      "details": "Found",
+      "timestamp": "2025-07-16 17:24:06"
+    },
+    {
+      "test": "OSINT Category: professional",
+      "status": "PASS",
+      "passed": true,
+      "details": "Found",
+      "timestamp": "2025-07-16 17:24:06"
+    },
+    {
+      "test": "OSINT Category: biometric",
+      "status": "PASS",
+      "passed": true,
+      "details": "Found",
+      "timestamp": "2025-07-16 17:24:06"
+    },
+    {
+      "test": "Rotation Speed Slider",
+      "status": "PASS",
+      "passed": true,
+      "details": "Found",
+      "timestamp": "2025-07-16 17:24:06"
+    },
+    {
+      "test": "Zoom Level Slider",
+      "status": "PASS",
+      "passed": true,
+      "details": "Found",
+      "timestamp": "2025-07-16 17:24:06"
+    },
+    {
+      "test": "Time Dimension Slider",
+      "status": "PASS",
+      "passed": true,
+      "details": "Found",
+      "timestamp": "2025-07-16 17:24:06"
+    },
+    {
+      "test": "Reset View Button",
+      "status": "PASS",
+      "passed": true,
+      "details": "Found",
+      "timestamp": "2025-07-16 17:24:06"
+    },
+    {
+      "test": "Export Model Button",
+      "status": "PASS",
+      "passed": true,
+      "details": "Found",
+      "timestamp": "2025-07-16 17:24:06"
+    },
+    {
+      "test": "Reset View Function",
+      "status": "PASS",
+      "passed": true,
+      "details": "Reset button clicked",
+      "timestamp": "2025-07-16 17:24:07"
+    }
+  ]
+}
