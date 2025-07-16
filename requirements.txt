@@ -1,5 +1,18 @@
 fastapi
-uvicorn[standard]
-python-multipart
+uvicorn
+opencv-python
+torch
+torchvision
+detectron2
+tesserocr
+face_liveness
+prnet @ git+https://github.com/YadiraF/PRNet.git
+deca
+open3d-python
+pycpd
+faiss-cpu
 numpy
-pillow
+scipy
+meshio
+trimesh
+Pillow
