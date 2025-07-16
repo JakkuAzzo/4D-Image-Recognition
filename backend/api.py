@@ -8,7 +8,7 @@ import os
 # Add the parent directory to the Python path to import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from fastapi import FastAPI, File, UploadFile, HTTPException, Form
+from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Request
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -288,79 +288,72 @@ async def delete_user(user_id: str):
     return {"status": "deleted"}
 
 @app.post("/ingest-scan")
-async def ingest_scan(user_id: str = Form(...), files: List[UploadFile] = File(...)):
+async def ingest_scan(request: Request, user_id: str = Form(None), files: List[UploadFile] = File(...)):
     """Ingest multiple scan images for a user"""
     try:
+        # Allow user_id to be passed either as form field or query parameter
+        if user_id is None:
+            user_id = request.query_params.get("user_id")
+        if not user_id:
+            raise HTTPException(status_code=400, detail="user_id required")
+
         # Process each uploaded file
         results = []
-        embeddings = []
-        
+        images = []
+
         for file in files:
             file_bytes = await file.read()
             img = utils.load_image(file_bytes)
-            
+            images.append(img)
+
             # Detect and crop face
             face_data = models.detect_face(img)
             if not face_data["face_detected"]:
                 continue
-                
-            # Generate 3D reconstruction
-            reconstruction_3d = reconstruct3d.reconstruct_prnet(img)
-            
-            # Generate embedding
-            embedding = models.extract_facenet_embedding(img)
-            embeddings.append(embedding)
-            
-            # Store result
+
+            # Generate 3D reconstruction (fallback if needed)
+            reconstruct3d.reconstruct_prnet(img)
+
             results.append({
                 "filename": file.filename,
                 "face_detected": True,
-                "reconstruction_quality": 0.8  # Fixed value for now
+                "reconstruction_quality": 0.8  # placeholder
             })
         
-        if not embeddings:
-            raise HTTPException(status_code=400, detail="No faces detected in uploaded images")
-        
-        # Store embeddings in database
+        if not images:
+            raise HTTPException(status_code=400, detail="No valid images uploaded")
+
+        # Build enhanced 4D model using available images
+        facial_model = models.reconstruct_4d_facial_model(images)
+
+        # Compute aggregated embedding from 4D model
+        embedding = models.compute_4d_embedding(facial_model, images)
+
         metadata = {
             "user_id": user_id,
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "num_images": len(files),
-            "embedding_hash": utils.sha256_bytes(str(embeddings).encode())[:16]
+            "num_images": len(images),
+            "embedding_hash": models.embedding_hash(embedding)[:16]
         }
-        
-        # Store the averaged embedding
-        avg_embedding = np.mean(embeddings, axis=0)
-        db.add(user_id, avg_embedding, metadata)
-        
-        # Also create the JSON model file for compatibility with get-4d-model endpoint
+
+        db.add(user_id, embedding, metadata)
+
+        # Store the model file for later visualization
         try:
-            # Create a basic 4D model structure
-            facial_model = {
-                "facial_points": [{"x": float(i), "y": float(i*2), "z": float(i*0.5)} for i in range(68)],
-                "detection_pointers": [{"confidence": 0.9, "x": 100, "y": 100}],
-                "surface_mesh": {
-                    "vertices": [[float(i), float(i*2), float(i*0.5)] for i in range(100)],
-                    "faces": [[i, i+1, i+2] for i in range(0, 97, 3)]
-                },
-                "metadata": metadata
-            }
-            
-            # Store the model file
             model_dir = Path("4d_models")
             model_dir.mkdir(exist_ok=True)
             model_path = model_dir / f"{user_id}_latest.json"
-            
             with open(model_path, 'w') as f:
                 json.dump(facial_model, f, indent=2)
         except Exception as e:
             print(f"Warning: Could not create model file: {e}")
-        
+
         return JSONResponse({
             "status": "success",
             "message": f"Successfully processed {len(results)} images for user {user_id}",
             "results": results,
-            "user_id": user_id
+            "user_id": user_id,
+            "embedding_hash": metadata["embedding_hash"]
         })
         
     except Exception as e:
