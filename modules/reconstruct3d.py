@@ -18,9 +18,15 @@ deca = DECA(config_path='configs/deca.yaml', device='cuda') if DECA is not None 
 
 
 def reconstruct_prnet(face_crop: Array):
-    """Return vertices, faces and UV texture from PRNet (fallback implementation)."""
+    """Return vertices, faces and UV texture from PRNet.
+
+    If the optional PRNet dependency is missing, a basic fallback mesh
+    is generated instead. A warning is printed so users understand why
+    the output may look unrealistic.
+    """
     if prnet is None:
         # Create a fallback 3D face mesh
+        print("[reconstruct3d] PRNet not available - using fallback mesh")
         return _create_fallback_mesh(face_crop)
     verts, faces, uv = prnet.reconstruction(face_crop)
     return verts, faces, uv

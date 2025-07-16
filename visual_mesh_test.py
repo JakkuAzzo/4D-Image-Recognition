@@ -4,6 +4,7 @@ Visual 4D Mesh Test - Browser-based visualization test
 Tests the frontend visualization of the fixed 4D mesh data
 """
 
+import os
 import time
 import requests
 from selenium import webdriver
@@ -12,9 +13,13 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import TimeoutException
+import pytest
 
 def test_frontend_visualization():
     """Test the frontend visualization with the fixed 4D mesh data"""
+
+    if os.environ.get("SKIP_SELENIUM"):
+        pytest.skip("selenium tests disabled")
     
     base_url = "https://localhost:8000"
     user_id = "visual_test_user"
@@ -32,7 +37,10 @@ def test_frontend_visualization():
     # Remove headless mode to see the visualization
     # chrome_options.add_argument("--headless")
     
-    driver = webdriver.Chrome(options=chrome_options)
+    try:
+        driver = webdriver.Chrome(options=chrome_options)
+    except Exception as e:
+        pytest.skip(f"webdriver unavailable: {e}")
     driver.set_window_size(1920, 1080)
     
     try:

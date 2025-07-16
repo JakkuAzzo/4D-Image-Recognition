@@ -106,7 +106,7 @@ def test_4d_mesh_api_direct():
             
             # Test visualization data structure
             print("\n🎨 Testing visualization data structure...")
-            test_visualization_structure(model_data)
+            check_visualization_structure(model_data)
             
         else:
             print(f"❌ Failed to get 4D model: {model_response.text}")
@@ -215,8 +215,8 @@ def analyze_4d_model(model_data):
     
     return analysis
 
-def test_visualization_structure(model_data):
-    """Test if the model data structure is suitable for 3D visualization"""
+def check_visualization_structure(model_data):
+    """Check if the model data structure is suitable for 3D visualization."""
     
     print("Testing visualization compatibility...")
     
