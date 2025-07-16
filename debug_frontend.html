@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Frontend Debug Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <canvas id="test-canvas" width="800" height="600" style="border: 1px solid black;"></canvas>
+    <button onclick="testFetch()">Test Model Fetch</button>
+    <div id="debug-output" style="white-space: pre-wrap; font-family: monospace;"></div>
+    
+    <script>
+        const debugOutput = document.getElementById('debug-output');
+        
+        function log(message) {
+            console.log(message);
+            debugOutput.textContent += message + '\n';
+        }
+        
+        async function testFetch() {
+            log('Starting model fetch test...');
+            
+            try {
+                const response = await fetch('/get-4d-model/nathan4');
+                if (!response.ok) {
+                    log('❌ Failed to fetch model: ' + response.status);
+                    return;
+                }
+                
+                const modelData = await response.json();
+                log('✅ Model data fetched successfully');
+                log('Model type: ' + modelData.model_type);
+                log('Vertex count: ' + (modelData.surface_mesh?.vertices?.length || 0));
+                log('Face count: ' + (modelData.surface_mesh?.faces?.length || 0));
+                
+                // Basic Three.js test
+                if (modelData.surface_mesh && modelData.surface_mesh.vertices) {
+                    testThreeJSRendering(modelData);
+                }
+                
+            } catch (error) {
+                log('❌ Error: ' + error.message);
+            }
+        }
+        
+        function testThreeJSRendering(modelData) {
+            log('Testing Three.js rendering...');
+            
+            const canvas = document.getElementById('test-canvas');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({canvas});
+            
+            // Add lighting
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(1, 1, 1);
+            scene.add(light);
+            
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+            scene.add(ambientLight);
+            
+            // Create mesh geometry
+            const geometry = new THREE.BufferGeometry();
+            const vertices = new Float32Array(modelData.surface_mesh.vertices.length * 3);
+            
+            for (let i = 0; i < modelData.surface_mesh.vertices.length; i++) {
+                const vertex = modelData.surface_mesh.vertices[i];
+                vertices[i * 3] = vertex[0];
+                vertices[i * 3 + 1] = vertex[1];
+                vertices[i * 3 + 2] = vertex[2];
+            }
+            
+            const indices = [];
+            for (const face of modelData.surface_mesh.faces) {
+                indices.push(face[0], face[1], face[2]);
+            }
+            
+            geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+            geometry.setIndex(indices);
+            geometry.computeVertexNormals();
+            
+            const material = new THREE.MeshLambertMaterial({color: 0xDDB894});
+            const mesh = new THREE.Mesh(geometry, material);
+            scene.add(mesh);
+            
+            // Position camera
+            camera.position.z = 5;
+            
+            log('✅ Mesh created and added to scene');
+            log('Vertex count: ' + geometry.attributes.position.count);
+            log('Index count: ' + (geometry.index ? geometry.index.count : 'No index'));
+            
+            // Render
+            renderer.render(scene, camera);
+            log('✅ Rendered!');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+INFO:     Will watch for changes in these directories: ['/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition']
+INFO:     Uvicorn running on https://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [51582] using StatReload
+INFO:     Started server process [51588]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+Creating enhanced 4D facial model from 5 images...
+  ✅ Enhanced facial reconstruction module loaded successfully
+  Image 1: 124 landmarks detected
+  Image 2: 124 landmarks detected
+  Image 3: 124 landmarks detected
+  Image 4: 124 landmarks detected
+  Image 5: 124 landmarks detected
+  Generating high-resolution facial mesh...
+  Computing biometric profile for identification...
+  Creating OSINT identification features...
+  Enhanced 4D model created: 124 landmarks, 1954 vertices, confidence: 1.00
+INFO:     127.0.0.1:61065 - "POST /ingest-scan?user_id=enhanced_test_user HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61067 - "GET /get-4d-model/enhanced_test_user HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61069 - "GET / HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61086 - "GET / HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61086 - "GET /static/styles.css HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61086 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61086 - "GET /osint-data?source=all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61094 - "POST /ingest-scan?user_id=nathan6 HTTP/1.1" 422 Unprocessable Entity
+INFO:     10.154.64.188:61106 - "GET / HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61106 - "GET /osint-data?source=all HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61106 - "GET / HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61106 - "GET /osint-data?source=all HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61106 - "GET / HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61106 - "GET /osint-data?source=all HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61106 - "GET / HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61106 - "GET /osint-data?source=all HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61106 - "GET / HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61106 - "GET /osint-data?source=all HTTP/1.1" 200 OK
+Creating enhanced 4D facial model from 3 images...
+  ✅ Enhanced facial reconstruction module loaded successfully
+  Image 1: 124 landmarks detected
+  Image 2: 124 landmarks detected
+  Image 3: 124 landmarks detected
+  Generating high-resolution facial mesh...
+  Computing biometric profile for identification...
+  Creating OSINT identification features...
+  Enhanced 4D model created: 124 landmarks, 1954 vertices, confidence: 1.00
+INFO:     127.0.0.1:61116 - "POST /ingest-scan?user_id=nathan6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61118 - "GET /get-4d-model/nathan6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61135 - "GET /?user=nathan6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61135 - "GET /static/styles.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61135 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61135 - "GET /osint-data?source=all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61166 - "GET /get-4d-model/nathan6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61451 - "GET /get-4d-model/nathan6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61486 - "POST /ingest HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61507 - "POST /ingest-scan HTTP/1.1" 422 Unprocessable Entity
+Creating enhanced 4D facial model from 3 images...
+  ✅ Enhanced facial reconstruction module loaded successfully
+  Image 1: 124 landmarks detected
+  Image 2: 124 landmarks detected
+  Image 3: 124 landmarks detected
+  Generating high-resolution facial mesh...
+  Computing biometric profile for identification...
+  Creating OSINT identification features...
+  Enhanced 4D model created: 124 landmarks, 1954 vertices, confidence: 1.00
+INFO:     127.0.0.1:61521 - "POST /ingest-scan?user_id=final_test_user HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61540 - "GET /visualize-face?user_id=final_test_user HTTP/1.1" 405 Method Not Allowed
+INFO:     127.0.0.1:61561 - "GET /get-4d-model/final_test_user HTTP/1.1" 200 OK
+WARNING:  StatReload detected changes in 'final_validation_test.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [51588]
+INFO:     Started server process [86487]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+Creating enhanced 4D facial model from 3 images...
+  ✅ Enhanced facial reconstruction module loaded successfully
+  Image 1: 124 landmarks detected
+  Image 2: 124 landmarks detected
+  Image 3: 124 landmarks detected
+  Generating high-resolution facial mesh...
+  Computing biometric profile for identification...
+  Creating OSINT identification features...
+  Enhanced 4D model created: 124 landmarks, 1954 vertices, confidence: 1.00
+INFO:     127.0.0.1:61834 - "POST /ingest-scan?user_id=validation_test_user HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61836 - "GET /get-4d-model/validation_test_user HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61838 - "GET / HTTP/1.1" 200 OK
+WARNING:  StatReload detected changes in 'final_validation_test.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [86487]
+INFO:     Started server process [86974]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     10.154.64.188:61880 - "GET / HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61880 - "GET /static/styles.css HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61882 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61882 - "GET /osint-data?source=all HTTP/1.1" 200 OK
+Creating enhanced 4D facial model from 5 images...
+  ✅ Enhanced facial reconstruction module loaded successfully
+  Image 1: 124 landmarks detected
+  Image 2: 124 landmarks detected
+  Image 3: 124 landmarks detected
+  Image 4: 124 landmarks detected
+  Image 5: 124 landmarks detected
+  Generating high-resolution facial mesh...
+  Computing biometric profile for identification...
+  Creating OSINT identification features...
+  Enhanced 4D model created: 124 landmarks, 1954 vertices, confidence: 1.00
+INFO:     10.154.64.188:61890 - "POST /ingest-scan?user_id=nathan7 HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61890 - "GET /get-4d-model/nathan7 HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61902 - "GET /get-4d-model/nathan7 HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61909 - "GET /get-4d-model/nathan7 HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61912 - "GET / HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61912 - "GET /static/app.js HTTP/1.1" 304 Not Modified
+INFO:     10.154.64.188:61912 - "GET /osint-data?source=all HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61917 - "GET /get-4d-model/nathan7 HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61922 - "GET / HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61922 - "GET /osint-data?source=all HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61924 - "GET /get-4d-model/nathan7 HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61933 - "GET / HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61933 - "GET /osint-data?source=all HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61933 - "GET /get-4d-model/nathan7 HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61936 - "GET / HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61936 - "GET /static/app.js HTTP/1.1" 304 Not Modified
+INFO:     10.154.64.188:61936 - "GET /osint-data?source=all HTTP/1.1" 200 OK
+INFO:     10.154.64.188:61936 - "GET /get-4d-model/nathan7 HTTP/1.1" 200 OK
+INFO:     10.154.64.188:62244 - "GET / HTTP/1.1" 200 OK
+INFO:     10.154.64.188:62244 - "GET /static/styles.css HTTP/1.1" 200 OK
+INFO:     10.154.64.188:62246 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     10.154.64.188:62246 - "GET /osint-data?source=all HTTP/1.1" 200 OK
+INFO:     10.154.64.188:62246 - "GET /get-4d-model/nathan7 HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [86974]
+INFO:     Stopping reloader process [51582]

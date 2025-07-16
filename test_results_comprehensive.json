@@ -1,0 +1,812 @@
+{
+  "test_summary": {
+    "timestamp": "2025-07-16 13:15:23",
+    "total_tests": 7,
+    "successful_tests": 6,
+    "failed_tests": 1
+  },
+  "detailed_results": {
+    "identity_verification": {
+      "id_image_analysis": {
+        "valid": true,
+        "dimensions": [
+          1060,
+          1060
+        ],
+        "file_size": 319456,
+        "brightness": 103.7814747241011,
+        "contrast": 70.22540625508724,
+        "faces_detected": 0,
+        "face_regions": [],
+        "quality_score": 70.22540625508724
+      },
+      "selfie_image_analysis": {
+        "valid": true,
+        "dimensions": [
+          1110,
+          1110
+        ],
+        "file_size": 329701,
+        "brightness": 94.64364905445987,
+        "contrast": 73.22441861384637,
+        "faces_detected": 0,
+        "face_regions": [],
+        "quality_score": 73.22441861384637
+      },
+      "api_response": {
+        "user_id": "f00a055bd5b7344d",
+        "similarity": 0.9976275589160085,
+        "id_document": {
+          "type": "Passport Photo",
+          "confidence": 0.7475525097899609
+        },
+        "facial_match": {
+          "score": 0.9976275589160085,
+          "threshold": 0.8
+        }
+      }
+    },
+    "scan_ingestion": {
+      "image_analyses": [
+        {
+          "valid": true,
+          "dimensions": [
+            1060,
+            1060
+          ],
+          "file_size": 319456,
+          "brightness": 103.7814747241011,
+          "contrast": 70.22540625508724,
+          "faces_detected": 0,
+          "face_regions": [],
+          "quality_score": 70.22540625508724,
+          "filename": "Jane_04.jpg"
+        },
+        {
+          "valid": true,
+          "dimensions": [
+            1110,
+            1110
+          ],
+          "file_size": 329701,
+          "brightness": 94.64364905445987,
+          "contrast": 73.22441861384637,
+          "faces_detected": 0,
+          "face_regions": [],
+          "quality_score": 73.22441861384637,
+          "filename": "Jane_05.jpg"
+        },
+        {
+          "valid": true,
+          "dimensions": [
+            1110,
+            1110
+          ],
+          "file_size": 329255,
+          "brightness": 94.64654654654655,
+          "contrast": 73.22431738324246,
+          "faces_detected": 0,
+          "face_regions": [],
+          "quality_score": 73.22431738324246,
+          "filename": "Jane_02.jpg"
+        },
+        {
+          "valid": true,
+          "dimensions": [
+            1060,
+            1060
+          ],
+          "file_size": 318885,
+          "brightness": 103.78226593093628,
+          "contrast": 70.22541861696415,
+          "faces_detected": 0,
+          "face_regions": [],
+          "quality_score": 70.22541861696415,
+          "filename": "Jane_03.jpg"
+        },
+        {
+          "valid": true,
+          "dimensions": [
+            1188,
+            1188
+          ],
+          "file_size": 343804,
+          "brightness": 82.62993997211169,
+          "contrast": 75.32311818346872,
+          "faces_detected": 0,
+          "face_regions": [],
+          "quality_score": 75.32311818346872,
+          "filename": "Jane_01.jpg"
+        }
+      ],
+      "api_response": {
+        "embedding_hash": "39f7e9b051533b75c762d6e26b57aa9112e5549cb5410cfa87322f586882e3db",
+        "message": "Successfully processed 5 scan images"
+      }
+    },
+    "model_visualization": {
+      "api_response": {
+        "facial_points": [
+          {
+            "x": 2.32600527674595,
+            "y": 22.186023916155783,
+            "z": -1.6597997471602257,
+            "skin_color": [
+              251,
+              212,
+              182
+            ]
+          },
+          {
+            "x": -23.43394224373501,
+            "y": 7.4208204505404245,
+            "z": -0.32237356142911633,
+            "skin_color": [
+              235,
+              218,
+              186
+            ]
+          },
+          {
+            "x": 23.02083559653784,
+            "y": 12.86744357606279,
+            "z": -6.100525513788125,
+            "skin_color": [
+              238,
+              204,
+              182
+            ]
+          },
+          {
+            "x": 0.12401045144786682,
+            "y": 3.9256506678065364,
+            "z": 6.596032739683441,
+            "skin_color": [
+              246,
+              211,
+              189
+            ]
+          },
+          {
+            "x": -10.427962583768014,
+            "y": -16.771116319600566,
+            "z": -2.858477055894647,
+            "skin_color": [
+              245,
+              220,
+              185
+            ]
+          },
+          {
+            "x": 11.431571091074899,
+            "y": -16.822842916234208,
+            "z": -2.470240907329762,
+            "skin_color": [
+              235,
+              207,
+              184
+            ]
+          },
+          {
+            "x": 1.3416591953216788,
+            "y": -26.590133597020472,
+            "z": -1.22621165779233,
+            "skin_color": [
+              250,
+              204,
+              185
+            ]
+          },
+          {
+            "x": -22.26510351855623,
+            "y": -4.018524642607181,
+            "z": -5.923334749841409,
+            "skin_color": [
+              242,
+              213,
+              169
+            ]
+          },
+          {
+            "x": 16.642104102421776,
+            "y": -6.522976701694462,
+            "z": 1.9048524031196292,
+            "skin_color": [
+              244,
+              210,
+              188
+            ]
+          },
+          {
+            "x": -3.4847011604278064,
+            "y": -11.000364196889993,
+            "z": 0.03205450972119017,
+            "skin_color": [
+              238,
+              205,
+              175
+            ]
+          },
+          {
+            "x": -11.084061342376947,
+            "y": 18.170296583458686,
+            "z": -6.733790350371698,
+            "skin_color": [
+              246,
+              213,
+              172
+            ]
+          },
+          {
+            "x": 18.21128523940779,
+            "y": 17.144205927635134,
+            "z": -0.443884360047174,
+            "skin_color": [
+              248,
+              204,
+              173
+            ]
+          }
+        ],
+        "detection_pointers": [
+          {
+            "from": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "to": [
+              2.32600527674595,
+              22.186023916155783,
+              -1.6597997471602257
+            ],
+            "confidence": 0.7552898651022688
+          },
+          {
+            "from": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "to": [
+              -23.43394224373501,
+              7.4208204505404245,
+              -0.32237356142911633
+            ],
+            "confidence": 0.8503949760882312
+          },
+          {
+            "from": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "to": [
+              23.02083559653784,
+              12.86744357606279,
+              -6.100525513788125
+            ],
+            "confidence": 0.8159622215417626
+          },
+          {
+            "from": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "to": [
+              0.12401045144786682,
+              3.9256506678065364,
+              6.596032739683441
+            ],
+            "confidence": 0.8318258985163838
+          },
+          {
+            "from": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "to": [
+              -10.427962583768014,
+              -16.771116319600566,
+              -2.858477055894647
+            ],
+            "confidence": 0.8695182353800912
+          },
+          {
+            "from": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "to": [
+              11.431571091074899,
+              -16.822842916234208,
+              -2.470240907329762
+            ],
+            "confidence": 0.896691848158871
+          },
+          {
+            "from": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "to": [
+              1.3416591953216788,
+              -26.590133597020472,
+              -1.22621165779233
+            ],
+            "confidence": 0.9210625222797906
+          },
+          {
+            "from": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "to": [
+              -22.26510351855623,
+              -4.018524642607181,
+              -5.923334749841409
+            ],
+            "confidence": 0.7619700212485881
+          },
+          {
+            "from": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "to": [
+              16.642104102421776,
+              -6.522976701694462,
+              1.9048524031196292
+            ],
+            "confidence": 0.8057634253993643
+          },
+          {
+            "from": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "to": [
+              -3.4847011604278064,
+              -11.000364196889993,
+              0.03205450972119017
+            ],
+            "confidence": 0.8846666529025471
+          },
+          {
+            "from": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "to": [
+              -11.084061342376947,
+              18.170296583458686,
+              -6.733790350371698
+            ],
+            "confidence": 0.9252400776213225
+          },
+          {
+            "from": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "to": [
+              18.21128523940779,
+              17.144205927635134,
+              -0.443884360047174
+            ],
+            "confidence": 0.8084323171350397
+          }
+        ],
+        "surface_mesh": {
+          "vertices": [
+            [
+              2.32600527674595,
+              22.186023916155783,
+              -1.6597997471602257
+            ],
+            [
+              -23.43394224373501,
+              7.4208204505404245,
+              -0.32237356142911633
+            ],
+            [
+              23.02083559653784,
+              12.86744357606279,
+              -6.100525513788125
+            ],
+            [
+              0.12401045144786682,
+              3.9256506678065364,
+              6.596032739683441
+            ],
+            [
+              -10.427962583768014,
+              -16.771116319600566,
+              -2.858477055894647
+            ],
+            [
+              11.431571091074899,
+              -16.822842916234208,
+              -2.470240907329762
+            ],
+            [
+              1.3416591953216788,
+              -26.590133597020472,
+              -1.22621165779233
+            ],
+            [
+              -22.26510351855623,
+              -4.018524642607181,
+              -5.923334749841409
+            ],
+            [
+              16.642104102421776,
+              -6.522976701694462,
+              1.9048524031196292
+            ],
+            [
+              -3.4847011604278064,
+              -11.000364196889993,
+              0.03205450972119017
+            ],
+            [
+              -11.084061342376947,
+              18.170296583458686,
+              -6.733790350371698
+            ],
+            [
+              18.21128523940779,
+              17.144205927635134,
+              -0.443884360047174
+            ]
+          ],
+          "faces": [
+            [
+              0,
+              1,
+              10
+            ],
+            [
+              0,
+              10,
+              2
+            ],
+            [
+              1,
+              2,
+              9
+            ],
+            [
+              2,
+              9,
+              3
+            ],
+            [
+              3,
+              4,
+              7
+            ],
+            [
+              3,
+              7,
+              5
+            ],
+            [
+              5,
+              8,
+              6
+            ],
+            [
+              4,
+              5,
+              6
+            ],
+            [
+              7,
+              8,
+              6
+            ],
+            [
+              1,
+              4,
+              7
+            ],
+            [
+              2,
+              5,
+              8
+            ],
+            [
+              0,
+              3,
+              9
+            ]
+          ],
+          "colors": [
+            [
+              242,
+              222,
+              192
+            ],
+            [
+              241,
+              219,
+              180
+            ],
+            [
+              251,
+              209,
+              179
+            ],
+            [
+              236,
+              214,
+              169
+            ],
+            [
+              242,
+              228,
+              164
+            ],
+            [
+              251,
+              202,
+              169
+            ],
+            [
+              255,
+              208,
+              179
+            ],
+            [
+              244,
+              210,
+              174
+            ],
+            [
+              239,
+              202,
+              190
+            ],
+            [
+              245,
+              216,
+              174
+            ],
+            [
+              244,
+              226,
+              187
+            ],
+            [
+              240,
+              223,
+              190
+            ]
+          ]
+        },
+        "skin_color_profile": {
+          "dominant_color": [
+            244,
+            214,
+            179
+          ],
+          "color_variance": 10.943139047967863,
+          "tone_classification": "light",
+          "sample_count": 167
+        },
+        "depth_map": {
+          "min_depth": -5.435865569165942,
+          "max_depth": 9.87962147453488,
+          "depth_variance": 8.33184912078369
+        },
+        "temporal_markers": {
+          "capture_sequence": "2025-07-16T12:15:22.838318+00:00",
+          "stability_index": 0.9668938937224242,
+          "temporal_consistency": 0.8999108729105255
+        },
+        "metadata": {
+          "user_id": "f00a055bd5b7344d",
+          "embedding_hash": "39f7e9b051533b75c762d6e26b57aa9112e5549cb5410cfa87322f586882e3db",
+          "timestamp": "2025-07-16T12:15:22.838318+00:00",
+          "confidence": 0.9315963800345277,
+          "model_version": "4D-v1.1-embedded",
+          "generation_method": "embedding_based"
+        }
+      },
+      "analysis": {
+        "is_placeholder": false,
+        "issues": [],
+        "facial_points_analysis": {
+          "count": 12,
+          "x_range": 46.454777840272854,
+          "y_range": 48.77615751317626,
+          "z_range": 13.32982309005514,
+          "coordinates_mean": [
+            0.200141675341149,
+            -0.0009597710322933514,
+            -1.6004748542608522
+          ],
+          "coordinates_std": [
+            14.619113407612737,
+            15.284449895776042,
+            3.5692857483034506
+          ]
+        },
+        "mesh_analysis": {
+          "vertex_count": 12,
+          "face_count": 12,
+          "vertex_range": {
+            "x": [
+              -23.43394224373501,
+              23.02083559653784
+            ],
+            "y": [
+              -26.590133597020472,
+              22.186023916155783
+            ],
+            "z": [
+              -6.733790350371698,
+              6.596032739683441
+            ]
+          }
+        },
+        "detection_analysis": {
+          "pointer_count": 12,
+          "confidence_stats": {
+            "mean": 0.8439015051145219,
+            "std": 0.054711802985293156,
+            "min": 0.7552898651022688,
+            "max": 0.9252400776213225
+          }
+        }
+      }
+    },
+    "scan_validation": {
+      "error": "422: {\"detail\":[{\"type\":\"missing\",\"loc\":[\"query\",\"user_id\"],\"msg\":\"Field required\",\"input\":null}]}"
+    },
+    "audit_log": {
+      "api_response": "[{\"user_id\":\"b7ce9bb3b81bb2be\",\"embedding_hash\":\"772e34d32e993cbbaaa5529c731c630a8a78a7559a1e47e5c39bcc81e05c5302\",\"timestamp\":\"2025-07-01T14:47:27.861392+00:00\"},{\"user_id\":\"8eee912cc6cf8ef1\",\"embedding_hash\":\"22273d307092e3928273f2c99f0d295c4d176ef5db870fce1771966c157625ed\",\"timestamp\":\"2025-07-01T14:53:32.551318+00:00\"},{\"user_id\":\"Nathan\",\"embedding_hash\":\"fdc98c11c739d3cf2851806a570b40f6b734e0c23a2b12b8465bb190287fc8c3\",\"timestamp\":\"2025-07-16T09:27:00.486358+00:00\",\"type\":\"ingest\",\"file_count\":2},{\"user_id\":\"test_user_4d\",\"embedding_hash\":\"a31436c19199a020e50c51c73049e42e2a3a81c53d7042c857d086afa88ccc51\",\"timestamp\":\"2025-07-16T10:01:02.289570+00:00\",\"type\":\"ingest\",\"file_count\":1},{\"user_id\":\"test_user_4d\",\"embedding_hash\":\"4e92b76ed366cd4bd890d9c859ebc522f2e1b1c565f32930fc1eaf0f63bc3756\",\"timestamp\":\"2025-07-16T10:01:13.730169+00:00\",\"type\":\"validate\"},{\"user_id\":\"test_4d_multi\",\"embedding_hash\":\"119c62920d881584e5989e70fe549d3d819d05b9a767d1aedfd8c188374be23f\",\"timestamp\":\"2025-07-16T10:03:28.157553+00:00\",\"type\":\"ingest\",\"file_count\":3},{\"user_id\":\"Nathan\",\"embedding_hash\":\"df0332257c70ec945385af15e25378eaf86b2f279d1e6445d29e30fed390b0de\",\"timestamp\":\"2025-07-16T10:26:20.074054+00:00\",\"type\":\"ingest\",\"file_count\":3},{\"user_id\":\"test_user_facial_mesh\",\"embedding_hash\":\"a16c03f6ff4f477d91baee6bbeb7ced156ec7b5857f6bf283af8a868908fcbf5\",\"timestamp\":\"2025-07-16T10:40:33.345123+00:00\",\"type\":\"ingest\",\"file_count\":1},{\"user_id\":\"facial_mesh_test_001\",\"embedding_hash\":\"8acb589cc97a4bbc0262e7a1ae544fdaf6fef9798d0471a67d2c26f7f2c4fe49\",\"timestamp\":\"2025-07-16T10:42:51.311302+00:00\",\"type\":\"ingest\",\"file_count\":2},{\"user_id\":\"Nathan\",\"embedding_hash\":\"be5a84b3c76373fcc1408ca81c19d2253ed383ae9cc11e86b85dd65d50c88c51\",\"timestamp\":\"2025-07-16T11:18:05.874119+00:00\",\"type\":\"ingest\",\"file_count\":4},{\"user_id\":\"diagnostic_test_user_001\",\"embedding_hash\":\"f130143f289bf042aaea57610892b05fce3dd8f4af21606599cb515355de422d\",\"timestamp\":\"2025-07-16T12:02:37.159445+00:00\",\"type\":\"ingest\",\"file_count\":3},{\"user_id\":\"f00a055bd5b7344d\",\"embedding_hash\":\"23d0b4e5267ae39daf04527bd8e63afac7c2dc91dc3da2fca47cb1cb4cb42fd7\",\"timestamp\":\"2025-07-16T12:14:46.368604+00:00\",\"id_document_type\":\"Passport Photo\",\"verification_score\":0.9976275589160085},{\"user_id\":\"f00a055bd5b7344d\",\"embedding_hash\":\"39f7e9b051533b75c762d6e26b57aa9112e5549cb5410cfa87322f586882e3db\",\"timestamp\":\"2025-07-16T12:15:22.838318+00:00\",\"type\":\"ingest\",\"file_count\":5}]",
+      "parsed_entries": 13
+    },
+    "osint_intelligence": {
+      "all": {
+        "social": {
+          "platforms": [
+            "LinkedIn",
+            "Twitter",
+            "Facebook"
+          ],
+          "profiles_found": 3,
+          "confidence": 87,
+          "last_activity": "2 days ago",
+          "risk_score": "LOW"
+        },
+        "public": {
+          "records_found": 12,
+          "verified_records": 8,
+          "pending_verification": 4,
+          "address_matches": true,
+          "phone_verified": true
+        },
+        "financial": {
+          "credit_score": 742,
+          "adverse_findings": false,
+          "bankruptcy_records": 0,
+          "liens": 0,
+          "risk_assessment": "LOW"
+        },
+        "professional": {
+          "linkedin_verified": true,
+          "current_employer": "Tech Corp Inc.",
+          "employment_verified": true,
+          "professional_licenses": 2
+        },
+        "biometric": {
+          "facial_recognition_matches": 7,
+          "confidence_score": 94,
+          "databases_searched": 3,
+          "duplicate_profiles": 0
+        }
+      },
+      "social": {
+        "social": {
+          "platforms": [
+            "LinkedIn",
+            "Twitter",
+            "Facebook"
+          ],
+          "profiles_found": 3,
+          "confidence": 87,
+          "last_activity": "2 days ago",
+          "risk_score": "LOW"
+        }
+      },
+      "public": {
+        "public": {
+          "records_found": 12,
+          "verified_records": 8,
+          "pending_verification": 4,
+          "address_matches": true,
+          "phone_verified": true
+        }
+      },
+      "financial": {
+        "financial": {
+          "credit_score": 742,
+          "adverse_findings": false,
+          "bankruptcy_records": 0,
+          "liens": 0,
+          "risk_assessment": "LOW"
+        }
+      },
+      "professional": {
+        "professional": {
+          "linkedin_verified": true,
+          "current_employer": "Tech Corp Inc.",
+          "employment_verified": true,
+          "professional_licenses": 2
+        }
+      },
+      "biometric": {
+        "biometric": {
+          "facial_recognition_matches": 7,
+          "confidence_score": 94,
+          "databases_searched": 3,
+          "duplicate_profiles": 0
+        }
+      }
+    },
+    "backend_direct_test": {
+      "success": true,
+      "analysis": {
+        "facial_points_count": 24,
+        "detection_pointers_count": 24,
+        "surface_mesh_vertices": 16384,
+        "mesh_faces_count": 100,
+        "has_landmark_map": true,
+        "confidence_map_shape": [
+          64,
+          64
+        ],
+        "num_images_processed": 3,
+        "detection_quality": 0.8395042173959449
+      },
+      "sample_data": {
+        "first_facial_point": [
+          0.6055,
+          0.6175,
+          0.3685534591194968,
+          187.34
+        ],
+        "first_detection_pointer": [
+          0.6055,
+          0.6175,
+          0.3685534591194968,
+          0.8411456892990484,
+          1.0
+        ],
+        "landmark_types": [
+          "left_eye",
+          "right_eye",
+          "nose",
+          "mouth_left",
+          "mouth_right",
+          "left_eyebrow",
+          "right_eyebrow",
+          "chin"
+        ]
+      }
+    }
+  },
+  "recommendations": []
+}

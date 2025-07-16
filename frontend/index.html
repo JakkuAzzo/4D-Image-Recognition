@@ -3,41 +3,152 @@
 <head>
     <meta charset="UTF-8" />
     <title>4D Image Recognition</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
-    <h1>4D Image Recognition</h1>
+    <div class="glass-container">
+        <h1>4D Image Recognition</h1>
 
-    <section id="verify">
-        <h2>Verify Identity</h2>
-        <input type="file" id="id_image" />
-        <input type="file" id="selfie" />
-        <button onclick="verifyId()">Verify</button>
-        <pre id="verify_result"></pre>
-    </section>
+        <section id="verify">
+            <h2>🔐 Identity Verification</h2>
+            <div class="input-group">
+                <label>ID Document:</label>
+                <input type="file" id="id_image" accept="image/*" />
+                <button onclick="captureIdImage()">📷 Capture ID</button>
+                <button onclick="analyzeIdDocument()" class="secondary-btn">Analyze Document</button>
+            </div>
+            <div class="input-group">
+                <label>Selfie:</label>
+                <input type="file" id="selfie" accept="image/*" />
+                <button onclick="captureSelfie()">📷 Take Selfie</button>
+                <button onclick="analyzeSelfie()" class="secondary-btn">Analyze Face</button>
+            </div>
+            <div class="preview-container">
+                <div class="preview-item">
+                    <h4>ID Document Preview</h4>
+                    <canvas id="id-preview-canvas" width="320" height="240"></canvas>
+                </div>
+                <div class="preview-item">
+                    <h4>Selfie Preview</h4>
+                    <canvas id="selfie-preview-canvas" width="320" height="240"></canvas>
+                </div>
+            </div>
+            <button onclick="verifyId()" class="primary-btn">Verify Identity</button>
+            <div id="verify_result"></div>
+        </section>
 
-    <section id="ingest">
-        <h2>Ingest Scan</h2>
-        <input type="text" id="user_id" placeholder="User ID" />
-        <input type="file" id="scan_files" multiple />
-        <button onclick="ingestScan()">Upload</button>
-        <pre id="ingest_result"></pre>
-    </section>
+        <section id="ingest">
+            <h2>📥 Scan Ingestion</h2>
+            <div class="input-group">
+                <label>User ID:</label>
+                <input type="text" id="user_id" placeholder="User ID" />
+            </div>
+            <div class="input-group">
+                <label>Scan Files:</label>
+                <input type="file" id="scan_files" multiple accept="image/*" />
+                <button onclick="captureMultipleScans()">📷 Capture Scans</button>
+            </div>
+            <button onclick="ingestScan()" class="primary-btn">Upload & Process</button>
+            <pre id="ingest_result"></pre>
+        </section>
 
-    <section id="validate">
-        <h2>Validate Scan</h2>
-        <input type="text" id="val_user_id" placeholder="User ID" />
-        <input type="file" id="val_files" multiple />
-        <button onclick="validateScan()">Validate</button>
-        <pre id="validate_result"></pre>
-    </section>
+        <section id="model-visualization" class="full-width">
+            <h2>🧠 4D Model Visualization</h2>
+            <div class="controls-panel">
+                <div class="control-group">
+                    <label>Test User ID</label>
+                    <input type="text" id="test-user-id" placeholder="Enter user ID to load model" value="final_test_user">
+                    <button onclick="loadTestModel()" class="secondary-btn">Load Model</button>
+                </div>
+                <div class="control-group">
+                    <label>Rotation Speed</label>
+                    <input type="range" id="rotation-speed" class="slider" min="0" max="5" value="1" step="0.1">
+                </div>
+                <div class="control-group">
+                    <label>Zoom Level</label>
+                    <input type="range" id="zoom-level" class="slider" min="0.5" max="3" value="1" step="0.1">
+                </div>
+                <div class="control-group">
+                    <label>Time Dimension</label>
+                    <input type="range" id="time-dimension" class="slider" min="0" max="100" value="50" step="1">
+                </div>
+                <button onclick="resetVisualization()">Reset View</button>
+                <button onclick="exportModel()">Export Model</button>
+            </div>
+            <div class="visualization-container">
+                <canvas id="model-canvas"></canvas>
+                <div id="visualization-placeholder" class="visualization-placeholder">
+                    <p>📊 4D model will appear here after scan ingestion</p>
+                    <small>Interactive 3D representation with temporal dimension</small>
+                </div>
+            </div>
+        </section>
 
-    <section>
-        <h2>Audit Log</h2>
-        <button onclick="loadAuditLog()">Refresh</button>
-        <pre id="audit_log"></pre>
-    </section>
+        <section id="validate">
+            <h2>✅ Scan Validation</h2>
+            <div class="input-group">
+                <label>User ID:</label>
+                <input type="text" id="val_user_id" placeholder="User ID" />
+            </div>
+            <div class="input-group">
+                <label>Validation Files:</label>
+                <input type="file" id="val_files" multiple accept="image/*" />
+            </div>
+            <button onclick="validateScan()" class="primary-btn">Validate</button>
+            <pre id="validate_result"></pre>
+        </section>
 
-    <script src="app.js"></script>
+        <section id="osint-results" class="full-width">
+            <h2>🔍 OSINT Intelligence</h2>
+            <div class="controls-panel">
+                <button onclick="refreshOSINT()">🔄 Refresh Data</button>
+                <button onclick="exportOSINT()">📄 Export Report</button>
+                <div class="control-group">
+                    <label>Data Sources</label>
+                    <select id="osint-sources" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px; border-radius: 8px;">
+                        <option value="all">All Sources</option>
+                        <option value="social">Social Media</option>
+                        <option value="public">Public Records</option>
+                        <option value="financial">Financial</option>
+                        <option value="professional">Professional</option>
+                    </select>
+                </div>
+            </div>
+            <div id="osint-grid" class="osint-grid">
+                <div class="osint-card">
+                    <h4><span class="status-indicator status-info"></span>System Status</h4>
+                    <p>OSINT scrapers ready. Click refresh to gather intelligence data.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="audit">
+            <h2>📋 Audit Log</h2>
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button onclick="loadAuditLog()">🔄 Refresh</button>
+                <button onclick="clearAuditLog()">🗑️ Clear Log</button>
+                <button onclick="exportAuditLog()">📄 Export</button>
+            </div>
+            <pre id="audit_log"></pre>
+        </section>
+
+        <!-- Camera modal -->
+        <div id="camera-modal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeCamera()">&times;</span>
+                <h3 id="camera-title">Camera</h3>
+                <video id="camera-video" autoplay playsinline></video>
+                <canvas id="camera-canvas" style="display: none;"></canvas>
+                <div class="camera-controls">
+                    <button onclick="capturePhoto()" class="capture-btn">📷 Capture</button>
+                    <button onclick="closeCamera()" class="cancel-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
 </body>
 </html>

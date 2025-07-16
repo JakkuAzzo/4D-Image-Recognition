@@ -34,14 +34,46 @@ class EmbeddingDB:
             json.dump(self.meta, f)
 
     def add(self, user_id: str, embedding: np.ndarray, metadata: Dict) -> None:
-        self.index.add(np.expand_dims(embedding.astype("float32"), 0))
+        """Add an embedding to the database with associated metadata.
+
+        Args:
+            user_id: User identifier
+            embedding: Feature vector (must be INDEX_DIM dimensions)
+            metadata: Additional information to store
+
+        Raises:
+            AssertionError: If embedding dimension doesn't match INDEX_DIM
+            ValueError: For other embedding validation errors
+        """
+        # Verify embedding shape and dimensions
+        if not isinstance(embedding, np.ndarray):
+            raise ValueError(f"Embedding must be a numpy array, got {type(embedding)}")
+
+        embedding_flat = embedding.flatten()
+        if embedding_flat.shape[0] != INDEX_DIM:
+            raise ValueError(
+                f"Embedding dimension mismatch: expected {INDEX_DIM}, got {embedding_flat.shape[0]}"
+            )
+
+        # Convert to correct format and add to index
+        embedding_ready = np.expand_dims(embedding_flat.astype("float32"), 0)
+        self.index.add(embedding_ready)
         self.meta.append({"user_id": user_id, **metadata})
         self.save()
 
     def search(self, embedding: np.ndarray, top_k: int = 5) -> List[Tuple[float, Dict]]:
         if len(self.meta) == 0:
             return []
-        dists, idxs = self.index.search(np.expand_dims(embedding.astype("float32"), 0), top_k)
+
+        # Ensure embedding is in correct shape and format
+        embedding_flat = embedding.flatten()
+        if embedding_flat.shape[0] != INDEX_DIM:
+            raise ValueError(
+                f"Search embedding dimension mismatch: expected {INDEX_DIM}, got {embedding_flat.shape[0]}"
+            )
+
+        embedding_ready = np.expand_dims(embedding_flat.astype("float32"), 0)
+        dists, idxs = self.index.search(embedding_ready, top_k)
         results = []
         for dist, idx in zip(dists[0], idxs[0]):
             if idx == -1:
