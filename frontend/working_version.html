@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4D Image Recognition System - WORKING VERSION</title>
+    <style>
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { text-align: center; margin-bottom: 30px; }
+        .upload-section { 
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        .upload-zone {
+            border: 2px dashed rgba(255,255,255,0.3);
+            padding: 40px;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        input[type="file"] {
+            margin: 20px 0;
+            padding: 10px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 5px;
+            color: white;
+        }
+        button {
+            background: #00ff88;
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover { background: #00cc66; }
+        button:disabled { 
+            background: #666; 
+            color: #999; 
+            cursor: not-allowed; 
+        }
+        .selected-files {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .file-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .file-item {
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        .processing {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            text-align: center;
+            border-radius: 15px;
+            display: none;
+        }
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid #00ff88;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .results {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+        .error {
+            background: rgba(255,0,0,0.2);
+            border: 1px solid #ff4444;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .success {
+            background: rgba(0,255,0,0.2);
+            border: 1px solid #00ff88;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 4D Image Recognition System</h1>
+        <p style="text-align: center;">Advanced Facial Analysis & Intelligence Pipeline</p>
+        
+        <div class="upload-section">
+            <div class="upload-zone">
+                <h3>📸 Select Multiple Face Images</h3>
+                <p>Choose 2-5 images for comprehensive 4D facial analysis</p>
+                
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <input type="file" id="fileInput" name="files" multiple accept="image/*" required>
+                    <br>
+                    <button type="button" onclick="selectFiles()">Choose Files</button>
+                </form>
+                
+                <div id="fileRequirements">
+                    <p><strong>📋 Requirements:</strong></p>
+                    <ul style="text-align: left; display: inline-block;">
+                        <li>Multiple face photos from different angles</li>
+                        <li>Good lighting, clear facial features</li>
+                        <li>JPG, PNG, or WebP format</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="selectedFiles" class="selected-files" style="display: none;">
+                <h4>Selected Files (<span id="fileCount">0</span>):</h4>
+                <div id="filePreview" class="file-preview"></div>
+                <button id="processBtn" onclick="startProcessing()" disabled>
+                    🚀 PROCESS IMAGES
+                </button>
+                <button onclick="clearFiles()">🗑️ Clear</button>
+            </div>
+        </div>
+        
+        <div id="processing" class="processing">
+            <div class="spinner"></div>
+            <h3>Processing your images through the 4D pipeline...</h3>
+            <p id="processingStatus">Initializing...</p>
+        </div>
+        
+        <div id="results" class="results">
+            <h3>📊 Processing Results</h3>
+            <div id="resultContent"></div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+        
+        function selectFiles() {
+            document.getElementById('fileInput').click();
+        }
+        
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            selectedFiles = Array.from(e.target.files);
+            updateFileDisplay();
+        });
+        
+        function updateFileDisplay() {
+            const selectedDiv = document.getElementById('selectedFiles');
+            const fileCount = document.getElementById('fileCount');
+            const filePreview = document.getElementById('filePreview');
+            const processBtn = document.getElementById('processBtn');
+            
+            if (selectedFiles.length > 0) {
+                selectedDiv.style.display = 'block';
+                fileCount.textContent = selectedFiles.length;
+                
+                filePreview.innerHTML = '';
+                selectedFiles.forEach(file => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.textContent = `${file.name} (${(file.size/1024/1024).toFixed(2)} MB)`;
+                    filePreview.appendChild(fileItem);
+                });
+                
+                processBtn.disabled = selectedFiles.length < 2;
+                if (selectedFiles.length < 2) {
+                    processBtn.textContent = `🚀 Need ${2 - selectedFiles.length} more image(s)`;
+                } else {
+                    processBtn.textContent = '🚀 PROCESS IMAGES';
+                }
+            } else {
+                selectedDiv.style.display = 'none';
+            }
+        }
+        
+        function clearFiles() {
+            selectedFiles = [];
+            document.getElementById('fileInput').value = '';
+            document.getElementById('selectedFiles').style.display = 'none';
+        }
+        
+        async function startProcessing() {
+            console.log('Starting processing with', selectedFiles.length, 'files');
+            
+            if (selectedFiles.length < 2) {
+                showError('Please select at least 2 images for processing');
+                return;
+            }
+            
+            // Show processing UI
+            document.getElementById('processing').style.display = 'block';
+            document.getElementById('selectedFiles').style.display = 'none';
+            
+            try {
+                // Create form data
+                const formData = new FormData();
+                selectedFiles.forEach((file, index) => {
+                    formData.append('files', file);
+                });
+                formData.append('user_id', `user_${Date.now()}`);
+                
+                updateProcessingStatus('Uploading files...');
+                
+                // Send to backend
+                const response = await fetch('/upload-multiple', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                updateProcessingStatus('Processing images through 7-step pipeline...');
+                
+                const result = await response.json();
+                
+                // Show results
+                showResults(result);
+                
+            } catch (error) {
+                console.error('Processing error:', error);
+                showError(`Processing failed: ${error.message}`);
+            }
+        }
+        
+        function updateProcessingStatus(status) {
+            document.getElementById('processingStatus').textContent = status;
+        }
+        
+        function showResults(result) {
+            document.getElementById('processing').style.display = 'none';
+            
+            const resultsDiv = document.getElementById('results');
+            const resultContent = document.getElementById('resultContent');
+            
+            if (result.success) {
+                resultContent.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Processing Completed Successfully!</h4>
+                        <p><strong>User ID:</strong> ${result.user_id || 'N/A'}</p>
+                        <p><strong>Files Processed:</strong> ${selectedFiles.length}</p>
+                        <p><strong>Processing Time:</strong> ${result.processing_time || 'N/A'}</p>
+                    </div>
+                `;
+            } else {
+                resultContent.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Processing Failed</h4>
+                        <p>${result.error || 'Unknown error occurred'}</p>
+                    </div>
+                `;
+            }
+            
+            resultsDiv.style.display = 'block';
+        }
+        
+        function showError(message) {
+            document.getElementById('processing').style.display = 'none';
+            
+            const resultsDiv = document.getElementById('results');
+            const resultContent = document.getElementById('resultContent');
+            
+            resultContent.innerHTML = `
+                <div class="error">
+                    <h4>❌ Error</h4>
+                    <p>${message}</p>
+                    <button onclick="location.reload()">🔄 Try Again</button>
+                </div>
+            `;
+            
+            resultsDiv.style.display = 'block';
+        }
+        
+        console.log('✅ 4D Image Recognition System loaded successfully');
+        console.log('All JavaScript functions are working');
+    </script>
+</body>
+</html>

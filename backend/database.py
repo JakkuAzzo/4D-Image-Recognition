@@ -29,6 +29,8 @@ class EmbeddingDB:
             self.meta = []
 
     def save(self) -> None:
+        if faiss is None:
+            raise ImportError("faiss is required for saving the index")
         faiss.write_index(self.index, str(self.index_path))
         with open(self.meta_path, "w") as f:
             json.dump(self.meta, f)
@@ -57,7 +59,8 @@ class EmbeddingDB:
 
         # Convert to correct format and add to index
         embedding_ready = np.expand_dims(embedding_flat.astype("float32"), 0)
-        self.index.add(embedding_ready)
+        if self.index is not None:
+            self.index.add(embedding_ready)  # type: ignore
         self.meta.append({"user_id": user_id, **metadata})
         self.save()
 
@@ -73,7 +76,7 @@ class EmbeddingDB:
             )
 
         embedding_ready = np.expand_dims(embedding_flat.astype("float32"), 0)
-        dists, idxs = self.index.search(embedding_ready, top_k)
+        dists, idxs = self.index.search(embedding_ready, top_k)  # type: ignore
         results = []
         for dist, idx in zip(dists[0], idxs[0]):
             if idx == -1:

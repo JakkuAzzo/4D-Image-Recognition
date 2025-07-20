@@ -407,16 +407,46 @@ def extract_facenet_embedding(image: np.ndarray, face_data: Optional[Dict[str, A
 def _empty_4d_model() -> Dict[str, Any]:
     """Return an empty 4D facial model structure."""
     return {
+        "model_type": "EMPTY_4D_FACIAL",
+        "user_id": "empty_user",
+        "image_count": 0,
+        "landmark_count": 0,
+        "mesh_resolution": "none",
+        "osint_ready": False,
+        "facial_landmarks": [],  # For validation compatibility
         "facial_points": np.zeros((100, 4)),
+        "mesh_vertices": [],  # For validation compatibility
+        "surface_mesh": np.zeros((200, 4)),
         "landmark_map": {},
         "detection_pointers": np.zeros((50, 5)),  # x,y,z,confidence,type
-        "surface_mesh": np.zeros((200, 4)),
         "mesh_faces": np.zeros((100, 3), dtype=int),
         "skin_color_profile": np.zeros((12,)),  # Extended color analysis
         "depth_map": np.zeros((128, 128)),
         "biometric_signature": np.zeros((512,)),  # Expanded signature
         "confidence_map": np.zeros((64, 64)),
-        "temporal_markers": np.zeros((64,))
+        "temporal_markers": np.zeros((64,)),
+        "biometric_profile": {},
+        "osint_features": {},
+        "temporal_analysis": {"consistency_score": 0.0},
+        "quality_metrics": {
+            "overall_confidence": 0.0,
+            "reconstruction_quality": 0.0,
+            "biometric_reliability": 0.0,
+            "osint_suitability": 0.0,
+            "image_quality": 0.0
+        },
+        "identification_features": {
+            "facial_hash": "empty_hash",
+            "search_vectors": [],
+            "comparison_signature": [],
+            "database_ready": False
+        },
+        "metadata": {
+            "generation_timestamp": "2025-07-16",
+            "model_version": "4D-EMPTY-v1.0",
+            "generation_method": "empty_placeholder",
+            "total_processing_time": "none"
+        }
     }
 
 
@@ -999,15 +1029,18 @@ def reconstruct_4d_facial_model(images: List[np.ndarray]) -> Dict[str, Any]:
     enhanced_model = {
         # Core model metadata
         "model_type": "ENHANCED_4D_FACIAL_OSINT",
+        "user_id": f"user_{len(images)}",  # Add user_id field
         "image_count": len(images),
         "landmark_count": len(all_landmarks[0]) if all_landmarks else 0,
         "mesh_resolution": "high_resolution",
         "osint_ready": True,
         
-        # High-detail facial points for 3D visualization
+        # High-detail facial points for 3D visualization (with compatibility names)
+        "facial_landmarks": create_detailed_facial_points(all_landmarks),  # For validation compatibility
         "facial_points": create_detailed_facial_points(all_landmarks),
         
-        # Dense surface mesh for detailed rendering
+        # Dense surface mesh for detailed rendering (with compatibility names)
+        "mesh_vertices": mesh_data,  # For validation compatibility
         "surface_mesh": mesh_data,
         
         # Enhanced detection pointers for analysis
@@ -1076,11 +1109,14 @@ def _create_fallback_model() -> Dict[str, Any]:
     """Create a basic fallback model when enhanced reconstruction fails."""
     return {
         "model_type": "FALLBACK_4D_FACIAL",
+        "user_id": "fallback_user",
         "image_count": 0,
         "landmark_count": 68,  # Standard facial landmarks
         "mesh_resolution": "basic",
         "osint_ready": False,
+        "facial_landmarks": _generate_basic_facial_mesh(),  # For validation compatibility
         "facial_points": _generate_basic_facial_mesh(),
+        "mesh_vertices": _generate_basic_surface_mesh(),  # For validation compatibility
         "surface_mesh": _generate_basic_surface_mesh(),
         "detection_pointers": [],
         "biometric_profile": {},

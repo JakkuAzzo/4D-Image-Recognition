@@ -6,6 +6,10 @@ import numpy as np
 from PIL import Image
 import io
 import hashlib
+import uuid
+import random
+import string
+from datetime import datetime
 from typing import Union
 
 # Thresholds for verification and validation
@@ -88,3 +92,20 @@ def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
 def sha256_bytes(data: bytes) -> str:
     """Generate SHA256 hash of bytes data"""
     return hashlib.sha256(data).hexdigest()
+
+def generate_user_id() -> str:
+    """Generate a unique user ID"""
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    random_suffix = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+    return f"user_{timestamp}_{random_suffix}"
+
+def generate_user_id() -> str:
+    """Generate a unique user ID for tracking"""
+    # Use timestamp + random string for uniqueness
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    random_part = ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
+    return f"user_{timestamp}_{random_part}"
+
+def generate_session_id() -> str:
+    """Generate a unique session ID"""
+    return str(uuid.uuid4())

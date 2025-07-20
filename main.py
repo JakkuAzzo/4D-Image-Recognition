@@ -15,8 +15,8 @@ def main():
     """Run the 4D Image Recognition FastAPI server"""
     
     # SSL certificate paths
-    ssl_keyfile = project_root / "ssl" / "server.key"
-    ssl_certfile = project_root / "ssl" / "server.crt"
+    ssl_keyfile = project_root / "ssl" / "key.pem"
+    ssl_certfile = project_root / "ssl" / "cert.pem"
     
     # Check if SSL certificates exist
     if ssl_keyfile.exists() and ssl_certfile.exists():

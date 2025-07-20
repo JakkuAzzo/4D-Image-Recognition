@@ -1,20 +1,40 @@
 import numpy as np
-from typing import Any, Tuple, Union
+from typing import Any, Tuple, Union, Optional
 
 # Type alias for arrays
 Array = Union[np.ndarray, Any]
 
+# Optional imports for 3D reconstruction libraries
+PRNet = None
+DECA = None
+
 try:
-    from PRNet.api import PRNet
-except Exception:  # pragma: no cover
+    from PRNet.api import PRNet as _PRNet  # type: ignore
+    PRNet = _PRNet
+except ImportError:
     PRNet = None
+
 try:
-    from deca import DECA
-except Exception:  # pragma: no cover
+    from deca import DECA as _DECA  # type: ignore
+    DECA = _DECA
+except ImportError:
     DECA = None
 
-prnet = PRNet() if PRNet is not None else None
-deca = DECA(config_path='configs/deca.yaml', device='cuda') if DECA is not None else None
+# Initialize reconstruction engines if available
+prnet: Optional[Any] = None
+deca: Optional[Any] = None
+
+if PRNet is not None:
+    try:
+        prnet = PRNet()
+    except Exception:
+        prnet = None
+
+if DECA is not None:
+    try:
+        deca = DECA(config_path='configs/deca.yaml', device='cuda')
+    except Exception:
+        deca = None
 
 
 def reconstruct_prnet(face_crop: Array):

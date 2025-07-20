@@ -1,0 +1,99 @@
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyc
+
+# Ignore virtual environment directories
+env/
+venv/
+ENV/
+.venv/
+
+# Ignore log files
+*.log
+server.log
+fastapi.log
+
+# Ignore test output and results
+/tests/test_output/
+*test_results*.json
+*test_report*.json
+*test_analysis*.json
+*validation_results*.json
+live_app_test_analysis.json
+basic_test_results.json
+comprehensive_manual_test_results.json
+final_validation_results.json
+
+# Ignore coverage reports
+*.coverage
+.coverage.*
+
+# Ignore 4D model files and generated data
+4d_models/
+*.json
+!package.json
+!tsconfig.json
+!requirements.json
+
+# Ignore database and vector index files
+*.index
+vector.index
+metadata.json
+*.db
+*.sqlite
+*.sqlite3
+
+# Ignore SSL certificates and keys
+ssl/
+*.pem
+*.key
+*.crt
+*.p12
+
+# Ignore image files and screenshots
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+mesh_debug_screenshot.png
+
+# Ignore OS specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Ignore temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Ignore node modules (if any)
+node_modules/
+npm-debug.log*
+
+# Ignore backup files
+*.bak
+*.backup
+*.old
+
+# Ignore processed outputs
+processed_*
+output_*
+result_*
+temp_*

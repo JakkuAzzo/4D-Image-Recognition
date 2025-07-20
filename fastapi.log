@@ -1,137 +1,313 @@
 INFO:     Will watch for changes in these directories: ['/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition']
 INFO:     Uvicorn running on https://0.0.0.0:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process [51582] using StatReload
-INFO:     Started server process [51588]
+INFO:     Started reloader process [46955] using StatReload
+INFO:faiss.loader:Loading faiss.
+INFO:faiss.loader:Successfully loaded faiss.
+INFO:faiss:Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1753038660.196044 1096230 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M4
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+I0000 00:00:1753038660.200411 1096230 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M4
+W0000 00:00:1753038660.201982 1096353 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1753038660.209207 1096355 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1753038660.210726 1096346 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+WARNING:modules.facial_pipeline:68-point facial landmark predictor not found. Some features may be limited.
+INFO:     Started server process [46961]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
-Creating enhanced 4D facial model from 5 images...
+INFO:     192.168.0.120:63235 - "GET / HTTP/1.1" 200 OK
+INFO:     192.168.0.120:63235 - "GET /styles.css HTTP/1.1" 200 OK
+INFO:     192.168.0.120:63235 - "GET /app.js HTTP/1.1" 200 OK
+INFO:backend.api:🚀 Starting 7-step pipeline processing for 11 files
+INFO:backend.api:📸 Step 1: Loading and validating images...
+INFO:backend.api:✅ Loaded image 1: 4FC5C07A-005C-4D02-AA96-1939FDAD4B79.jpg
+INFO:backend.api:✅ Loaded image 2: 97CE627D-A49B-42A1-9BFE-CCD5570FDE91.jpg
+INFO:backend.api:✅ Loaded image 3: 280332C2-C4ED-472E-B749-D3962B3ADFE9.jpg
+INFO:backend.api:✅ Loaded image 4: 479926582_2134123993673834_1270801714858167817_n.jpg
+INFO:backend.api:✅ Loaded image 5: A4F4CC7A-23B3-4FD8-8C22-22E19DB9440B.jpg
+INFO:backend.api:✅ Loaded image 6: A480A7D0-CEA0-45C0-B323-24065C543F72.jpg
+INFO:backend.api:✅ Loaded image 7: Screenshot 2025-07-17 at 2.24.20 PM.png
+INFO:backend.api:✅ Loaded image 8: Screenshot 2025-07-17 at 2.24.43 PM.png
+INFO:backend.api:✅ Loaded image 9: Screenshot 2025-07-17 at 2.26.30 PM.png
+INFO:backend.api:✅ Loaded image 10: Screenshot 2025-07-17 at 2.26.47 PM.png
+INFO:backend.api:✅ Loaded image 11: Screenshot 2025-07-17 at 2.27.09 PM.png
+INFO:backend.api:👤 Step 2: Detecting and cropping faces...
+ERROR:backend.api:❌ Face detection failed for image 1: slice indices must be integers or None or have an __index__ method
+ERROR:backend.api:❌ Face detection failed for image 2: slice indices must be integers or None or have an __index__ method
+ERROR:backend.api:❌ Face detection failed for image 3: slice indices must be integers or None or have an __index__ method
+ERROR:backend.api:❌ Face detection failed for image 4: slice indices must be integers or None or have an __index__ method
+ERROR:backend.api:❌ Face detection failed for image 5: slice indices must be integers or None or have an __index__ method
+ERROR:backend.api:❌ Face detection failed for image 6: slice indices must be integers or None or have an __index__ method
+ERROR:backend.api:❌ Face detection failed for image 7: slice indices must be integers or None or have an __index__ method
+ERROR:backend.api:❌ Face detection failed for image 8: slice indices must be integers or None or have an __index__ method
+ERROR:backend.api:❌ Face detection failed for image 9: slice indices must be integers or None or have an __index__ method
+ERROR:backend.api:❌ Face detection failed for image 10: slice indices must be integers or None or have an __index__ method
+ERROR:backend.api:❌ Face detection failed for image 11: slice indices must be integers or None or have an __index__ method
+INFO:     192.168.0.120:63254 - "POST /process-pipeline HTTP/1.1" 400 Bad Request
+INFO:backend.api:🚀 Starting 7-step pipeline processing for 11 files
+INFO:backend.api:📸 Step 1: Loading and validating images...
+INFO:backend.api:✅ Loaded image 1: 4FC5C07A-005C-4D02-AA96-1939FDAD4B79.jpg
+INFO:backend.api:✅ Loaded image 2: 97CE627D-A49B-42A1-9BFE-CCD5570FDE91.jpg
+INFO:backend.api:✅ Loaded image 3: 280332C2-C4ED-472E-B749-D3962B3ADFE9.jpg
+INFO:backend.api:✅ Loaded image 4: 479926582_2134123993673834_1270801714858167817_n.jpg
+INFO:backend.api:✅ Loaded image 5: A4F4CC7A-23B3-4FD8-8C22-22E19DB9440B.jpg
+INFO:backend.api:✅ Loaded image 6: A480A7D0-CEA0-45C0-B323-24065C543F72.jpg
+INFO:backend.api:✅ Loaded image 7: Screenshot 2025-07-17 at 2.24.20 PM.png
+INFO:backend.api:✅ Loaded image 8: Screenshot 2025-07-17 at 2.24.43 PM.png
+INFO:backend.api:✅ Loaded image 9: Screenshot 2025-07-17 at 2.26.30 PM.png
+INFO:backend.api:✅ Loaded image 10: Screenshot 2025-07-17 at 2.26.47 PM.png
+INFO:backend.api:✅ Loaded image 11: Screenshot 2025-07-17 at 2.27.09 PM.png
+INFO:backend.api:👤 Step 2: Detecting and cropping faces...
+ERROR:backend.api:❌ Face detection failed for image 1: slice indices must be integers or None or have an __index__ method
+ERROR:backend.api:❌ Face detection failed for image 2: slice indices must be integers or None or have an __index__ method
+ERROR:backend.api:❌ Face detection failed for image 3: slice indices must be integers or None or have an __index__ method
+ERROR:backend.api:❌ Face detection failed for image 4: slice indices must be integers or None or have an __index__ method
+ERROR:backend.api:❌ Face detection failed for image 5: slice indices must be integers or None or have an __index__ method
+ERROR:backend.api:❌ Face detection failed for image 6: slice indices must be integers or None or have an __index__ method
+ERROR:backend.api:❌ Face detection failed for image 7: slice indices must be integers or None or have an __index__ method
+ERROR:backend.api:❌ Face detection failed for image 8: slice indices must be integers or None or have an __index__ method
+ERROR:backend.api:❌ Face detection failed for image 9: slice indices must be integers or None or have an __index__ method
+ERROR:backend.api:❌ Face detection failed for image 10: slice indices must be integers or None or have an __index__ method
+ERROR:backend.api:❌ Face detection failed for image 11: slice indices must be integers or None or have an __index__ method
+INFO:     192.168.0.120:63255 - "POST /process-pipeline HTTP/1.1" 400 Bad Request
+INFO:     192.168.0.120:63311 - "GET / HTTP/1.1" 200 OK
+INFO:     192.168.0.120:63311 - "GET /styles.css HTTP/1.1" 200 OK
+INFO:     192.168.0.120:63314 - "GET /app.js HTTP/1.1" 200 OK
+WARNING:  StatReload detected changes in 'backend/api.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [46961]
+INFO:faiss.loader:Loading faiss.
+INFO:faiss.loader:Successfully loaded faiss.
+INFO:faiss:Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1753039534.735318 1130617 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M4
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+I0000 00:00:1753039534.740629 1130617 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M4
+W0000 00:00:1753039534.742472 1130718 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1753039534.749349 1130707 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1753039534.750891 1130720 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+WARNING:modules.facial_pipeline:68-point facial landmark predictor not found. Some features may be limited.
+INFO:     Started server process [55375]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'backend/utils.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [55375]
+INFO:faiss.loader:Loading faiss.
+INFO:faiss.loader:Successfully loaded faiss.
+INFO:faiss:Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1753039545.148098 1131061 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M4
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+I0000 00:00:1753039545.155529 1131061 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M4
+W0000 00:00:1753039545.157764 1131165 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1753039545.162794 1131169 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1753039545.164989 1131154 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+WARNING:modules.facial_pipeline:68-point facial landmark predictor not found. Some features may be limited.
+INFO:     Started server process [55473]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'backend/api.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [55473]
+INFO:faiss.loader:Loading faiss.
+INFO:faiss.loader:Successfully loaded faiss.
+INFO:faiss:Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1753039810.485782 1139700 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M4
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+I0000 00:00:1753039810.490955 1139700 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M4
+W0000 00:00:1753039810.493199 1139829 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1753039810.498497 1139834 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1753039810.502410 1139824 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+WARNING:modules.facial_pipeline:68-point facial landmark predictor not found. Some features may be limited.
+INFO:     Started server process [57855]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'test_manual_upload.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [57855]
+INFO:faiss.loader:Loading faiss.
+INFO:faiss.loader:Successfully loaded faiss.
+INFO:faiss:Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1753039883.338739 1143034 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M4
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+I0000 00:00:1753039883.343220 1143034 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M4
+W0000 00:00:1753039883.344968 1143110 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1753039883.352306 1143108 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1753039883.354214 1143100 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+WARNING:modules.facial_pipeline:68-point facial landmark predictor not found. Some features may be limited.
+INFO:     Started server process [58548]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     192.168.0.120:64327 - "GET / HTTP/1.1" 200 OK
+INFO:backend.api:🚀 Starting 7-step pipeline processing for 6 files
+INFO:backend.api:📸 Step 1: Loading and validating images...
+INFO:backend.api:✅ Loaded image 1: 280332C2-C4ED-472E-B749-D3962B3ADFE9.jpg
+INFO:backend.api:✅ Loaded image 2: 4FC5C07A-005C-4D02-AA96-1939FDAD4B79.jpg
+INFO:backend.api:✅ Loaded image 3: A4F4CC7A-23B3-4FD8-8C22-22E19DB9440B.jpg
+INFO:backend.api:✅ Loaded image 4: 97CE627D-A49B-42A1-9BFE-CCD5570FDE91.jpg
+INFO:backend.api:✅ Loaded image 5: 479926582_2134123993673834_1270801714858167817_n.jpg
+INFO:backend.api:✅ Loaded image 6: A480A7D0-CEA0-45C0-B323-24065C543F72.jpg
+INFO:backend.api:👤 Step 2: Detecting and cropping faces...
+INFO:backend.api:✅ Face detected in image 1
+INFO:backend.api:✅ Face detected in image 2
+INFO:backend.api:✅ Face detected in image 3
+INFO:backend.api:✅ Face detected in image 4
+INFO:backend.api:✅ Face detected in image 5
+INFO:backend.api:✅ Face detected in image 6
+INFO:backend.api:🧊 Step 3: Performing 3D reconstruction...
+INFO:backend.api:✅ 3D facial model reconstructed
+INFO:backend.api:🧬 Step 4: Computing 4D embeddings...
+INFO:backend.api:✅ 4D embeddings computed
+INFO:backend.api:🆔 Step 5: Generating user ID...
+INFO:backend.api:✅ Generated user ID: user_20250720_203555_c6y7z7
+INFO:backend.api:💾 Step 6: Storing in vector database...
+INFO:backend.api:✅ Data stored in vector database
+INFO:backend.api:📊 Step 7: Generating 4D model...
+INFO:backend.api:✅ 4D model saved: 4d_models/user_20250720_203555_c6y7z7_latest.json
+INFO:backend.api:🎉 7-step pipeline processing completed successfully
+Creating enhanced 4D facial model from 6 images...
   ✅ Enhanced facial reconstruction module loaded successfully
   Image 1: 124 landmarks detected
   Image 2: 124 landmarks detected
   Image 3: 124 landmarks detected
   Image 4: 124 landmarks detected
   Image 5: 124 landmarks detected
+  Image 6: 124 landmarks detected
   Generating high-resolution facial mesh...
   Computing biometric profile for identification...
   Creating OSINT identification features...
   Enhanced 4D model created: 124 landmarks, 1954 vertices, confidence: 1.00
-INFO:     127.0.0.1:61065 - "POST /ingest-scan?user_id=enhanced_test_user HTTP/1.1" 200 OK
-INFO:     127.0.0.1:61067 - "GET /get-4d-model/enhanced_test_user HTTP/1.1" 200 OK
-INFO:     127.0.0.1:61069 - "GET / HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61086 - "GET / HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61086 - "GET /static/styles.css HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61086 - "GET /static/app.js HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61086 - "GET /osint-data?source=all HTTP/1.1" 200 OK
-INFO:     127.0.0.1:61094 - "POST /ingest-scan?user_id=nathan6 HTTP/1.1" 422 Unprocessable Entity
-INFO:     10.154.64.188:61106 - "GET / HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61106 - "GET /osint-data?source=all HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61106 - "GET / HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61106 - "GET /osint-data?source=all HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61106 - "GET / HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61106 - "GET /osint-data?source=all HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61106 - "GET / HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61106 - "GET /osint-data?source=all HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61106 - "GET / HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61106 - "GET /osint-data?source=all HTTP/1.1" 200 OK
-Creating enhanced 4D facial model from 3 images...
-  ✅ Enhanced facial reconstruction module loaded successfully
-  Image 1: 124 landmarks detected
-  Image 2: 124 landmarks detected
-  Image 3: 124 landmarks detected
-  Generating high-resolution facial mesh...
-  Computing biometric profile for identification...
-  Creating OSINT identification features...
-  Enhanced 4D model created: 124 landmarks, 1954 vertices, confidence: 1.00
-INFO:     127.0.0.1:61116 - "POST /ingest-scan?user_id=nathan6 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:61118 - "GET /get-4d-model/nathan6 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:61135 - "GET /?user=nathan6 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:61135 - "GET /static/styles.css HTTP/1.1" 200 OK
-INFO:     127.0.0.1:61135 - "GET /static/app.js HTTP/1.1" 200 OK
-INFO:     127.0.0.1:61135 - "GET /osint-data?source=all HTTP/1.1" 200 OK
-INFO:     127.0.0.1:61166 - "GET /get-4d-model/nathan6 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:61451 - "GET /get-4d-model/nathan6 HTTP/1.1" 200 OK
-INFO:     127.0.0.1:61486 - "POST /ingest HTTP/1.1" 404 Not Found
-INFO:     127.0.0.1:61507 - "POST /ingest-scan HTTP/1.1" 422 Unprocessable Entity
-Creating enhanced 4D facial model from 3 images...
-  ✅ Enhanced facial reconstruction module loaded successfully
-  Image 1: 124 landmarks detected
-  Image 2: 124 landmarks detected
-  Image 3: 124 landmarks detected
-  Generating high-resolution facial mesh...
-  Computing biometric profile for identification...
-  Creating OSINT identification features...
-  Enhanced 4D model created: 124 landmarks, 1954 vertices, confidence: 1.00
-INFO:     127.0.0.1:61521 - "POST /ingest-scan?user_id=final_test_user HTTP/1.1" 200 OK
-INFO:     127.0.0.1:61540 - "GET /visualize-face?user_id=final_test_user HTTP/1.1" 405 Method Not Allowed
-INFO:     127.0.0.1:61561 - "GET /get-4d-model/final_test_user HTTP/1.1" 200 OK
-WARNING:  StatReload detected changes in 'final_validation_test.py'. Reloading...
+INFO:     192.168.0.120:64328 - "POST /process-pipeline HTTP/1.1" 200 OK
+INFO:     192.168.0.120:64329 - "GET /get-4d-model/user_20250720_203555_c6y7z7 HTTP/1.1" 200 OK
+WARNING:  StatReload detected changes in 'backend/api.py'. Reloading...
 INFO:     Shutting down
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
-INFO:     Finished server process [51588]
-INFO:     Started server process [86487]
+INFO:     Finished server process [58548]
+INFO:faiss.loader:Loading faiss.
+INFO:faiss.loader:Successfully loaded faiss.
+INFO:faiss:Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1753040650.504169 1216189 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M4
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+I0000 00:00:1753040650.544058 1216189 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M4
+W0000 00:00:1753040650.562924 1226562 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1753040650.567866 1226030 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1753040650.614886 1226561 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+WARNING:modules.facial_pipeline:68-point facial landmark predictor not found. Some features may be limited.
+INFO:     Started server process [81579]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
-Creating enhanced 4D facial model from 3 images...
-  ✅ Enhanced facial reconstruction module loaded successfully
-  Image 1: 124 landmarks detected
-  Image 2: 124 landmarks detected
-  Image 3: 124 landmarks detected
-  Generating high-resolution facial mesh...
-  Computing biometric profile for identification...
-  Creating OSINT identification features...
-  Enhanced 4D model created: 124 landmarks, 1954 vertices, confidence: 1.00
-INFO:     127.0.0.1:61834 - "POST /ingest-scan?user_id=validation_test_user HTTP/1.1" 200 OK
-INFO:     127.0.0.1:61836 - "GET /get-4d-model/validation_test_user HTTP/1.1" 200 OK
-INFO:     127.0.0.1:61838 - "GET / HTTP/1.1" 200 OK
-WARNING:  StatReload detected changes in 'final_validation_test.py'. Reloading...
+WARNING:  StatReload detected changes in 'test_manual_upload.py'. Reloading...
 INFO:     Shutting down
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
-INFO:     Finished server process [86487]
-INFO:     Started server process [86974]
+INFO:     Finished server process [81579]
+INFO:faiss.loader:Loading faiss.
+INFO:faiss.loader:Successfully loaded faiss.
+INFO:faiss:Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1753041375.907516 1389199 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M4
+I0000 00:00:1753041375.913160 1389199 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M4
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1753041375.918692 1389297 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1753041375.923398 1389298 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1753041375.927826 1389288 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+WARNING:modules.facial_pipeline:68-point facial landmark predictor not found. Some features may be limited.
+INFO:     Started server process [30290]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
-INFO:     10.154.64.188:61880 - "GET / HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61880 - "GET /static/styles.css HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61882 - "GET /static/app.js HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61882 - "GET /osint-data?source=all HTTP/1.1" 200 OK
-Creating enhanced 4D facial model from 5 images...
+WARNING:  StatReload detected changes in 'test_complete_frontend.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [30290]
+INFO:faiss.loader:Loading faiss.
+INFO:faiss.loader:Successfully loaded faiss.
+INFO:faiss:Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1753041516.649708 1392130 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M4
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+I0000 00:00:1753041516.654279 1392130 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M4
+W0000 00:00:1753041516.656256 1392212 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1753041516.662038 1392208 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1753041516.664845 1392197 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+WARNING:modules.facial_pipeline:68-point facial landmark predictor not found. Some features may be limited.
+INFO:     Started server process [30466]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     192.168.0.120:49833 - "GET / HTTP/1.1" 200 OK
+INFO:     192.168.0.120:49834 - "GET /app.js HTTP/1.1" 200 OK
+INFO:     192.168.0.120:49835 - "GET /styles.css HTTP/1.1" 200 OK
+INFO:     192.168.0.120:49836 - "GET /working HTTP/1.1" 200 OK
+INFO:     192.168.0.120:49837 - "GET /audit-log HTTP/1.1" 200 OK
+INFO:backend.api:🚀 Starting 7-step pipeline processing for 6 files
+INFO:backend.api:📸 Step 1: Loading and validating images...
+INFO:backend.api:✅ Loaded image 1: 280332C2-C4ED-472E-B749-D3962B3ADFE9.jpg
+INFO:backend.api:✅ Loaded image 2: 4FC5C07A-005C-4D02-AA96-1939FDAD4B79.jpg
+INFO:backend.api:✅ Loaded image 3: A4F4CC7A-23B3-4FD8-8C22-22E19DB9440B.jpg
+INFO:backend.api:✅ Loaded image 4: 97CE627D-A49B-42A1-9BFE-CCD5570FDE91.jpg
+INFO:backend.api:✅ Loaded image 5: 479926582_2134123993673834_1270801714858167817_n.jpg
+INFO:backend.api:✅ Loaded image 6: A480A7D0-CEA0-45C0-B323-24065C543F72.jpg
+INFO:backend.api:👤 Step 2: Detecting and cropping faces...
+INFO:backend.api:✅ Face detected in image 1 at (888,1036,1185,1333)
+INFO:backend.api:✅ Face detected in image 2 at (149,611,1039,1501)
+INFO:backend.api:✅ Face detected in image 3 at (888,296,1185,593)
+INFO:backend.api:✅ Face detected in image 4 at (296,1036,593,1333)
+INFO:backend.api:✅ Face detected in image 5 at (405,0,675,270)
+INFO:backend.api:✅ Face detected in image 6 at (0,1332,297,1629)
+INFO:backend.api:🧊 Step 3: Performing 3D reconstruction...
+INFO:backend.api:✅ 3D facial model reconstructed
+INFO:backend.api:🧬 Step 4: Computing 4D embeddings...
+INFO:backend.api:✅ 4D embeddings computed
+INFO:backend.api:🆔 Step 5: Generating user ID...
+INFO:backend.api:✅ Generated user ID: user_20250720_205849_hac8a5
+INFO:backend.api:💾 Step 6: Storing in vector database...
+INFO:backend.api:✅ Data stored in vector database
+INFO:backend.api:📊 Step 7: Generating 4D model...
+INFO:backend.api:✅ 4D model saved: 4d_models/user_20250720_205849_hac8a5_latest.json
+INFO:backend.api:🎉 7-step pipeline processing completed successfully
+Creating enhanced 4D facial model from 6 images...
   ✅ Enhanced facial reconstruction module loaded successfully
   Image 1: 124 landmarks detected
   Image 2: 124 landmarks detected
   Image 3: 124 landmarks detected
   Image 4: 124 landmarks detected
   Image 5: 124 landmarks detected
+  Image 6: 124 landmarks detected
   Generating high-resolution facial mesh...
   Computing biometric profile for identification...
   Creating OSINT identification features...
   Enhanced 4D model created: 124 landmarks, 1954 vertices, confidence: 1.00
-INFO:     10.154.64.188:61890 - "POST /ingest-scan?user_id=nathan7 HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61890 - "GET /get-4d-model/nathan7 HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61902 - "GET /get-4d-model/nathan7 HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61909 - "GET /get-4d-model/nathan7 HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61912 - "GET / HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61912 - "GET /static/app.js HTTP/1.1" 304 Not Modified
-INFO:     10.154.64.188:61912 - "GET /osint-data?source=all HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61917 - "GET /get-4d-model/nathan7 HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61922 - "GET / HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61922 - "GET /osint-data?source=all HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61924 - "GET /get-4d-model/nathan7 HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61933 - "GET / HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61933 - "GET /osint-data?source=all HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61933 - "GET /get-4d-model/nathan7 HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61936 - "GET / HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61936 - "GET /static/app.js HTTP/1.1" 304 Not Modified
-INFO:     10.154.64.188:61936 - "GET /osint-data?source=all HTTP/1.1" 200 OK
-INFO:     10.154.64.188:61936 - "GET /get-4d-model/nathan7 HTTP/1.1" 200 OK
-INFO:     10.154.64.188:62244 - "GET / HTTP/1.1" 200 OK
-INFO:     10.154.64.188:62244 - "GET /static/styles.css HTTP/1.1" 200 OK
-INFO:     10.154.64.188:62246 - "GET /static/app.js HTTP/1.1" 200 OK
-INFO:     10.154.64.188:62246 - "GET /osint-data?source=all HTTP/1.1" 200 OK
-INFO:     10.154.64.188:62246 - "GET /get-4d-model/nathan7 HTTP/1.1" 200 OK
+INFO:     192.168.0.120:49838 - "POST /process-pipeline HTTP/1.1" 200 OK
+INFO:     192.168.0.120:49840 - "GET /get-4d-model/user_20250720_205849_hac8a5 HTTP/1.1" 200 OK
+WARNING:  StatReload detected changes in 'test_complete_frontend.py'. Reloading...
 INFO:     Shutting down
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
-INFO:     Finished server process [86974]
-INFO:     Stopping reloader process [51582]
+INFO:     Finished server process [30466]
+INFO:faiss.loader:Loading faiss.
+INFO:faiss.loader:Successfully loaded faiss.
+INFO:faiss:Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1753041546.170031 1393257 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M4
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+I0000 00:00:1753041546.174200 1393257 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M4
+W0000 00:00:1753041546.176990 1393424 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1753041546.182539 1393425 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1753041546.184421 1393410 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+WARNING:modules.facial_pipeline:68-point facial landmark predictor not found. Some features may be limited.
+INFO:     Started server process [30844]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
