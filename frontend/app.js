@@ -1465,7 +1465,7 @@ function render4DVisualizationIsolation(modelData, facialGroup, centerX, centerY
         
         const featureTorus = new THREE.Mesh(geometry, material);
         featureTorus.position.set(x, y, 0);
-        featureTorus.rotation.x = Math.PI / 2;
+        featureTorus.rotation.x = Math.PI / 2 + i * 0.3;
         facialGroup.add(featureTorus);
         
         // Add feature points
@@ -3002,9 +3002,48 @@ async function startIntegratedVisualization() {
                                 </a>
                             </div>
                         ` : ''}
+                        ${result.model_url ? `
+                            <div class="viewer-iframe-section">
+                                <h4>🔎 3D Viewer Preview</h4>
+                                <iframe src="${result.model_url}" title="Model Viewer" style="width:100%;height:480px;border:1px solid #222;border-radius:8px;background:#0a0a0a"></iframe>
+                            </div>
+                        ` : ''}
+                        
+                        <!-- Snapchat Matches Section (auto-populated) -->
+                        <div class="snapchat-matches-panel">
+                            <h4>👻 Snapchat Pointer Matches</h4>
+                            <div id="snapchat-matches" class="matches-list">Checking for pointer matches…</div>
+                        </div>
                     </div>
                 `;
                 resultElement.className = 'processing-status success';
+
+                // Auto-call Snapchat compare after model generation
+                try {
+                    if (result && result.user_id) {
+                        await triggerSnapchatCompare(result.user_id);
+                    }
+                } catch (e) {
+                    console.warn('Snapchat compare check failed:', e);
+                }
+
+                // Initialize and render the 3D model in-browser
+                try {
+                    // Ensure the visualization section is visible
+                    const vizSection = document.getElementById('visualization-section');
+                    if (vizSection) vizSection.style.display = 'block';
+
+                    // Initialize viewer once
+                    if (!isVisualizationActive && typeof init3DVisualization === 'function') {
+                        init3DVisualization();
+                    }
+                    // Fetch latest 4D model JSON and render
+                    if (result && result.user_id && typeof fetchAndRender4DModel === 'function') {
+                        await fetchAndRender4DModel(result.user_id);
+                    }
+                } catch (e) {
+                    console.warn('3D viewer initialization/render failed:', e);
+                }
             } else {
                 resultElement.innerHTML = `
                     <div class="error-message">
@@ -3232,11 +3271,9 @@ async function generateStep5Content(files, result) {
     return `
         <h4>🧊 4D Feature Isolation</h4>
         <div class="model-preview">
-            <div class="model-placeholder">
-                4D<br>SCAN
-            </div>
+            <div class="model-placeholder">4D ISOLATION PREVIEW</div>
         </div>
-        <p>🔄 Extracting 4D facial features from multiple angles...</p>
+        <p>Isolating facial regions and masks...</p>
     `;
 }
 
@@ -3376,6 +3413,44 @@ function generateWireframeFace() {
 function getRandomOrientation() {
     const orientations = ['Frontal', 'Left Profile', 'Right Profile', 'Left Quarter', 'Right Quarter'];
     return orientations[Math.floor(Math.random() * orientations.length)];
+}
+
+// --- Snapchat compare integration ---
+async function triggerSnapchatCompare(userId){
+    const el = document.getElementById('snapchat-matches');
+    if (!el) return;
+    try {
+        el.textContent = 'Querying /api/snapchat/compare…';
+        const res = await fetch(`/api/snapchat/compare?user_id=${encodeURIComponent(userId)}`);
+        if(!res.ok){
+            el.textContent = `Compare error: HTTP ${res.status}`;
+            return;
+        }
+        const data = await res.json();
+        renderSnapMatches(data.matches || []);
+    } catch(err){
+        console.warn('Snapchat compare error:', err);
+        el.textContent = 'Unable to fetch Snapchat matches.';
+    }
+}
+
+function renderSnapMatches(matches){
+    const el = document.getElementById('snapchat-matches');
+    if (!el) return;
+    if(!matches || matches.length === 0){
+        el.textContent = 'No pointer matches found.';
+        return;
+    }
+    el.innerHTML = matches.map(m => `
+        <div class="match-item">
+            <div class="match-score">Score: ${(m.score*100).toFixed(0)}%</div>
+            <div class="match-meta">
+                <span class="badge">Region: ${m.region || 'N/A'}</span>
+                <span class="badge">Location: ${m.location || 'unknown'}</span>
+                <span class="badge">Time: ${m.timestamp || ''}</span>
+            </div>
+        </div>
+    `).join('');
 }
 
 // Model control functions
@@ -4423,7 +4498,7 @@ function showProcessingSections() {
 /**
  * Start integrated 4D visualization pipeline
  */
-function startIntegratedVisualization() {
+function startLegacyProcessing() {
     console.log('🚀 Starting integrated 4D visualization pipeline...');
     
     // Initialize 3D visualization if not already done

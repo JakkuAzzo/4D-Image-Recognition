@@ -1,0 +1,161 @@
+.............F.....F.F.F..F                                              [100%]
+=================================== FAILURES ===================================
+_____________________________ test_frontend_fixes ______________________________
+
+    def test_frontend_fixes():
+        """Test all the frontend improvements"""
+        base_url = os.environ.get("BASE_URL", "https://localhost:8000")
+    
+        print("🧪 FRONTEND INTEGRATION TEST")
+        print("="*50)
+    
+        results = {
+            "tests_passed": 0,
+            "tests_failed": 0,
+            "issues_found": [],
+            "improvements_verified": []
+        }
+    
+        try:
+            # Test 1: Server accessibility
+            print("1. Testing server accessibility...")
+            response = requests.get(base_url, timeout=10)
+            if response.status_code == 200:
+                print("   ✅ Server accessible")
+                results["tests_passed"] += 1
+                results["improvements_verified"].append("Server running on HTTP (SSL issues resolved)")
+            else:
+                print(f"   ❌ Server error: {response.status_code}")
+                results["tests_failed"] += 1
+                results["issues_found"].append(f"Server returned {response.status_code}")
+    
+        except Exception as e:
+            print(f"   ❌ Server connection failed: {e}")
+            results["tests_failed"] += 1
+            results["issues_found"].append(f"Server connection failed: {e}")
+>       assert False, f"Server connection failed: {results['issues_found']}"
+E       AssertionError: Server connection failed: ["Server connection failed: HTTPSConnectionPool(host='localhost', port=8000): Max retries exceeded with url: / (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate (_ssl.c:1017)')))"]
+E       assert False
+
+tests/integration_test.py:70: AssertionError
+----------------------------- Captured stdout call -----------------------------
+🧪 FRONTEND INTEGRATION TEST
+==================================================
+1. Testing server accessibility...
+   ❌ Server connection failed: HTTPSConnectionPool(host='localhost', port=8000): Max retries exceeded with url: / (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate (_ssl.c:1017)')))
+________________________ test_backend_osint_integration ________________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+________________________ test_complete_upload_workflow _________________________
+
+    def test_complete_upload_workflow():
+        """Test the complete upload workflow with detailed analysis"""
+    
+        print("🧪 COMPREHENSIVE FRONTEND TEST")
+        print("=" * 60)
+        print(f"📅 Test started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    
+        base_url = os.environ.get("BASE_URL", "https://localhost:8000")
+    
+        # Test 1: Server connectivity
+        print("\n1. 🌐 Testing server connectivity...")
+        try:
+            response = requests.get(f"{base_url}/", verify=False, timeout=10)
+            if response.status_code == 200:
+                print("✅ Server is running and responsive")
+                # Check for key elements in the HTML
+                html_content = response.text
+                key_elements = [
+                    ("File input", 'id="scan-files"'),
+                    ("Start processing function", 'onclick="startProcessing()"'),
+                    ("App.js script", 'src="app.js"'),
+                    ("Three.js library", 'three.min.js'),
+                    ("Processing button", 'Process Images'),
+                    ("Upload section", 'upload-section')
+                ]
+    
+                for element_name, search_text in key_elements:
+                    if search_text in html_content:
+                        print(f"   ✅ {element_name} found")
+                    else:
+                        print(f"   ❌ {element_name} missing")
+            else:
+                print(f"❌ Server returned status: {response.status_code}")
+                assert False, f"Server returned status: {response.status_code}"
+        except Exception as e:
+            print(f"❌ Server connection failed: {str(e)}")
+>       assert False, f"Server connection failed: {e}"
+E       UnboundLocalError: local variable 'e' referenced before assignment
+
+tests/test_complete_frontend.py:49: UnboundLocalError
+----------------------------- Captured stdout call -----------------------------
+🧪 COMPREHENSIVE FRONTEND TEST
+============================================================
+📅 Test started at: 2025-08-19 13:56:03
+
+1. 🌐 Testing server connectivity...
+✅ Server is running and responsive
+   ❌ File input missing
+   ❌ Start processing function missing
+   ❌ App.js script missing
+   ❌ Three.js library missing
+   ❌ Processing button missing
+   ❌ Upload section missing
+__________________________ test_genuine_osint_system ___________________________
+async def functions are not natively supported.
+You need to install a suitable plugin for your async framework, for example:
+  - anyio
+  - pytest-asyncio
+  - pytest-tornasync
+  - pytest-trio
+  - pytest-twisted
+______________ test_frontend_calls_compare_after_model_generation ______________
+
+    def test_frontend_calls_compare_after_model_generation():
+        """Smoke test the frontend flow via API to ensure the pipeline returns user_id, then hit compare."""
+        files = []
+        sample = Path('frontend') / 'assets' / 'sample_face.jpg'
+        if sample.exists():
+            files = [('scan_files', (sample.name, open(sample, 'rb'), 'image/jpeg'))]
+        else:
+            # Generate a tiny JPEG in-memory to avoid external files/base64 issues
+            from io import BytesIO
+            try:
+                from PIL import Image
+                img = Image.new('RGB', (2, 2), color=(255, 255, 255))
+                buf = BytesIO()
+                img.save(buf, format='JPEG')
+                tiny_bytes = buf.getvalue()
+            except Exception:
+                # Fallback raw minimal JPEG bytes if Pillow unavailable
+                tiny_bytes = (b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00' +
+                              b'\xff\xdb\x00C\x00' + b'\x08\x06\x06\x07\x06\x05\x08\x07'*8 +
+                              b'\xff\xc0\x00\x11\x08\x00\x02\x00\x02\x01\x01\x11\x00\x02\x11\x01\x03\x11\x01' +
+                              b'\xff\xda\x00\x0c\x03\x01\x00\x02\x11\x03\x11\x00?\x00' + b'\xaa'*20 + b'\xff\xd9')
+            files = [('scan_files', ('tiny.jpg', tiny_bytes, 'image/jpeg'))]
+    
+        data = { 'user_id': USER_ID }
+        r = requests.post(f"{BASE_URL}/integrated_4d_visualization", files=files, data=data, verify=False, timeout=60)
+        assert r.status_code == 200, f"Pipeline POST failed: {r.status_code} {r.text[:200]}"
+        j = r.json()
+        assert j.get('success') is True and j.get('user_id') == USER_ID
+    
+        # Now invoke compare directly (the actual UI auto-calls; here we validate endpoint works)
+        r2 = requests.get(f"{BASE_URL}/api/snapchat/compare", params={'user_id': USER_ID}, verify=False, timeout=30)
+>       assert r2.status_code == 200, r2.text
+E       AssertionError: {"detail":"Not Found"}
+E       assert 404 == 200
+E        +  where 404 = <Response [404]>.status_code
+
+tests/test_snapchat_compare_proxy.py:89: AssertionError
+=========================== short test summary info ============================
+FAILED tests/integration_test.py::test_frontend_fixes - AssertionError: Serve...
+FAILED tests/test_backend_osint_integration.py::test_backend_osint_integration
+FAILED tests/test_complete_frontend.py::test_complete_upload_workflow - Unbou...
+FAILED tests/test_genuine_osint_system.py::test_genuine_osint_system - Failed...
+FAILED tests/test_snapchat_compare_proxy.py::test_frontend_calls_compare_after_model_generation

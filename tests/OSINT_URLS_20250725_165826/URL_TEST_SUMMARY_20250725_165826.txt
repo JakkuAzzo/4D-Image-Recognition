@@ -1,0 +1,89 @@
+DIRECT OSINT URL TEST RESULTS
+========================================
+
+Test Timestamp: 20250725_165826
+Total URLs Tested: 12
+Accessible URLs: 2
+Inaccessible URLs: 10
+Success Rate: 16.7%
+
+✅ ACCESSIBLE URLS:
+- https://linkedin.com/in/sh_40276
+- https://arxiv.org/abs/2024.osint_
+
+❌ INACCESSIBLE URLS:
+- https://facebook.com/profile/osint_ha
+- https://instagram.com/14052366
+- https://x.com/521
+- https://github.com/osint_dev
+- https://stackoverflow.com/users/hash_4
+- https://techcrunch.com/2024/11/15/osint_ha
+- https://wired.com/story/sh_40276
+- https://sfgate.com/tech/14052366
+- https://techpodcast.com/episode/osint_hash
+- https://ieeexplore.ieee.org/document/hash_4
+
+DETAILED RESULTS:
+
+URL: https://facebook.com/profile/osint_ha
+Status: 404_not_found
+Accessible: False
+Title: Facebook – log in or sign up
+
+URL: https://linkedin.com/in/sh_40276
+Status: accessible
+Accessible: True
+Title: Sign Up | LinkedIn
+Content: LinkedIn respects your privacy
+LinkedIn and 3rd parties use essential and non-essential cookies to p...
+
+URL: https://instagram.com/14052366
+Status: 404_not_found
+Accessible: False
+Title: Page not found • Instagram
+
+URL: https://x.com/521
+Status: 404_not_found
+Accessible: False
+Title: 521 (@521) / X
+
+URL: https://github.com/osint_dev
+Status: 404_not_found
+Accessible: False
+Title: Page not found · GitHub · GitHub
+
+URL: https://stackoverflow.com/users/hash_4
+Status: 404_not_found
+Accessible: False
+Title: Page not found - Stack Overflow
+
+URL: https://techcrunch.com/2024/11/15/osint_ha
+Status: 404_not_found
+Accessible: False
+Title: Page not found | TechCrunch
+
+URL: https://wired.com/story/sh_40276
+Status: 404_not_found
+Accessible: False
+Title: Page Not Found | WIRED
+
+URL: https://sfgate.com/tech/14052366
+Status: 404_not_found
+Accessible: False
+Title: Page Not Found
+
+URL: https://techpodcast.com/episode/osint_hash
+Status: 404_not_found
+Accessible: False
+
+URL: https://arxiv.org/abs/2024.osint_
+Status: accessible
+Accessible: True
+Title: [2024.osint_] Article identifier not recognized
+Content: Skip to main content
+We gratefully acknowledge support from the Simons Foundation, member institutio...
+
+URL: https://ieeexplore.ieee.org/document/hash_4
+Status: 404_not_found
+Accessible: False
+Title: IEEE Xplore - Page not Found

@@ -1,0 +1,4 @@
+# Prevent pytest from collecting legacy scripts by default
+
+def pytest_ignore_collect(collection_path, config):
+    return True

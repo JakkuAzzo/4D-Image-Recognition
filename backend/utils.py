@@ -94,12 +94,6 @@ def sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 def generate_user_id() -> str:
-    """Generate a unique user ID"""
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    random_suffix = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
-    return f"user_{timestamp}_{random_suffix}"
-
-def generate_user_id() -> str:
     """Generate a unique user ID for tracking"""
     # Use timestamp + random string for uniqueness
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

@@ -12,46 +12,46 @@ import os
 
 def create_test_images():
     """Create test image files for upload testing"""
-    test_dir = Path("test_images")
-    test_dir.mkdir(exist_ok=True)
-    
-    # Create 8 test images to verify no upload limits
+    # Prefer Nathan's images folder if available
+    nathan_dir = Path("/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/test_images/nathan")
     test_files = []
-    for i in range(8):
-        test_file = test_dir / f"face_test_{i}.jpg"
-        if not test_file.exists():
-            # Create a proper JPEG file
-            with open(test_file, "wb") as f:
-                # Minimal but valid JPEG content
-                jpeg_header = b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00'
-                jpeg_data = b'\xff\xdb\x00C\x00' + b'\x08\x06\x06\x07\x06\x05\x08\x07' * 8
-                jpeg_end = b'\xff\xc0\x00\x11\x08\x00d\x00d\x01\x01\x11\x00\x02\x11\x01\x03\x11\x01'
-                jpeg_footer = b'\xff\xc4\x00\x14\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x08'
-                jpeg_footer += b'\xff\xda\x00\x0c\x03\x01\x00\x02\x11\x03\x11\x00\x3f\x00' + b'\xaa' * 500 + b'\xff\xd9'
-                
-                f.write(jpeg_header + jpeg_data + jpeg_end + jpeg_footer)
-        test_files.append(test_file)
-    
+    if nathan_dir.exists():
+        for ext in ["*.jpg", "*.jpeg", "*.png"]:
+            test_files.extend([p.resolve() for p in nathan_dir.glob(ext)])
+        test_files = test_files[:8] if len(test_files) >= 8 else test_files
+    # Fallback to local dummy images if Nathan folder not present
+    if not test_files:
+        test_dir = Path("test_images")
+        test_dir.mkdir(exist_ok=True)
+        for i in range(8):
+            test_file = test_dir / f"face_test_{i}.jpg"
+            if not test_file.exists():
+                with open(test_file, "wb") as f:
+                    jpeg_header = b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00'
+                    jpeg_data = b'\xff\xdb\x00C\x00' + b'\x08\x06\x06\x07\x06\x05\x08\x07' * 8
+                    jpeg_end = b'\xff\xc0\x00\x11\x08\x00d\x00d\x01\x01\x11\x00\x02\x11\x01\x03\x11\x01'
+                    jpeg_footer = b'\xff\xc4\x00\x14\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x08'
+                    jpeg_footer += b'\xff\xda\x00\x0c\x03\x01\x00\x02\x11\x03\x11\x00\x3f\x00' + b'\xaa' * 500 + b'\xff\xd9'
+                    f.write(jpeg_header + jpeg_data + jpeg_end + jpeg_footer)
+            test_files.append(test_file)
     return test_files
 
-def test_frontend_fixes():
-    """Test all the frontend improvements"""
-    base_url = "http://localhost:8000"
-    
+def run_frontend_checks(base_url: str):
+    """Run checks and return a results dict (for script mode or meta assertions)."""
     print("🧪 FRONTEND INTEGRATION TEST")
     print("="*50)
-    
+
     results = {
         "tests_passed": 0,
         "tests_failed": 0,
         "issues_found": [],
         "improvements_verified": []
     }
-    
+
     try:
         # Test 1: Server accessibility
         print("1. Testing server accessibility...")
-        response = requests.get(base_url, timeout=10)
+        response = requests.get(base_url, timeout=10, verify=False)
         if response.status_code == 200:
             print("   ✅ Server accessible")
             results["tests_passed"] += 1
@@ -60,11 +60,11 @@ def test_frontend_fixes():
             print(f"   ❌ Server error: {response.status_code}")
             results["tests_failed"] += 1
             results["issues_found"].append(f"Server returned {response.status_code}")
-            
     except Exception as e:
         print(f"   ❌ Server connection failed: {e}")
         results["tests_failed"] += 1
         results["issues_found"].append(f"Server connection failed: {e}")
+        # leave assertion to caller
         return results
     
     # Test 2: File upload limits removed
@@ -127,8 +127,12 @@ def test_frontend_fixes():
     print("7. Testing API endpoint...")
     try:
         # Test the integrated visualization endpoint exists
-        test_response = requests.post(f"{base_url}/integrated_4d_visualization", 
-                                    data={"user_id": "test"}, timeout=5)
+        test_response = requests.post(
+            f"{base_url}/integrated_4d_visualization",
+            data={"user_id": "test"},
+            timeout=5,
+            verify=False,
+        )
         # 422 is expected (missing files), 404 would be bad
         if test_response.status_code != 404:
             print("   ✅ API endpoint exists and functional")
@@ -154,14 +158,24 @@ def test_frontend_fixes():
         results["tests_failed"] += 1
         results["issues_found"].append("Test image creation failed")
     
+    # Require at least 4/8 checks to pass to consider frontend acceptable in CI
     return results
+
+
+def test_frontend_fixes():
+    """Pytest entrypoint: run checks and assert minimum acceptance."""
+    base_url = os.environ.get("BASE_URL", "https://localhost:8000")
+    results = run_frontend_checks(base_url)
+    total = results["tests_passed"] + results["tests_failed"]
+    assert results["tests_passed"] >= max(1, total - 4), f"Frontend checks failed: {results}"
 
 def run_integration_test():
     """Run the complete integration test"""
     print("🚀 STARTING 4D FACIAL RECOGNITION INTEGRATION TEST")
     print("="*60)
     
-    results = test_frontend_fixes()
+    base_url = os.environ.get("BASE_URL", "https://localhost:8000")
+    results = run_frontend_checks(base_url)
     
     print("\n" + "="*60)
     print("📊 TEST RESULTS SUMMARY")

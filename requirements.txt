@@ -13,10 +13,12 @@ deca
 open3d-python
 pycpd
 faiss-cpu
-numpy
+# Pin NumPy <2 to satisfy scikit-learn/pandas/mediapipe wheels
+numpy==1.26.4
 scipy
 meshio
 trimesh
+pygltflib
 Pillow
 # OSINT dependencies
 playwright

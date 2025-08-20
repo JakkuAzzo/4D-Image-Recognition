@@ -1,0 +1,249 @@
+
+==================================== ERRORS ====================================
+_______________ ERROR collecting tests/comprehensive_app_test.py _______________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/comprehensive_app_test.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/comprehensive_app_test.py:27: in <module>
+    import cv2
+E   ModuleNotFoundError: No module named 'cv2'
+_______________ ERROR collecting tests/direct_osint_url_test.py ________________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/direct_osint_url_test.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/direct_osint_url_test.py:11: in <module>
+    from selenium import webdriver
+E   ModuleNotFoundError: No module named 'selenium'
+_________ ERROR collecting tests/enhanced_comprehensive_osint_test.py __________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/enhanced_comprehensive_osint_test.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/enhanced_comprehensive_osint_test.py:25: in <module>
+    from selenium import webdriver
+E   ModuleNotFoundError: No module named 'selenium'
+______________ ERROR collecting tests/final_comprehensive_test.py ______________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/final_comprehensive_test.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/final_comprehensive_test.py:8: in <module>
+    import cv2
+E   ModuleNotFoundError: No module named 'cv2'
+________________ ERROR collecting tests/frontend_button_test.py ________________
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/_pytest/python.py:497: in importtestmodule
+    mod = import_path(
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/_pytest/pathlib.py:587: in import_path
+    importlib.import_module(module_name)
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1331: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:935: in _load_unlocked
+    ???
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/_pytest/assertion/rewrite.py:177: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/_pytest/assertion/rewrite.py:357: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/ast.py:54: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/frontend_button_test.py", line 11
+E       console.log('
+E                   ^
+E   SyntaxError: unterminated string literal (detected at line 11)
+________________ ERROR collecting tests/manual_frontend_test.py ________________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/manual_frontend_test.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/manual_frontend_test.py:11: in <module>
+    from selenium import webdriver
+E   ModuleNotFoundError: No module named 'selenium'
+____________ ERROR collecting tests/osint_url_verification_test.py _____________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/osint_url_verification_test.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/osint_url_verification_test.py:21: in <module>
+    from selenium import webdriver
+E   ModuleNotFoundError: No module named 'selenium'
+_________________ ERROR collecting tests/simple_server_test.py _________________
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/_pytest/python.py:497: in importtestmodule
+    mod = import_path(
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/_pytest/pathlib.py:587: in import_path
+    importlib.import_module(module_name)
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1331: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:935: in _load_unlocked
+    ???
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/_pytest/assertion/rewrite.py:177: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/_pytest/assertion/rewrite.py:357: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/ast.py:54: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/simple_server_test.py", line 65
+E       except requests.exceptions.ConnectionError as e:
+E                                                       ^
+E   IndentationError: unindent does not match any outer indentation level
+___________ ERROR collecting tests/test_backend_osint_integration.py ___________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/test_backend_osint_integration.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_backend_osint_integration.py:11: in <module>
+    import cv2
+E   ModuleNotFoundError: No module named 'cv2'
+___________ ERROR collecting tests/test_complete_webapp_workflow.py ____________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/test_complete_webapp_workflow.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_complete_webapp_workflow.py:15: in <module>
+    from selenium import webdriver
+E   ModuleNotFoundError: No module named 'selenium'
+_________ ERROR collecting tests/test_comprehensive_osint_workflow.py __________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/test_comprehensive_osint_workflow.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_comprehensive_osint_workflow.py:15: in <module>
+    from selenium import webdriver
+E   ModuleNotFoundError: No module named 'selenium'
+_______________ ERROR collecting tests/test_frontend_buttons.py ________________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/test_frontend_buttons.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_frontend_buttons.py:9: in <module>
+    from selenium import webdriver
+E   ModuleNotFoundError: No module named 'selenium'
+_____________ ERROR collecting tests/test_genuine_osint_system.py ______________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/test_genuine_osint_system.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_genuine_osint_system.py:12: in <module>
+    import cv2
+E   ModuleNotFoundError: No module named 'cv2'
+____________ ERROR collecting tests/test_honest_system_analysis.py _____________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/test_honest_system_analysis.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_honest_system_analysis.py:10: in <module>
+    import cv2
+E   ModuleNotFoundError: No module named 'cv2'
+__________ ERROR collecting tests/test_integrated_4d_visualization.py __________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/test_integrated_4d_visualization.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_integrated_4d_visualization.py:12: in <module>
+    from selenium import webdriver
+E   ModuleNotFoundError: No module named 'selenium'
+______________ ERROR collecting tests/test_real_osint_workflow.py ______________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/test_real_osint_workflow.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_real_osint_workflow.py:14: in <module>
+    from selenium import webdriver
+E   ModuleNotFoundError: No module named 'selenium'
+_____________ ERROR collecting tests/test_reverse_image_search.py ______________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/test_reverse_image_search.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_reverse_image_search.py:10: in <module>
+    from selenium import webdriver
+E   ModuleNotFoundError: No module named 'selenium'
+____________ ERROR collecting tests/test_snapchat_compare_proxy.py _____________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/test_snapchat_compare_proxy.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_snapchat_compare_proxy.py:15: in <module>
+    from .test_utils import get_base_url, wait_server
+E   ImportError: attempted relative import with no known parent package
+_________________ ERROR collecting tests/test_upload_button.py _________________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/test_upload_button.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_upload_button.py:6: in <module>
+    from selenium import webdriver
+E   ModuleNotFoundError: No module named 'selenium'
+=========================== short test summary info ============================
+ERROR tests/comprehensive_app_test.py
+ERROR tests/direct_osint_url_test.py
+ERROR tests/enhanced_comprehensive_osint_test.py
+ERROR tests/final_comprehensive_test.py
+ERROR tests/frontend_button_test.py
+ERROR tests/manual_frontend_test.py
+ERROR tests/osint_url_verification_test.py
+ERROR tests/simple_server_test.py
+ERROR tests/test_backend_osint_integration.py
+ERROR tests/test_complete_webapp_workflow.py
+ERROR tests/test_comprehensive_osint_workflow.py
+ERROR tests/test_frontend_buttons.py
+ERROR tests/test_genuine_osint_system.py
+ERROR tests/test_honest_system_analysis.py
+ERROR tests/test_integrated_4d_visualization.py
+ERROR tests/test_real_osint_workflow.py
+ERROR tests/test_reverse_image_search.py
+ERROR tests/test_snapchat_compare_proxy.py
+ERROR tests/test_upload_button.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 19 errors during collection !!!!!!!!!!!!!!!!!!!

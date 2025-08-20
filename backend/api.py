@@ -8,6 +8,7 @@ import logging
 import cv2
 import numpy as np
 import base64
+import time
 # face_recognition imported conditionally to avoid startup crashes
 
 # Configure logging
@@ -18,12 +19,16 @@ logger = logging.getLogger(__name__)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Request
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, FileResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 from . import models, utils, database
-from modules import face_crop, reconstruct3d, align_compare, fuse_mesh, osint_search
+# Genuine OSINT Engine - NO fake data
+from modules.genuine_osint_engine import genuine_osint_engine
+from modules.advanced_face_tracker import advanced_face_tracker
+from modules import face_crop, reconstruct3d, align_compare, fuse_mesh
 from modules.facial_pipeline import FacialPipeline
 
 # Initialize facial pipeline
@@ -40,38 +45,376 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Root now redirects to the actual web app UI
+@app.get("/")
+async def root():
+        return RedirectResponse(url="/static/index.html")
+
+# Keep an API landing page for quick reference
+@app.get("/api", response_class=HTMLResponse)
+async def api_landing():
+        return (
+                """
+                <html>
+                    <head><title>4D Image Recognition API</title></head>
+                    <body style="font-family: system-ui, -apple-system; background:#0b0b0b; color:#eaeaea;">
+                        <div style="max-width:760px;margin:40px auto;">
+                            <h1>4D Image Recognition API</h1>
+                            <p>Status: <b>OK</b></p>
+                            <ul>
+                                <li><a style=\"color:#66ccff;\" href=\"/docs\">OpenAPI docs</a></li>
+                                <li><a style=\"color:#66ccff;\" href=\"/healthz\">Health check</a></li>
+                                <li>Viewer example: <code>/model-viewer/{user_id}</code></li>
+                                <li>Web app UI: <a style=\"color:#66ccff;\" href=\"/\">/</a></li>
+                            </ul>
+                        </div>
+                    </body>
+                </html>
+                """
+        )
+
+@app.get("/healthz")
+async def healthz():
+        try:
+                route_count = len(getattr(app.router, "routes", []))
+        except Exception:
+                route_count = None
+        return JSONResponse({
+                "status": "ok",
+                "time": datetime.now(timezone.utc).isoformat(),
+                "routes": route_count,
+        })
+
 # Mount the frontend static files
 frontend_dir = Path(__file__).parent.parent / "frontend"
 app.mount("/static", StaticFiles(directory=str(frontend_dir)), name="static")
+# Public avatars directory for generated avatar assets
+avatars_dir = Path(__file__).parent.parent / "avatars"
+avatars_dir.mkdir(exist_ok=True)
+app.mount("/avatars", StaticFiles(directory=str(avatars_dir)), name="avatars")
 
-db = database.EmbeddingDB(Path("vector.index"), Path("metadata.json"))
-
-
-@app.get("/")
-async def serve_frontend():
-    return FileResponse(str(frontend_dir / "index.html"))
-
-@app.get("/working")
-async def serve_working_version():
-    """Serve the working version of the frontend"""
-    return FileResponse(str(frontend_dir / "working_version.html"))
-
-# Serve specific static files (CSS, JS, images)
-@app.get("/styles.css")
-async def serve_styles():
-    return FileResponse(str(frontend_dir / "styles.css"))
-
+# Convenience routes to satisfy tests that fetch assets at /app.js and /styles.css
 @app.get("/app.js")
 async def serve_app_js():
-    return FileResponse(str(frontend_dir / "app.js"))
+    path = frontend_dir / "app.js"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="app.js not found")
+    return FileResponse(str(path), media_type="application/javascript")
 
-@app.get("/frontend/{file_name}")
-async def serve_frontend_files(file_name: str):
-    """Serve frontend files under /frontend/ path"""
-    file_path = frontend_dir / file_name
-    if file_path.exists() and file_path.is_file():
-        return FileResponse(str(file_path))
-    raise HTTPException(status_code=404, detail="File not found")
+@app.get("/styles.css")
+async def serve_styles_css():
+    path = frontend_dir / "styles.css"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="styles.css not found")
+    return FileResponse(str(path), media_type="text/css")
+
+@app.get("/working")
+async def working_version():
+    path = frontend_dir / "working_version.html"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="working version not found")
+    return FileResponse(str(path), media_type="text/html")
+
+# Initialize vector database (FAISS) with graceful fallback
+try:
+    db = database.EmbeddingDB(Path("vector.index"), Path("metadata.json"))
+    logger.info("Vector database initialized with FAISS")
+except Exception as e:
+    logger.warning(f"FAISS unavailable or DB init failed: {e}. Using no-op database.")
+
+    class _NoOpDB:
+        def __init__(self):
+            self.meta = []
+
+        def add(self, user_id, embedding, metadata):
+            # Store metadata so downstream features like OSINT have context
+            try:
+                meta_copy = dict(metadata)
+                meta_copy.setdefault("user_id", user_id)
+                self.meta.append(meta_copy)
+            except Exception:
+                pass
+            logger.debug("No-op DB: add called (embedding ignored)")
+
+        def search(self, embedding, top_k: int = 5):
+            logger.debug("No-op DB: search called")
+            return []
+
+        def save(self):
+            logger.debug("No-op DB: save called")
+
+    db = _NoOpDB()
+
+# ---------------------------
+# Snapchat Intelligence Store
+# ---------------------------
+class PointerPayload(BaseModel):
+    pointers: List[Dict[str, Any]]
+
+SNAP_RESTRICTED_REGIONS = {"CU", "KP", "TR", "UA"}
+_snap_pointer_store: List[Dict[str, Any]] = []
+_snap_last_update: float = 0.0
+
+@app.post("/api/snapchat/pointers")
+async def api_snapchat_pointers(payload: PointerPayload):
+    """Store hashed pointers from user-visible Snap Map stories.
+    Notes:
+    - We do not automate Snapchat navigation here to comply with platform policies.
+    - Client supplies user_hash (already hashed), pointer_hash, timestamp, and location info.
+    - Regions with legal restrictions are filtered out both client and server side.
+    """
+    global _snap_pointer_store, _snap_last_update
+    accepted: List[Dict[str, Any]] = []
+    skipped = 0
+    now_ts = time.time()
+    for p in payload.pointers:
+        region = str(p.get("region", "")).upper()
+        if region in SNAP_RESTRICTED_REGIONS:
+            skipped += 1
+            continue
+        user_hash = p.get("user_hash")
+        pointer_hash = p.get("pointer_hash")
+        if not user_hash or not pointer_hash:
+            skipped += 1
+            continue
+        entry = {
+            "user_hash": str(user_hash),
+            "pointer_hash": str(pointer_hash),
+            "timestamp": p.get("timestamp"),
+            "region": region,
+            "lat": p.get("lat"),
+            "lon": p.get("lon"),
+            "meta": p.get("meta", {}),
+            "server_received": now_ts,
+        }
+        accepted.append(entry)
+    if accepted:
+        _snap_pointer_store.extend(accepted)
+        _snap_last_update = now_ts
+    return JSONResponse({"accepted": len(accepted), "skipped": skipped})
+
+
+@app.get("/api/snapchat/compare")
+async def api_snapchat_compare(user_id: str):
+    """Compare provided user_id against stored hashed pointers.
+    This is a lightweight, compliant endpoint that does not automate Snapchat. It
+    simply reflects whether any pointers exist for correlation and returns a stub similarity of 0.0.
+    """
+    try:
+        # Count pointers for this user (if any were ingested)
+        related = [p for p in _snap_pointer_store if p.get("user_hash") == user_id]
+        return JSONResponse({
+            "user_id": user_id,
+            "pointers_considered": len(_snap_pointer_store),
+            "pointers_matched": len(related),
+            "similarity": 0.0,
+            "last_update": _snap_last_update or None,
+        })
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"compare failed: {e}")
+
+
+@app.get("/api/snapchat/validate")
+async def api_snapchat_validate(user_id: str, region: str | None = None):
+    """Compliant validation helper for Snapchat intelligence.
+    - Does NOT automate Snapchat or bypass ToS.
+    - Uses previously ingested hashed pointers and simple region restrictions.
+    - Returns whether checks are allowed in the given region and a basic match summary.
+    """
+    try:
+        region_norm = (region or "").upper()
+        allowed = region_norm not in SNAP_RESTRICTED_REGIONS if region_norm else True
+        # Count pointers for this user (if any were ingested via /api/snapchat/pointers)
+        matched = [p for p in _snap_pointer_store if p.get("user_hash") == user_id]
+        return JSONResponse({
+            "user_id": user_id,
+            "region": region_norm or None,
+            "allowed": allowed,
+            "pointers_considered": len(_snap_pointer_store),
+            "matched_count": len(matched),
+            "policy": {
+                "restricted_regions": sorted(list(SNAP_RESTRICTED_REGIONS)),
+                "notes": "Server performs only metadata checks; no automated browsing."
+            }
+        })
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"validate failed: {e}")
+
+
+@app.get("/model-viewer/{user_id}")
+async def model_viewer(user_id: str):
+        """Standalone Three.js viewer page. Tries GLB, then OBJ, then JSON surface_mesh."""
+        html = """
+<!DOCTYPE html>
+<html lang=\"en\">
+<head>
+    <meta charset=\"UTF-8\" />
+    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />
+    <title>Model Viewer - __USER_ID__</title>
+    <style>
+        html, body { margin: 0; height: 100%; background: #0a0a0a; color: #eaeaea; font-family: system-ui, -apple-system; }
+        #c { width: 100vw; height: 100vh; display: block; }
+        .overlay { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.5); padding: 8px 12px; border-radius: 8px; font-size: 12px; }
+    </style>
+    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js\"></script>
+    <script src=\"https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js\"></script>
+    <script src=\"https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js\"></script>
+    <script src=\"https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js\"></script>
+    <script>
+        async function head(url) { try { const r = await fetch(url, { method: 'HEAD' }); return r.ok; } catch { return false; } }
+        async function getJson(url) { const r = await fetch(url); if(!r.ok) throw new Error('HTTP '+r.status); return await r.json(); }
+    </script>
+    </head>
+<body>
+    <div class=\"overlay\">User: __USER_ID__ • Drag to rotate • Scroll to zoom</div>
+    <canvas id=\"c\"></canvas>
+    <script>
+        const canvas = document.getElementById('c');
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+        function resize() {
+            const w = window.innerWidth, h = window.innerHeight; renderer.setSize(w, h, false); camera.aspect = w/h; camera.updateProjectionMatrix();
+        }
+        const scene = new THREE.Scene(); scene.background = new THREE.Color(0x0a0a0a);
+        const camera = new THREE.PerspectiveCamera(60, 2, 0.1, 1000); camera.position.set(0, 0.5, 3);
+        const controls = new THREE.OrbitControls(camera, renderer.domElement); controls.enableDamping = true;
+        const amb = new THREE.AmbientLight(0x808080, 0.7); scene.add(amb);
+        const dir = new THREE.DirectionalLight(0xffffff, 0.8); dir.position.set(2,2,2); scene.add(dir);
+        window.addEventListener('resize', resize);
+
+        function frame() { requestAnimationFrame(frame); controls.update(); renderer.render(scene, camera); }
+        frame(); resize();
+
+        const glbUrl = '/download/__USER_ID__.glb';
+        const objUrl = '/download/__USER_ID__.obj';
+        const jsonUrl = '/get-4d-model/__USER_ID__';
+
+        (async () => {
+            try {
+                if (await head(glbUrl)) {
+                    const loader = new THREE.GLTFLoader();
+                    loader.load(glbUrl, (gltf) => {
+                        scene.add(gltf.scene);
+                        fitScene();
+                    }, undefined, (e) => fallbackObj());
+                } else {
+                    fallbackObj();
+                }
+            } catch(e) { fallbackObj(); }
+        })();
+
+        function fitScene() {
+            const box = new THREE.Box3().setFromObject(scene);
+            const size = box.getSize(new THREE.Vector3()).length();
+            const center = box.getCenter(new THREE.Vector3());
+            controls.target.copy(center);
+            camera.near = size / 100; camera.far = size * 100; camera.updateProjectionMatrix();
+            camera.position.copy(center).add(new THREE.Vector3(size/2, size/3, size/2));
+        }
+
+        function fallbackObj() {
+            const loader = new THREE.OBJLoader();
+            fetch(objUrl, { method: 'HEAD' }).then(r => {
+                if (r.ok) {
+                    loader.load(objUrl, (obj) => { scene.add(obj); fitScene(); }, undefined, () => fallbackJson());
+                } else { fallbackJson(); }
+            }).catch(() => fallbackJson());
+        }
+
+        async function fallbackJson() {
+            try {
+                const data = await getJson(jsonUrl);
+                const mesh = data && data.surface_mesh;
+                if (mesh && mesh.vertices && mesh.faces) {
+                    const geom = new THREE.BufferGeometry();
+                    const verts = new Float32Array(mesh.vertices.flat());
+                    const indices = new Uint32Array(mesh.faces.flat());
+                    geom.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+                    geom.setIndex(new THREE.BufferAttribute(indices, 1));
+                    geom.computeVertexNormals();
+                    const mat = new THREE.MeshStandardMaterial({ color: 0x66ccff, metalness: 0.1, roughness: 0.8 });
+                    const m = new THREE.Mesh(geom, mat); scene.add(m); fitScene();
+                } else {
+                    const geo = new THREE.IcosahedronGeometry(1, 2);
+                    const mat = new THREE.MeshStandardMaterial({ color: 0x8888ff, wireframe: true });
+                    scene.add(new THREE.Mesh(geo, mat));
+                }
+            } catch(e) {
+                const geo = new THREE.TorusKnotGeometry(0.7, 0.2, 128, 16);
+                const mat = new THREE.MeshStandardMaterial({ color: 0xff66aa, wireframe: true });
+                scene.add(new THREE.Mesh(geo, mat));
+            }
+        }
+    </script>
+</body>
+</html>
+        """
+        return HTMLResponse(content=html.replace("__USER_ID__", user_id))
+
+
+@app.get("/dual-rig")
+async def dual_rig(user_id: str = "demo"):
+    """Serve the dual rig live viewer HTML (uses MediaPipe in-browser)."""
+    try:
+        html_path = frontend_dir / "dual_rig_viewer.html"
+        if not html_path.exists():
+            raise HTTPException(status_code=404, detail="dual_rig_viewer.html missing")
+        html = html_path.read_text(encoding="utf-8")
+        # Inject a simple user id hint for the viewer via a data attr
+        html = html.replace("<body>", f"<body data-user-id=\"{user_id}\">")
+        return HTMLResponse(html)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to serve dual rig viewer: {e}")
+
+
+@app.get("/download/{user_id}.obj")
+async def download_obj(user_id: str):
+    """Serve exported OBJ if available."""
+    export_path = Path("exports") / user_id / "model.obj"
+    if export_path.exists():
+        return FileResponse(str(export_path), media_type="text/plain")
+    raise HTTPException(status_code=404, detail="OBJ not found for user")
+
+
+@app.get("/download/{user_id}.glb")
+async def download_glb(user_id: str):
+    """Serve exported GLB if available."""
+    export_path = Path("exports") / user_id / "model.glb"
+    if export_path.exists():
+        return FileResponse(str(export_path), media_type="model/gltf-binary")
+    raise HTTPException(status_code=404, detail="GLB not found for user")
+
+
+@app.post("/api/avatar/generate")
+async def generate_avatar(user_id: str = Form(...), privacy_lambda: float = Form(0.5)):
+    """
+    Scaffold endpoint to generate an identity-shifted avatar for a user.
+    Current implementation copies the user's GLB as a placeholder into avatars/{user_id}/avatar.glb.
+    """
+    try:
+        src = Path("exports") / user_id / "model.glb"
+        if not src.exists():
+            raise HTTPException(status_code=404, detail="Source GLB not found. Run reconstruction/export first.")
+        dst_dir = Path("avatars") / user_id
+        dst_dir.mkdir(parents=True, exist_ok=True)
+        dst = dst_dir / "avatar.glb"
+        # Copy file (placeholder for a true identity shift)
+        dst.write_bytes(src.read_bytes())
+        # Write simple metadata
+        (dst_dir / "metadata.json").write_text(json.dumps({
+            "user_id": user_id,
+            "privacy_lambda": float(privacy_lambda),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "mode": "copy-placeholder"
+        }, indent=2))
+        return JSONResponse({
+            "status": "ok",
+            "avatar_path": str(dst),
+            "note": "Placeholder avatar generated by copying GLB. Implement identity shift in a later step."
+        })
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Avatar generation failed: {e}")
 
 
 @app.post("/verify-id")
@@ -187,22 +530,63 @@ async def validate_scan(user_id: str, files: List[UploadFile] = File(...)):
 @app.post("/visualize-face")
 async def visualize_face(image: UploadFile = File(...), is_id: bool = False):
     """
-    Endpoint to detect faces in an image and return landmarks for visualization.
+    ENHANCED endpoint using real advanced computer vision algorithms.
+    Uses MediaPipe, dlib, and face_recognition for production-grade facial analysis.
     
     Args:
         image: The image file to analyze
         is_id: Whether this is an ID document (to also run document validation)
     
     Returns:
-        Face detection results and document validation if applicable
+        Advanced face detection results with multiple algorithms and document validation
     """
     try:
         # Process the image
         img_bytes = await image.read()
         img = utils.load_image(img_bytes)
         
-        # Detect face
-        face_data = models.detect_face(img)
+        # Initialize advanced face tracker
+        from modules.real_advanced_face_tracker import RealAdvancedFaceTracker
+        advanced_tracker = RealAdvancedFaceTracker()
+        
+        try:
+            # Perform comprehensive facial analysis using advanced algorithms
+            user_id = f"temp_user_{int(time.time())}"
+            face_models = advanced_tracker.comprehensive_face_analysis(img, user_id, 0)
+            
+            # Fallback to basic detection if advanced methods fail
+            if not face_models:
+                logger.warning("Advanced detection failed, falling back to basic OpenCV")
+                face_data = models.detect_face(img)
+            else:
+                # Convert advanced results to compatible format
+                face_data = {
+                    "faces_detected": len(face_models),
+                    "detection_methods": ["MediaPipe Face Mesh", "dlib 68-point", "face_recognition"],
+                    "advanced_analysis": True,
+                    "landmarks": {},
+                    "pose_estimation": {},
+                    "quality_metrics": {}
+                }
+                
+                # Process each detected face
+                for i, face_model in enumerate(face_models):
+                    face_key = f"face_{i}"
+                    
+                    # Convert 3D landmarks to 2D for visualization
+                    if face_model.landmarks_3d is not None:
+                        landmarks_2d = face_model.landmarks_2d
+                        face_data["landmarks"][face_key] = landmarks_2d.tolist()
+                    
+                    # Add pose estimation data
+                    face_data["pose_estimation"][face_key] = face_model.pose_estimation
+                    
+                    # Add quality metrics
+                    face_data["quality_metrics"][face_key] = face_model.quality_metrics
+        
+        finally:
+            # Always cleanup resources
+            advanced_tracker.cleanup()
         
         # Add document validation if this is an ID
         doc_validation = None
@@ -211,12 +595,19 @@ async def visualize_face(image: UploadFile = File(...), is_id: bool = False):
         
         # Convert numpy types to Python native types for JSON serialization
         landmarks = {}
-        for key, value in face_data.get("landmarks", {}).items():
-            if isinstance(value, tuple) and len(value) == 2:
-                # Convert coordinate tuples to lists
-                landmarks[key] = [float(value[0]), float(value[1])]
-            else:
-                landmarks[key] = value
+        if "landmarks" in face_data:
+            for face_key, face_landmarks in face_data["landmarks"].items():
+                if isinstance(face_landmarks, list):
+                    # Already converted to list format
+                    landmarks[face_key] = face_landmarks
+                else:
+                    # Handle legacy format
+                    landmarks[face_key] = {}
+                    for key, value in face_landmarks.items():
+                        if isinstance(value, tuple) and len(value) == 2:
+                            landmarks[face_key][key] = [float(value[0]), float(value[1])]
+                        else:
+                            landmarks[face_key][key] = value
         
         # Convert bounding box tuple to list of floats
         bbox = []
@@ -241,13 +632,28 @@ async def visualize_face(image: UploadFile = File(...), is_id: bool = False):
             }
             
         # Return JSON-serializable response
-        return {
-            "face_detected": bool(face_data["face_detected"]),
-            "confidence": float(face_data["confidence"]),
+        response_data = {
+            "face_detected": face_data.get("faces_detected", 0) > 0 if "faces_detected" in face_data else bool(face_data.get("face_detected", False)),
+            "confidence": float(face_data.get("confidence", 0.0)),
             "landmarks": landmarks,
             "bounding_box": bbox,
             "document_validation": doc_validation_json
         }
+        
+        # Add advanced analysis data if available
+        if face_data.get("advanced_analysis"):
+            response_data["advanced_analysis"] = face_data["advanced_analysis"]
+        
+        if face_data.get("detection_methods"):
+            response_data["detection_methods"] = face_data["detection_methods"]
+            
+        if face_data.get("pose_estimation"):
+            response_data["pose_estimation"] = face_data["pose_estimation"]
+            
+        if face_data.get("quality_metrics"):
+            response_data["quality_metrics"] = face_data["quality_metrics"]
+        
+        return response_data
     except Exception as e:
         import traceback
         error_details = traceback.format_exc()
@@ -532,14 +938,18 @@ async def ingest_scan(request: Request, user_id: str = Form(None), files: List[U
         if not images:
             raise HTTPException(status_code=400, detail="No valid images uploaded")
 
-        # Build enhanced 4D model using available images
-        facial_model = models.reconstruct_4d_facial_model(images)
-        
-        # Update model with correct user_id
-        facial_model["user_id"] = user_id
-
-        # Compute aggregated embedding from 4D model
-        embedding = models.compute_4d_embedding(facial_model, images)
+        # Build 2D→3D model using orchestrator with decision logic and fallbacks
+        try:
+            from modules.reconstruction_orchestrator import reconstruct_from_images
+            recon = reconstruct_from_images(images, user_id)
+            facial_model = recon.model
+            facial_model["user_id"] = user_id
+            embedding = recon.embedding if recon.embedding is not None else models.compute_4d_embedding(facial_model, images)
+        except Exception as _e:
+            # Fallback to previous pipeline if orchestrator unavailable
+            facial_model = models.reconstruct_4d_facial_model(images)
+            facial_model["user_id"] = user_id
+            embedding = models.compute_4d_embedding(facial_model, images)
 
         metadata = {
             "user_id": user_id,
@@ -560,13 +970,27 @@ async def ingest_scan(request: Request, user_id: str = Form(None), files: List[U
         except Exception as e:
             print(f"Warning: Could not create model file: {e}")
 
-        return JSONResponse({
+        resp_payload = {
             "status": "success",
             "message": f"Successfully processed {len(results)} images for user {user_id}",
             "results": results,
             "user_id": user_id,
             "embedding_hash": metadata["embedding_hash"]
-        })
+        }
+        try:
+            # Include export path if available
+            if 'method' in facial_model:
+                resp_payload["method"] = facial_model['method']
+            export_dir = Path("exports") / user_id
+            export_obj = export_dir / "model.obj"
+            export_glb = export_dir / "model.glb"
+            if export_glb.exists():
+                resp_payload["export_glb"] = str(export_glb)
+            if export_obj.exists():
+                resp_payload["export_obj"] = str(export_obj)
+        except Exception:
+            pass
+        return JSONResponse(resp_payload)
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing scan: {str(e)}")
@@ -598,11 +1022,11 @@ async def get_osint_data(user_id: str, source: str = "all"):
             "phone": user_data.get("phone", "")
         }
         
-        # Use the comprehensive OSINT engine
-        from modules.osint_search import osint_engine
+        # Use the GENUINE OSINT engine - NO fake data generation
+        from modules.genuine_osint_engine import genuine_osint_engine
         
         if user_image is not None:
-            # If we have a face image, perform comprehensive search
+            # If we have a face image, perform GENUINE reverse image search ONLY
             try:
                 # Convert image data to numpy array if needed
                 import numpy as np
@@ -617,8 +1041,21 @@ async def get_osint_data(user_id: str, source: str = "all"):
                 else:
                     face_image = user_image
                 
-                # Perform comprehensive OSINT search
-                osint_results = await osint_engine.comprehensive_search(face_image, query_data)
+                # Perform GENUINE comprehensive reverse image search - NO FAKE DATA
+                if face_image is not None and face_image.size > 0:
+                    osint_results = await genuine_osint_engine.comprehensive_search(face_image, query_data)
+                else:
+                    # No valid image, return empty results - NO FAKE DATA
+                    osint_results = {
+                        "timestamp": datetime.now().isoformat(),
+                        "search_engines_used": [],
+                        "total_urls_found": 0,
+                        "verified_urls": [],
+                        "inaccessible_urls": [],
+                        "reverse_image_results": {},
+                        "confidence_score": 0.0,
+                        "error": "No valid image provided"
+                    }
                 
                 # Convert to API format
                 osint_data = {
@@ -657,12 +1094,10 @@ async def get_osint_data(user_id: str, source: str = "all"):
             except Exception as e:
                 logger.error(f"Error in comprehensive OSINT search: {e}")
                 # Fallback to basic search without image
-                osint_data = await _generate_basic_osint_data(user_id, query_data, osint_engine)
+                osint_data = await _generate_basic_osint_data(user_id, query_data, genuine_osint_engine)
         else:
             # No image available, perform basic search
-            osint_data = await _generate_basic_osint_data(user_id, query_data, osint_engine)
-        
-        # Filter by source if specified
+            osint_data = await _generate_basic_osint_data(user_id, query_data, genuine_osint_engine)        # Filter by source if specified
         if source != "all" and source in osint_data["sources"]:
             filtered_data = {
                 "user_id": user_id,
@@ -682,56 +1117,55 @@ async def get_osint_data(user_id: str, source: str = "all"):
         return JSONResponse(await _generate_fallback_osint_data(user_id))
 
 async def _generate_basic_osint_data(user_id: str, query_data: Dict, osint_engine) -> Dict:
-    """Generate basic OSINT data without face image"""
+    """Generate basic OSINT data without face image - now uses genuine search engine"""
     try:
-        # Perform searches that don't require face image
-        public_records = osint_engine.search_public_records(query_data)
+        logger.info(f"Generating basic OSINT data for user: {user_id}")
         
-        query_terms = []
-        if query_data.get("name"):
-            query_terms.extend(query_data["name"].split())
-        if query_data.get("email"):
-            query_terms.append(query_data["email"])
-            
-        news_articles = osint_engine.search_news_articles(query_terms) if query_terms else {"articles_found": [], "total_articles": 0}
-        
-        # Calculate basic confidence
-        total_confidence = 0.6  # Moderate confidence without face matching
+        # Since genuine engine requires face image for comprehensive search,
+        # we'll return a basic structure indicating the need for an image
+        total_confidence = 0.2  # Very low confidence without face image
         
         osint_data = {
             "user_id": user_id,
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "sources": {
                 "public": {
-                    "records": [r.get("type", "Unknown") for r in public_records.get("records_found", [])],
-                    "matches": public_records.get("total_records", 0),
-                    "confidence": total_confidence,
-                    "details": public_records.get("records_found", [])
+                    "records": [],
+                    "matches": 0,
+                    "confidence": 0.0,
+                    "details": [],
+                    "note": "Face image required for genuine OSINT search"
                 },
                 "news": {
-                    "articles_found": news_articles.get("total_articles", 0),
-                    "sources_searched": len(news_articles.get("sources_searched", [])),
-                    "confidence": total_confidence * 0.6,
-                    "articles": news_articles.get("articles_found", [])
+                    "articles_found": 0,
+                    "sources_searched": 0,
+                    "confidence": 0.0,
+                    "articles": [],
+                    "note": "Face image required for genuine reverse image search"
                 },
                 "social": {
-                    "platforms": ["Manual search recommended"],
+                    "platforms": [],
                     "profiles_found": 0,
-                    "confidence": 0.3,
-                    "note": "Face image required for automated social media search"
+                    "confidence": 0.0,
+                    "profiles": [],
+                    "note": "Face image required for genuine social media search via reverse image lookup"
                 },
                 "biometric": {
                     "facial_matches": 0,
                     "databases_searched": 0,
                     "confidence": 0.0,
-                    "note": "Face image required for biometric search"
+                    "results": [],
+                    "note": "Face image required for genuine biometric reverse image search"
                 }
             },
             "risk_assessment": {
-                "overall_risk": "Medium",
+                "overall_risk": "Unknown",
                 "identity_confidence": total_confidence,
-                "fraud_indicators": 0
-            }
+                "fraud_indicators": 0,
+                "note": "Genuine OSINT requires face image - no fabricated data generated"
+            },
+            "search_method": "genuine_osint_engine",
+            "data_authenticity": "NO_FAKE_DATA_GENERATED"
         }
         
         return osint_data
@@ -741,37 +1175,50 @@ async def _generate_basic_osint_data(user_id: str, query_data: Dict, osint_engin
         return await _generate_fallback_osint_data(user_id)
 
 async def _generate_fallback_osint_data(user_id: str) -> Dict:
-    """Generate fallback mock OSINT data when all else fails"""
+    """Generate fallback data when genuine OSINT engine fails - NO FAKE DATA"""
+    logger.warning("OSINT engine failed - returning empty results with NO fabricated data")
+    
     return {
         "user_id": user_id,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "sources": {
             "social": {
-                "platforms": ["Facebook", "Twitter", "Instagram", "LinkedIn"],
-                "profiles_found": 2,
-                "confidence": 0.85,
-                "last_activity": "2025-07-15",
-                "note": "Mock data - OSINT engine unavailable"
+                "platforms": [],
+                "profiles_found": 0,
+                "confidence": 0.0,
+                "profiles": [],
+                "error": "OSINT engine unavailable - no fake data generated"
             },
             "public": {
-                "records": ["Voter Registration", "Property Records"],
-                "matches": 1,
-                "confidence": 0.72,
-                "note": "Mock data - OSINT engine unavailable"
+                "records": [],
+                "matches": 0,
+                "confidence": 0.0,
+                "details": [],
+                "error": "OSINT engine unavailable - no fake data generated"
             },
             "biometric": {
-                "facial_matches": 3,
-                "databases_searched": 5,
-                "confidence": 0.93,
-                "note": "Mock data - OSINT engine unavailable"
+                "facial_matches": 0,
+                "databases_searched": 0,
+                "confidence": 0.0,
+                "results": [],
+                "error": "OSINT engine unavailable - no fake data generated"
+            },
+            "news": {
+                "articles_found": 0,
+                "sources_searched": 0,
+                "confidence": 0.0,
+                "articles": [],
+                "error": "OSINT engine unavailable - no fake data generated"
             }
         },
         "risk_assessment": {
-            "overall_risk": "Low",
-            "identity_confidence": 0.87,
-            "fraud_indicators": 0
+            "overall_risk": "Unknown",
+            "identity_confidence": 0.0,
+            "fraud_indicators": 0,
+            "error": "OSINT engine unavailable - assessment impossible without genuine data"
         },
-        "status": "fallback_mode"
+        "system_status": "GENUINE_OSINT_ENGINE_UNAVAILABLE",
+        "data_authenticity": "NO_FAKE_DATA_GENERATED_EVER"
     }
 
 @app.post("/api/pipeline/step1-scan-ingestion")
@@ -1534,13 +1981,50 @@ async def integrated_4d_visualization_main(scan_files: List[UploadFile] = File(.
                 "pipeline_complete": True
             }
             
+            # Also run 2D→3D reconstruction orchestrator while we still have images in memory
+            try:
+                imgs_np: List[np.ndarray] = []
+                for data in image_files:
+                    nparr2 = np.frombuffer(data, np.uint8)
+                    im2 = cv2.imdecode(nparr2, cv2.IMREAD_COLOR)
+                    if im2 is not None:
+                        imgs_np.append(im2)
+                if imgs_np:
+                    from modules.reconstruction_orchestrator import reconstruct_from_images
+                    recon2 = reconstruct_from_images(imgs_np, user_id)
+                    # Persist model JSON for get_4d_model
+                    model_dir = Path("4d_models")
+                    model_dir.mkdir(exist_ok=True)
+                    with open(model_dir / f"{user_id}_latest.json", "w") as f:
+                        json.dump(recon2.model, f, indent=2)
+                    # If we have an embedding, add it to DB as well
+                    if recon2.embedding is not None:
+                        metadata = {
+                            "user_id": user_id,
+                            "timestamp": datetime.now(timezone.utc).isoformat(),
+                            "num_images": len(imgs_np),
+                            "embedding_hash": models.embedding_hash(recon2.embedding)[:16],
+                            "type": "integrated_reconstruction",
+                        }
+                        db.add(user_id, recon2.embedding, metadata)
+                    # Attach reconstruction summary to pipeline results
+                    pipeline_results["reconstruction"] = {
+                        "method": recon2.model.get("method"),
+                        "vertex_count": recon2.model.get("vertex_count", 0),
+                        "face_count": recon2.model.get("face_count", 0),
+                        "export_obj": str(recon2.export_path_obj) if recon2.export_path_obj else None,
+                        "export_glb": str(recon2.export_path_glb) if getattr(recon2, 'export_path_glb', None) else None,
+                    }
+            except Exception as _re:
+                logger.warning(f"2D→3D reconstruction orchestrator failed in integrated flow: {_re}")
+
             # Clean up temp files
             for temp_file in temp_files:
                 try:
                     temp_file.unlink()
                 except:
                     pass
-            
+
         except Exception as pipeline_error:
             logger.error(f"Error in facial pipeline: {pipeline_error}")
             # Continue with basic processing even if pipeline fails
@@ -1569,8 +2053,58 @@ async def integrated_4d_visualization_main(scan_files: List[UploadFile] = File(.
             "pipeline_results": pipeline_results,
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "model_url": f"/model-viewer/{user_id}" if total_faces_detected > 0 else None,
-            "download_url": f"/download/{user_id}.obj" if total_faces_detected > 0 else None
+            "download_url": None
         }
+
+        # Run 2D→3D reconstruction orchestrator as part of integrated flow
+        try:
+            imgs_np: List[np.ndarray] = []
+            for fi in processed_files:
+                # Reload from temp dir saved earlier
+                temp_dir = Path("temp_uploads")
+                file_path = temp_dir / f"{user_id}_{fi['filename']}"
+                if file_path.exists():
+                    data = file_path.read_bytes()
+                    nparr = np.frombuffer(data, np.uint8)
+                    im = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+                    if im is not None:
+                        imgs_np.append(im)
+            if imgs_np:
+                from modules.reconstruction_orchestrator import reconstruct_from_images
+                recon2 = reconstruct_from_images(imgs_np, user_id)
+                # Save/merge model info
+                results["reconstruction"] = {
+                    "method": recon2.model.get("method"),
+                    "vertex_count": recon2.model.get("vertex_count", 0),
+                    "face_count": recon2.model.get("face_count", 0),
+                    "export_obj": str(recon2.export_path_obj) if recon2.export_path_obj else None,
+                    "export_glb": str(recon2.export_path_glb) if getattr(recon2, 'export_path_glb', None) else None,
+                }
+                # Persist model JSON for get_4d_model
+                model_dir = Path("4d_models")
+                model_dir.mkdir(exist_ok=True)
+                with open(model_dir / f"{user_id}_latest.json", "w") as f:
+                    json.dump(recon2.model, f, indent=2)
+                # Prefer GLB download if available; else OBJ
+                try:
+                    if getattr(recon2, 'export_path_glb', None):
+                        results["download_url"] = f"/download/{user_id}.glb"
+                    elif recon2.export_path_obj:
+                        results["download_url"] = f"/download/{user_id}.obj"
+                except Exception:
+                    pass
+                # If we have an embedding, add it to DB as well
+                if recon2.embedding is not None:
+                    metadata = {
+                        "user_id": user_id,
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
+                        "num_images": len(imgs_np),
+                        "embedding_hash": models.embedding_hash(recon2.embedding)[:16],
+                        "type": "integrated_reconstruction",
+                    }
+                    db.add(user_id, recon2.embedding, metadata)
+        except Exception as _re:
+            logger.warning(f"2D→3D reconstruction orchestrator failed in integrated flow: {_re}")
         
         # Save results to file
         results_file = Path(f"{user_id}_integrated_results.json")

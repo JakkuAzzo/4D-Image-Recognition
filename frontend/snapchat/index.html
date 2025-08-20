@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Snapchat Intelligence | 4D Image Recognition</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .snap-container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+    .snap-hero { background: rgba(255,255,255,0.08); border-radius: 16px; padding: 24px; margin-bottom: 16px; }
+    .snap-grid { display: grid; grid-template-columns: 1fr 320px; gap: 16px; align-items: start; }
+    .snap-panel { background: rgba(255,255,255,0.06); border-radius: 12px; padding: 16px; }
+    .snap-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn { background: #00ff88; color: #111; border: 0; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .btn.secondary { background: rgba(255,255,255,0.15); color: #fff; }
+    .status { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas; font-size: 12px; opacity: 0.9; }
+    .map-placeholder { height: 520px; border-radius: 12px; background: linear-gradient(135deg, #232a34, #1a1f27); display: grid; place-items: center; color: #9cc; }
+    .pill { display: inline-block; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,0.12); font-size: 12px; margin-right: 6px; }
+    .note { font-size: 12px; opacity: 0.8; }
+    .list { max-height: 260px; overflow: auto; }
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <div class="snap-container">
+    <div class="snap-hero">
+      <h1>👻 Snapchat Intelligence</h1>
+      <p>Snap Map assisted OSINT, consent workflow, and hashed-pointer storage.</p>
+      <div class="pill">30-min updates</div>
+      <div class="pill">Geo + Time + Pointer Hash</div>
+      <div class="pill">Consent-first reporting</div>
+      <p class="note">Limitations: Snap Maps unavailable in Cuba, North Korea, Turkey, and Ukraine. These regions are skipped automatically.</p>
+    </div>
+
+    <div class="snap-grid">
+      <div class="snap-panel">
+        <h3>Snap Map</h3>
+        <div id="snap-map" class="map-placeholder">Map UI placeholder (requires Snapchat login)</div>
+        <div class="snap-actions" style="margin-top:12px;">
+          <button class="btn" id="btn-login">Login with Snapchat</button>
+          <button class="btn secondary" id="btn-request-mobile">Request Mobile Site</button>
+          <button class="btn secondary" id="btn-scan-viewport" disabled>Scan Visible Stories</button>
+        </div>
+        <p class="note">Users must access Snap Maps via a logged-in Snapchat account (email or phone required).</p>
+        <div class="status" id="snap-status">Status: idle</div>
+      </div>
+
+      <div class="snap-panel">
+        <h3>Pointer Matches</h3>
+        <div class="list" id="match-list">No matches yet.</div>
+        <h3 style="margin-top:16px;">Report Consent</h3>
+        <p class="note">If matches are yours and posted without consent, you can flag them for takedown processing.</p>
+        <button class="btn secondary" id="btn-export">Export Pointer Matches (JSON)</button>
+      </div>
+    </div>
+
+    <div class="snap-panel" style="margin-top:16px;">
+      <h3>How it works</h3>
+      <ul>
+        <li>We compute FaceNet-like pointer vectors for faces in public stories visible to the logged-in user.</li>
+        <li>Pointers are stored with hashed usernames, date/time, and approximate location in our ledger.</li>
+        <li>Every 30 minutes a scheduled task updates recent regions (rate-limited; regions with legal restrictions are skipped).</li>
+        <li>When you upload photos, we compare your model against this pointer set and show potential matches for your review.</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <script src="snapchat.js"></script>
+</body>
+</html>

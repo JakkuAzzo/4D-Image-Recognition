@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dual Rig Live Viewer</title>
+  <style>
+    body{margin:0;background:#0b0b0b;color:#eaeaea;font-family:system-ui,-apple-system}
+    header{padding:10px 16px;border-bottom:1px solid #222}
+    .row{display:flex;gap:6px;align-items:center}
+    .col{flex:1;position:relative}
+    canvas{width:100%;height:70vh;display:block;background:#111}
+    .panel{padding:10px 16px;border-top:1px solid #222;display:flex;gap:12px;align-items:center}
+    label{font-size:12px}
+    input[type=range]{width:200px}
+    .meter{min-width:160px}
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r150/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+</head>
+<body>
+  <header>
+    <div class="row">
+      <div style="font-weight:600">Dual Rig Live Viewer</div>
+  <div class="meter" id="similarity">Drive energy: --</div>
+      <label>Privacy λ <input id="lambda" type="range" min="0" max="1" step="0.05" value="0.5"></label>
+      <button id="start">Start Camera</button>
+    </div>
+  </header>
+  <div class="row">
+    <div class="col"><canvas id="truth"></canvas></div>
+    <div class="col"><canvas id="avatar"></canvas></div>
+  </div>
+  <div class="panel">
+    <label><input id="keepScars" type="checkbox" checked> Keep scars</label>
+    <label><input id="keepHair" type="checkbox" checked> Keep hair</label>
+  </div>
+  <video id="video" style="display:none"></video>
+
+<script>
+// Minimal ARKit-like subset mapping from landmarks
+const channels = ["jawOpen","mouthSmile_L","mouthSmile_R","eyeBlinkLeft","eyeBlinkRight","browInnerUp"]; // demo subset
+
+function landmarksToCoeffs(landmarks){
+  if(!landmarks || !landmarks.length) return {};
+  const lm = landmarks[0];
+  const get = i => lm[i];
+  // Very rough proxies for demo purposes
+  const mouthOpen = () => Math.max(0, (get(13).y - get(14).y) * 5.0);
+  const smileL = () => Math.max(0, (get(61).x - get(50).x) * 5.0);
+  const smileR = () => Math.max(0, (get(280).x - get(290).x) * 5.0);
+  const blinkL = () => Math.max(0, (get(159).y - get(145).y) * -15.0);
+  const blinkR = () => Math.max(0, (get(386).y - get(374).y) * -15.0);
+  const browUp  = () => Math.max(0, (get(55).y - get(65).y) * -5.0);
+  return {
+    jawOpen: clamp(mouthOpen(),0,1),
+    mouthSmile_L: clamp(smileL(),0,1),
+    mouthSmile_R: clamp(smileR(),0,1),
+    eyeBlinkLeft: clamp(blinkL(),0,1),
+    eyeBlinkRight: clamp(blinkR(),0,1),
+    browInnerUp: clamp(browUp(),0,1)
+  };
+}
+
+function clamp(v,min,max){return Math.max(min, Math.min(max,v));}
+
+// Three.js setup for two scenes
+function setupCanvas(canvasId){
+  const canvas = document.getElementById(canvasId);
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(0x0b0b0b);
+  const camera = new THREE.PerspectiveCamera(50, 2, 0.1, 100);
+  camera.position.set(0, 0.2, 1.8);
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  const light = new THREE.DirectionalLight(0xffffff, 1.0); light.position.set(1,1,1); scene.add(light);
+  scene.add(new THREE.AmbientLight(0x888888));
+  function resize(){
+    const w = canvas.clientWidth, h = canvas.clientHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', resize); resize();
+  return {renderer, scene, camera, controls};
+}
+
+const truth = setupCanvas('truth');
+const avatar = setupCanvas('avatar');
+
+let truthRig=null, avatarRig=null;
+
+function loadRig(url, target){
+  return new Promise((resolve)=>{
+    new THREE.GLTFLoader().load(url, (gltf)=>{
+      const g = gltf.scene;
+      target.scene.add(g);
+      resolve(g);
+    }, undefined, ()=>{
+      // Fallback primitive head-like mesh
+      const geo = new THREE.IcosahedronGeometry(0.8, 3);
+      const mat = new THREE.MeshStandardMaterial({color:0x88aaff, roughness:0.6, metalness:0.05});
+      const m = new THREE.Mesh(geo, mat);
+      const group = new THREE.Group(); group.add(m);
+      target.scene.add(group);
+      resolve(group);
+    });
+  });
+}
+
+(async function init(){
+  // Try to load existing exports; if not found, load a placeholder head
+  const truthUrl = '/static/placeholder_head.glb';
+  const avatarUrl = '/static/placeholder_head.glb';
+  truthRig = await loadRig(truthUrl, truth);
+  avatarRig = await loadRig(avatarUrl, avatar);
+
+  function tick(){
+    requestAnimationFrame(tick);
+    truth.controls.update(); avatar.controls.update();
+    truth.renderer.render(truth.scene, truth.camera);
+    avatar.renderer.render(avatar.scene, avatar.camera);
+  }
+  tick();
+})();
+
+// Driving both rigs with MediaPipe FaceMesh
+const video = document.getElementById('video');
+const startBtn = document.getElementById('start');
+startBtn.onclick = async () => {
+  const stream = await navigator.mediaDevices.getUserMedia({video:true});
+  video.srcObject = stream; await video.play();
+  const fm = new FaceMesh({locateFile: (f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`});
+  fm.setOptions({maxNumFaces:1, refineLandmarks:true, minDetectionConfidence:0.5, minTrackingConfidence:0.5});
+  fm.onResults(onResults);
+  const camera = new Camera(video, {onFrame: async ()=>{await fm.send({image: video});}, width:640, height:480});
+  camera.start();
+};
+
+function onResults(res){
+  const coeffs = landmarksToCoeffs(res.multiFaceLandmarks);
+  applyCoeffsToRig(truthRig, coeffs);
+  applyCoeffsToRig(avatarRig, coeffs);
+  // Simple energy readout (not identity similarity)
+  const v = Object.values(coeffs);
+  const energy = Math.sqrt(v.reduce((s,x)=>s+x*x,0)).toFixed(3);
+  document.getElementById('similarity').textContent = `Drive energy: ${energy}`;
+}
+
+function applyCoeffsToRig(root, coeffs){
+  if(!root) return;
+  // If morph targets present: traverse meshes and set morphTargetInfluences by name
+  root.traverse((obj)=>{
+    if(obj.isMesh && obj.morphTargetDictionary && obj.morphTargetInfluences){
+      for(const ch of channels){
+        const idx = obj.morphTargetDictionary[ch];
+        if(idx !== undefined){ obj.morphTargetInfluences[idx] = coeffs[ch] || 0; }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+F.FF..F                                                                  [100%]
+=================================== FAILURES ===================================
+_____________________________ test_frontend_fixes ______________________________
+Expected None, but test returned {'tests_passed': 0, 'tests_failed': 1, 'issues_found': ["Server connection failed: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"], 'improvements_verified': []}. Did you mean to use `assert` instead of `return`?
+----------------------------- Captured stdout call -----------------------------
+🧪 FRONTEND INTEGRATION TEST
+==================================================
+1. Testing server accessibility...
+   ❌ Server connection failed: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+________________________ test_complete_upload_workflow _________________________
+Expected None, but test returned False. Did you mean to use `assert` instead of `return`?
+----------------------------- Captured stdout call -----------------------------
+🧪 COMPREHENSIVE FRONTEND TEST
+============================================================
+📅 Test started at: 2025-08-19 13:51:32
+
+1. 🌐 Testing server connectivity...
+❌ Server connection failed: HTTPSConnectionPool(host='192.168.0.120', port=8000): Max retries exceeded with url: / (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x10aed0ec0>, 'Connection to 192.168.0.120 timed out. (connect timeout=10)'))
+____________________________ test_frontend_complete ____________________________
+Expected None, but test returned True. Did you mean to use `assert` instead of `return`?
+----------------------------- Captured stdout call -----------------------------
+🧪 Testing Complete Frontend Functionality
+==================================================
+
+1. 🌐 Testing server connectivity...
+✅ Server running at: https://localhost:8000
+
+2. 📱 Testing main frontend...
+✅ Main frontend loads correctly
+❌ startProcessing function missing
+❌ File input missing
+❌ App.js inclusion missing
+❌ Three.js inclusion missing
+❌ Upload button missing
+❌ Processing section missing
+
+3. 📜 Testing app.js...
+❌ app.js failed to load: 404
+
+4. 🔌 Testing backend API endpoints...
+✅ /audit-log endpoint working
+❌ /working endpoint failed: 404
+
+5. 🛠️ Testing working version...
+❌ Working version failed: 404
+
+==================================================
+🎯 Frontend Test Summary:
+   Server URL: https://localhost:8000
+   Main frontend: Check above results
+   JavaScript: Check function availability
+   API endpoints: Check connectivity
+   Working version: Available as backup
+
+💡 To test manually:
+   1. Visit: https://localhost:8000
+   2. Select multiple face images
+   3. Click 'Process Images'
+   4. Watch for console output and results
+______________ test_frontend_calls_compare_after_model_generation ______________
+
+    def test_frontend_calls_compare_after_model_generation():
+        """Smoke test the frontend flow via API to ensure the pipeline returns user_id, then hit compare."""
+        files = []
+        sample = Path('frontend') / 'assets' / 'sample_face.jpg'
+        if sample.exists():
+            files = [('scan_files', (sample.name, open(sample, 'rb'), 'image/jpeg'))]
+        else:
+            # Tiny 1x1 white JPEG (base64) to avoid external deps
+            import base64
+            tiny_jpeg_b64 = (
+                '/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxAQEA8QDw8QEA8PDw8PDw8PDw8PDw8PFREWFhURFhUYHSggGBolGxYVITEhJSkrLi4uFx8zODMsNygtLisBCgoKDg0OGhAQGy0lICUtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLf/AABEIAAEAAQMBIgACEQEDEQH/xAAbAAEAAgMBAQAAAAAAAAAAAAAABQYDBAcCAf/EADYQAAEDAwIDBQQBBAMAAAAAAAEAAgMEERIHITFBUQUTIjJhcYGRobHB8BQiM0JScqL/xAAZAQEAAwEBAAAAAAAAAAAAAAAAAgMEAQX/xAAjEQEAAgICAgIDAAAAAAAAAAAAAQIRAxIhMQQTQVEUImFx/9oADAMBAAIRAxEAPwD7qiiigAooooAKKKKACiiigAooooAKKKKACiiigD//Z'
+            )
+>           tiny_bytes = base64.b64decode(tiny_jpeg_b64)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_snapchat_compare_proxy.py:70: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+s = b'/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxAQEA8QDw8QEA8PDw8PDw8PDw8PDw8PFREWFhURFhUYHSggGBolGxYVITEhJSkrLi4uFx8zODMsNygt...AAgMEAQX/xAAjEQEAAgICAgIDAAAAAAAAAAAAAQIRAxIhMQQTQVEUImFx/9oADAMBAAIRAxEAPwD7qiiigAooooAKKKKACiiigAooooAKKKKACiiigD//Z'
+altchars = None, validate = False
+
+    def b64decode(s, altchars=None, validate=False):
+        """Decode the Base64 encoded bytes-like object or ASCII string s.
+    
+        Optional altchars must be a bytes-like object or ASCII string of length 2
+        which specifies the alternative alphabet used instead of the '+' and '/'
+        characters.
+    
+        The result is returned as a bytes object.  A binascii.Error is raised if
+        s is incorrectly padded.
+    
+        If validate is False (the default), characters that are neither in the
+        normal base-64 alphabet nor the alternative alphabet are discarded prior
+        to the padding check.  If validate is True, these non-alphabet characters
+        in the input result in a binascii.Error.
+        For more information about the strict base64 check, see:
+    
+        https://docs.python.org/3.11/library/binascii.html#binascii.a2b_base64
+        """
+        s = _bytes_from_decode_data(s)
+        if altchars is not None:
+            altchars = _bytes_from_decode_data(altchars)
+            assert len(altchars) == 2, repr(altchars)
+            s = s.translate(bytes.maketrans(altchars, b'+/'))
+>       return binascii.a2b_base64(s, strict_mode=validate)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       binascii.Error: Invalid base64-encoded string: number of data characters (477) cannot be 1 more than a multiple of 4
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/base64.py:88: Error
+=========================== short test summary info ============================
+FAILED tests/integration_test.py::test_frontend_fixes - Failed: Expected None...
+FAILED tests/test_complete_frontend.py::test_complete_upload_workflow - Faile...
+FAILED tests/test_frontend_complete.py::test_frontend_complete - Failed: Expe...
+FAILED tests/test_snapchat_compare_proxy.py::test_frontend_calls_compare_after_model_generation

@@ -20,6 +20,7 @@ import requests
 import subprocess
 import signal
 import os
+from typing import Any
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -53,38 +54,39 @@ class FrontendTestSuite:
         
         self.driver = webdriver.Chrome(options=chrome_options)
         self.driver.implicitly_wait(10)
+
+    def ensure_browser(self):
+        """Ensure a browser instance exists before using self.driver"""
+        if self.driver is None:
+            self.setup_browser()
         
     def start_server(self):
-        """Start the 4D facial recognition server"""
+        """Start the 4D facial recognition server. Raises on failure."""
+        # Kill any existing servers
+        os.system("lsof -ti:8000 | xargs kill -9 2>/dev/null")
+        os.system("lsof -ti:8443 | xargs kill -9 2>/dev/null")
+
+        # Start new server
+        project_root = Path(__file__).parent.parent
         try:
-            # Kill any existing servers
-            os.system("lsof -ti:8000 | xargs kill -9 2>/dev/null")
-            os.system("lsof -ti:8443 | xargs kill -9 2>/dev/null")
-            
-            # Start new server
-            project_root = Path(__file__).parent.parent
             self.server_process = subprocess.Popen(
                 ["python", "main.py"],
                 cwd=project_root,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
             )
-            
-            # Wait for server to start
-            time.sleep(5)
-            
-            # Verify server is running
-            try:
-                response = requests.get(self.base_url, verify=False, timeout=10)
-                logger.info(f"Server started successfully - Status: {response.status_code}")
-                return True
-            except Exception as e:
-                logger.error(f"Server failed to start: {e}")
-                return False
-                
         except Exception as e:
-            logger.error(f"Error starting server: {e}")
-            return False
+            logger.error(f"Error launching server: {e}")
+            raise
+
+        # Wait for server to start and verify
+        time.sleep(5)
+        try:
+            response = requests.get(self.base_url, verify=False, timeout=10)
+            logger.info(f"Server started successfully - Status: {response.status_code}")
+        except Exception as e:
+            logger.error(f"Server failed to start: {e}")
+            raise
     
     def stop_server(self):
         """Stop the server process"""
@@ -103,6 +105,8 @@ class FrontendTestSuite:
     def measure_ui_element(self, element_selector, element_name):
         """Measure UI element dimensions and visibility"""
         try:
+            self.ensure_browser()
+            assert self.driver is not None, "WebDriver not initialized"
             element = self.driver.find_element(By.CSS_SELECTOR, element_selector)
             size = element.size
             location = element.location
@@ -131,6 +135,8 @@ class FrontendTestSuite:
         self.test_results["tests_run"] += 1
         
         try:
+            self.ensure_browser()
+            assert self.driver is not None, "WebDriver not initialized"
             start_time = time.time()
             self.driver.get(self.base_url)
             load_time = time.time() - start_time
@@ -165,48 +171,54 @@ class FrontendTestSuite:
         self.test_results["tests_run"] += 1
         
         try:
+            self.ensure_browser()
+            assert self.driver is not None, "WebDriver not initialized"
             # Find file input
             file_input = self.driver.find_element(By.ID, "scan-files")
             
             # Check if multiple attribute is present (allows multiple files)
             multiple_allowed = file_input.get_attribute("multiple") is not None
             
-            # Create test files
-            test_dir = Path("test_images")
-            test_dir.mkdir(exist_ok=True)
+            # Prefer real Nathan test images if available
+            nathan_dir = Path("/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/test_images/nathan")
+            files_to_use = []
+            if nathan_dir.exists():
+                for ext in ("*.jpg", "*.jpeg", "*.png"):
+                    files_to_use.extend([str(p.resolve()) for p in nathan_dir.glob(ext)])
             
-            # Create dummy image files for testing
-            test_files = []
-            for i in range(15):  # Test with 15 files to check limits
-                test_file = test_dir / f"test_image_{i}.jpg"
-                if not test_file.exists():
-                    # Create a small dummy JPEG file
-                    with open(test_file, "wb") as f:
-                        # Minimal JPEG header
-                        f.write(b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00\xff\xdb\x00C\x00\x08\x06\x06\x07\x06\x05\x08\x07\x07\x07\t\t\x08\n\x0c\x14\r\x0c\x0b\x0b\x0c\x19\x12\x13\x0f\x14\x1d\x1a\x1f\x1e\x1d\x1a\x1c\x1c $.\' ",#\x1c\x1c(7),01444\x1f\'9=82<.342\xff\xc0\x00\x11\x08\x00\x01\x00\x01\x01\x01\x11\x00\x02\x11\x01\x03\x11\x01\xff\xc4\x00\x14\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x08\xff\xc4\x00\x14\x10\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xda\x00\x0c\x03\x01\x00\x02\x11\x03\x11\x00\x3f\x00\xaa\xff\xd9')
-                test_files.append(str(test_file))
-            
-            # Try to upload multiple files
-            file_paths = "\n".join(test_files[:10])  # Upload 10 files first
+            # Fallback to local dummy images if Nathan folder not present
+            if not files_to_use:
+                test_dir = Path("test_images")
+                test_dir.mkdir(exist_ok=True)
+                for i in range(15):  # create up to 15 dummy files
+                    test_file = test_dir / f"test_image_{i}.jpg"
+                    if not test_file.exists():
+                        with open(test_file, "wb") as f:
+                            f.write(b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00\xff\xdb\x00C\x00\x08\x06\x06\x07\x06\x05\x08\x07\x07\x07\t\t\x08\n\x0c\x14\r\x0c\x0b\x0b\x0c\x19\x12\x13\x0f\x14\x1d\x1a\x1f\x1e\x1d\x1a\x1c\x1c $.\' ",#\x1c\x1c(7),01444\x1f\'9=82<.342\xff\xc0\x00\x11\x08\x00\x01\x00\x01\x01\x01\x11\x00\x02\x11\x01\x03\x11\x01\xff\xc4\x00\x14\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x08\xff\xc4\x00\x14\x10\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xda\x00\x0c\x03\x01\x00\x02\x11\x03\x11\x00\x3f\x00\xaa\xff\xd9')
+                    files_to_use.append(str(test_file.resolve()))
+
+            # Try to upload multiple files (use up to 10)
+            file_paths = "\n".join(files_to_use[:10])
             file_input.send_keys(file_paths)
             
             time.sleep(2)  # Wait for processing
             
             # Check for error messages about file limits
             try:
+                assert self.driver is not None, "WebDriver not initialized"
                 error_element = self.driver.find_element(By.CLASS_NAME, "error-message")
                 error_text = error_element.text
                 if "limit" in error_text.lower() or "too many" in error_text.lower():
                     self.test_results["issues_found"].append({
                         "issue": "File upload limit exists",
                         "description": f"Upload limit detected: {error_text}",
-                        "files_tested": len(test_files[:10])
+                        "files_tested": len(files_to_use[:10])
                     })
-            except:
+            except Exception:
                 pass  # No error message found (good)
-            
+
             self.log_interaction("file_upload_test", {
-                "files_uploaded": len(test_files[:10]),
+                "files_uploaded": len(files_to_use[:10]),
                 "multiple_allowed": multiple_allowed
             })
             
@@ -222,6 +234,8 @@ class FrontendTestSuite:
         self.test_results["tests_run"] += 1
         
         try:
+            self.ensure_browser()
+            assert self.driver is not None, "WebDriver not initialized"
             # Upload test files first
             self.upload_test_files()
             
@@ -298,6 +312,7 @@ class FrontendTestSuite:
         expected_content = step_content_checks.get(step, [])
         
         try:
+            assert self.driver is not None, "WebDriver not initialized"
             # Look for step-specific content
             page_text = self.driver.find_element(By.TAG_NAME, "body").text.lower()
             
@@ -317,23 +332,31 @@ class FrontendTestSuite:
             logger.warning(f"Could not check step {step} content: {e}")
     
     def upload_test_files(self):
-        """Helper method to upload test files"""
+        """Helper: Upload test files to the page"""
         try:
+            self.ensure_browser()
+            assert self.driver is not None, "WebDriver not initialized"
             file_input = self.driver.find_element(By.ID, "scan-files")
             
-            # Use actual test images if available, or create dummy ones
-            test_dir = Path("test_images")
-            test_dir.mkdir(exist_ok=True)
-            
+            # Prefer Nathan's real images if available
+            nathan_dir = Path("/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/test_images/nathan")
             test_files = []
-            for i in range(5):
-                test_file = test_dir / f"face_test_{i}.jpg"
-                if not test_file.exists():
-                    # Create larger dummy JPEG for testing
-                    with open(test_file, "wb") as f:
-                        # Larger JPEG content
-                        f.write(b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00\xff\xdb\x00C\x00\x08\x06\x06\x07\x06\x05\x08\x07\x07\x07\t\t\x08\n\x0c\x14\r\x0c\x0b\x0b\x0c\x19\x12\x13\x0f\x14\x1d\x1a\x1f\x1e\x1d\x1a\x1c\x1c $.\' ",#\x1c\x1c(7),01444\x1f\'9=82<.342\xff\xc0\x00\x11\x08\x00d\x00d\x01\x01\x11\x00\x02\x11\x01\x03\x11\x01\xff\xc4\x00\x14\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x08\xff\xc4\x00\x14\x10\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xda\x00\x0c\x03\x01\x00\x02\x11\x03\x11\x00\x3f\x00' + b'\xaa' * 1000 + b'\xff\xd9')
-                test_files.append(str(test_file.absolute()))
+            if nathan_dir.exists():
+                for ext in ("*.jpg", "*.jpeg", "*.png"):
+                    test_files.extend([str(p.resolve()) for p in nathan_dir.glob(ext)])
+                # Limit to a reasonable number for upload
+                test_files = test_files[:5] if len(test_files) >= 5 else test_files
+            
+            # Fallback: create local dummy files if Nathan dir not present
+            if not test_files:
+                test_dir = Path("test_images")
+                test_dir.mkdir(exist_ok=True)
+                for i in range(5):
+                    test_file = test_dir / f"face_test_{i}.jpg"
+                    if not test_file.exists():
+                        with open(test_file, "wb") as f:
+                            f.write(b'\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00\xff\xdb\x00C\x00\x08\x06\x06\x07\x06\x05\x08\x07\x07\x07\t\t\x08\n\x0c\x14\r\x0c\x0b\x0b\x0c\x19\x12\x13\x0f\x14\x1d\x1a\x1f\x1e\x1d\x1a\x1c\x1c $.\' ",#\x1c\x1c(7),01444\x1f\'9=82<.342\xff\xc0\x00\x11\x08\x00d\x00d\x01\x01\x11\x00\x02\x11\x01\x03\x11\x01\xff\xc4\x00\x14\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x08\xff\xc4\x00\x14\x10\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xda\x00\x0c\x03\x01\x00\x02\x11\x03\x11\x00\x3f\x00' + b'\xaa' * 1000 + b'\xff\xd9')
+                    test_files.append(str(test_file.absolute()))
             
             # Upload files
             file_input.send_keys("\n".join(test_files))
@@ -350,6 +373,8 @@ class FrontendTestSuite:
         self.test_results["tests_run"] += 1
         
         try:
+            self.ensure_browser()
+            assert self.driver is not None, "WebDriver not initialized"
             visual_issues = []
             
             # Check for 2D image display
@@ -391,6 +416,8 @@ class FrontendTestSuite:
         self.test_results["tests_run"] += 1
         
         try:
+            self.ensure_browser()
+            assert self.driver is not None, "WebDriver not initialized"
             # Test different viewport sizes
             viewport_tests = [
                 (1920, 1080),  # Desktop
@@ -441,8 +468,7 @@ class FrontendTestSuite:
         
         try:
             # Setup
-            if not self.start_server():
-                raise Exception("Failed to start server")
+            self.start_server()
                 
             self.setup_browser()
             

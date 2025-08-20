@@ -1,0 +1,81 @@
+
+==================================== ERRORS ====================================
+_______________ ERROR collecting tests/comprehensive_app_test.py _______________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/comprehensive_app_test.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/comprehensive_app_test.py:27: in <module>
+    import cv2
+E   ModuleNotFoundError: No module named 'cv2'
+_________ ERROR collecting tests/enhanced_comprehensive_osint_test.py __________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/enhanced_comprehensive_osint_test.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/enhanced_comprehensive_osint_test.py:25: in <module>
+    from selenium import webdriver
+E   ModuleNotFoundError: No module named 'selenium'
+______________ ERROR collecting tests/final_comprehensive_test.py ______________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/final_comprehensive_test.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/final_comprehensive_test.py:8: in <module>
+    import cv2
+E   ModuleNotFoundError: No module named 'cv2'
+_____________________ ERROR collecting tests/quick_test.py _____________________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/quick_test.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/quick_test.py:4: in <module>
+    from selenium import webdriver
+E   ModuleNotFoundError: No module named 'selenium'
+___________ ERROR collecting tests/test_backend_osint_integration.py ___________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/test_backend_osint_integration.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_backend_osint_integration.py:11: in <module>
+    import cv2
+E   ModuleNotFoundError: No module named 'cv2'
+_____________ ERROR collecting tests/test_genuine_osint_system.py ______________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/test_genuine_osint_system.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_genuine_osint_system.py:12: in <module>
+    import cv2
+E   ModuleNotFoundError: No module named 'cv2'
+____________ ERROR collecting tests/test_honest_system_analysis.py _____________
+ImportError while importing test module '/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/tests/test_honest_system_analysis.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_honest_system_analysis.py:10: in <module>
+    import cv2
+E   ModuleNotFoundError: No module named 'cv2'
+=========================== short test summary info ============================
+ERROR tests/comprehensive_app_test.py
+ERROR tests/enhanced_comprehensive_osint_test.py
+ERROR tests/final_comprehensive_test.py
+ERROR tests/quick_test.py
+ERROR tests/test_backend_osint_integration.py
+ERROR tests/test_genuine_osint_system.py
+ERROR tests/test_honest_system_analysis.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 7 errors during collection !!!!!!!!!!!!!!!!!!!!
