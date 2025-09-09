@@ -115,6 +115,23 @@ if [ -n "$FASTAPI_PID_EXISTING" ]; then
   exit 1
 fi
 
+# 6a. Ensure dlib facial landmark model is present (auto-fetch if missing)
+MODEL_FILE="shape_predictor_68_face_landmarks.dat"
+if [[ ! -f "$MODEL_FILE" ]]; then
+  echo "Model $MODEL_FILE not found in project root. Attempting to fetch..."
+  if [[ -x "scripts/fetch_dlib_model.sh" ]]; then
+    scripts/fetch_dlib_model.sh
+  elif [[ -f "scripts/fetch_dlib_model.sh" ]]; then
+    chmod +x scripts/fetch_dlib_model.sh
+    scripts/fetch_dlib_model.sh
+  else
+    echo "Missing scripts/fetch_dlib_model.sh. Please download manually:"
+    echo "  curl -L -o ${MODEL_FILE}.bz2 http://dlib.net/files/${MODEL_FILE}.bz2"
+    echo "  bunzip2 ${MODEL_FILE}.bz2"
+    exit 1
+  fi
+fi
+
 # 7. Activate virtual environment and start FastAPI backend with HTTPS
 if [[ -d "venv" ]]; then
   source venv/bin/activate
