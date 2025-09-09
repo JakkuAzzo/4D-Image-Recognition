@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# Pre-commit guard: prevent committing large/binary or unwanted paths.
+set -euo pipefail
+
+# Max file size (bytes)
+MAX_SIZE=$((50 * 1024 * 1024))
+
+# Disallowed globs/paths (regex)
+DISALLOWED_REGEX="^(venv/|.venv/|env/|ENV/|ssl/|node_modules/|.*\\.(log|crt|key|p12|pem)$)"
+
+# Large file check and disallowed path check
+while IFS= read -r -d '' file; do
+  # Skip deletions
+  if ! git cat-file -e :"$file" 2>/dev/null; then
+    continue
+  fi
+  # Disallow certain paths/extensions
+  if [[ "$file" =~ $DISALLOWED_REGEX ]]; then
+    echo "[pre-commit] Blocked disallowed path: $file" >&2
+    exit 1
+  fi
+  # Size check
+  size=$(git cat-file -s :"$file")
+  if [[ $size -gt $MAX_SIZE ]]; then
+    echo "[pre-commit] $file is too large ($size bytes > $MAX_SIZE). Use Git LFS or ignore it." >&2
+    exit 1
+  fi
+  # Binary check (heuristic)
+  if git show :"$file" | head -c 8000 | LC_ALL=C grep -q "\x00"; then
+    echo "[pre-commit] Binary-like file detected: $file. Use Git LFS or ignore it." >&2
+    exit 1
+  fi
+  # Block common 3D asset heavy types unless under avatars/ with small size
+  if [[ "$file" =~ \.(obj|mtl|fbx|blend|glb|gltf|tga|tiff|tif)$ ]]; then
+    if [[ ! "$file" =~ ^avatars/ ]]; then
+      echo "[pre-commit] 3D asset types must live under avatars/: $file" >&2
+      exit 1
+    fi
+  fi
+  # Block .dat in root unless it’s ignored
+  if [[ "$file" == "shape_predictor_68_face_landmarks.dat" ]]; then
+    echo "[pre-commit] The dlib .dat model should not be committed. Run scripts/fetch_dlib_model.sh and add to .gitignore." >&2
+    exit 1
+  fi
+
+done < <(git diff --cached --name-only -z)
+
+exit 0

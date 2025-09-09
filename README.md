@@ -24,3 +24,16 @@ Manual steps (if you prefer):
 
 Note: If `bunzip2` is missing on macOS, install it via Homebrew: `brew install bzip2`.
 
+Git hygiene (optional but recommended)
+-------------------------------------
+
+This repo includes a pre-commit hook at `.githooks/pre-commit` to block large or unwanted files (venv, ssl, logs, >50MB, binary-like files, root `.dat`, etc.).
+
+Enable it locally:
+
+```
+git config core.hooksPath .githooks
+```
+
+You can disable it with `git config --unset core.hooksPath` if needed.
+
