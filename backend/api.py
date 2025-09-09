@@ -23,6 +23,9 @@ from fastapi.responses import JSONResponse, FileResponse, HTMLResponse, Redirect
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import subprocess
+import shutil
+import tempfile
 
 from . import models, utils, database
 # Genuine OSINT Engine - NO fake data
@@ -44,6 +47,145 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# In-memory identity filter configuration used by browser extension and native app
+_identity_filter_cfg = {
+    "type": "grayscale",  # placeholder: grayscale, pixelate, avatar, mesh_mask
+    "fps": 30,
+    "user_id": None,
+    "params": {},  # arbitrary client-side pipeline configuration (Dual Rig preset)
+}
+
+# Static mounts for frontend and avatars
+frontend_dir = Path(__file__).parent.parent / "frontend"
+avatars_dir = Path(__file__).parent.parent / "avatars"
+avatars_dir.mkdir(exist_ok=True)
+app.mount("/static", StaticFiles(directory=str(frontend_dir)), name="static")
+app.mount("/avatars", StaticFiles(directory=str(avatars_dir)), name="avatars")
+
+@app.get("/api/identity-filter/config")
+async def get_identity_filter_config():
+    try:
+        return JSONResponse(_identity_filter_cfg)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get config: {e}")
+
+class _FilterCfg(BaseModel):
+    type: str | None = None
+    fps: int | None = None
+    user_id: str | None = None
+    params: Dict[str, Any] | None = None
+
+@app.post("/api/identity-filter/config")
+async def set_identity_filter_config(cfg: _FilterCfg):
+    try:
+        if cfg.type is not None:
+            _identity_filter_cfg["type"] = cfg.type
+        if cfg.fps is not None:
+            _identity_filter_cfg["fps"] = int(cfg.fps)
+        if cfg.user_id is not None:
+            _identity_filter_cfg["user_id"] = cfg.user_id
+        if cfg.params is not None:
+            # Shallow replace; clients should send full params blob
+            _identity_filter_cfg["params"] = cfg.params
+        return JSONResponse({"status": "ok", "config": _identity_filter_cfg})
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid config: {e}")
+
+@app.post("/api/identity-filter/load-model")
+async def identity_filter_load_model(user_id: str = Form(...)):
+    """Record the active user model for downstream masking/avatars. The actual
+    video filtering is performed on-client (browser extension) or native app.
+    """
+    try:
+        _identity_filter_cfg["user_id"] = user_id
+        # Optionally validate model exists
+        model_path = Path("4d_models") / f"{user_id}_latest.json"
+        exists = model_path.exists()
+        return JSONResponse({"status": "ok", "user_id": user_id, "model_exists": exists})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to set model: {e}")
+
+# List available avatar models (e.g., under avatars/cgtrader)
+@app.get("/api/avatars/list")
+async def list_avatars(subdir: str = ""):
+    try:
+        base = avatars_dir
+        if subdir:
+            # prevent path traversal
+            safe = Path(subdir).as_posix().strip("/")
+            base = (avatars_dir / safe).resolve()
+            if not str(base).startswith(str(avatars_dir.resolve())):
+                raise HTTPException(status_code=400, detail="Invalid subdir")
+        if not base.exists():
+            return JSONResponse({"items": []})
+        exts = {".glb", ".gltf", ".obj", ".blend"}
+        items = []
+        for p in base.rglob("*"):
+            if p.is_file() and p.suffix.lower() in exts:
+                rel = p.relative_to(avatars_dir)
+                items.append({
+                    "name": p.stem,
+                    "file": rel.as_posix(),
+                    "url": f"/avatars/{rel.as_posix()}"
+                })
+        items.sort(key=lambda x: x["name"].lower())
+        return JSONResponse({"items": items})
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to list avatars: {e}")
+
+# Convert a .blend file under avatars to .glb using Blender CLI
+@app.post("/api/avatars/convert-blend")
+async def convert_blend(file: str):
+    try:
+        if not file:
+            raise HTTPException(status_code=400, detail="Missing file path")
+        # Validate and resolve path under avatars_dir
+        safe = Path(file).as_posix().strip("/")
+        src = (avatars_dir / safe).resolve()
+        if not str(src).startswith(str(avatars_dir.resolve())):
+            raise HTTPException(status_code=400, detail="Invalid file path")
+        if src.suffix.lower() != ".blend":
+            raise HTTPException(status_code=400, detail="File is not a .blend")
+        if not src.exists():
+            raise HTTPException(status_code=404, detail="File not found")
+        # Determine output glb path
+        dst = src.with_suffix(".glb")
+        # If already converted and newer or same mtime, reuse
+        try:
+            if dst.exists() and dst.stat().st_mtime >= src.stat().st_mtime:
+                rel = dst.relative_to(avatars_dir).as_posix()
+                return JSONResponse({"status":"ok","url": f"/avatars/{rel}", "file": rel})
+        except Exception:
+            pass
+        # Ensure blender is available
+        blender = shutil.which("blender")
+        if not blender:
+            raise HTTPException(status_code=500, detail="Blender not found on server PATH")
+        # Build command to export to glTF/glb
+        # We'll open the .blend then export to GLB applying transforms
+        export_expr = (
+            "import bpy,sys;\n"
+            "bpy.ops.wm.open_mainfile(filepath=r'" + str(src) + "');\n"
+            "bpy.ops.export_scene.gltf(filepath=r'" + str(dst) + "', export_format='GLB', export_apply=True)\n"
+        )
+        cmd = [blender, "-b", "--python-expr", export_expr]
+        try:
+            proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=300)
+            if proc.returncode != 0:
+                raise HTTPException(status_code=500, detail=f"Blender export failed: {proc.stderr.decode('utf-8', 'ignore')[:4000]}")
+        except subprocess.TimeoutExpired:
+            raise HTTPException(status_code=500, detail="Blender export timed out")
+        if not dst.exists():
+            raise HTTPException(status_code=500, detail="Export did not produce output")
+        rel = dst.relative_to(avatars_dir).as_posix()
+        return JSONResponse({"status":"ok","url": f"/avatars/{rel}", "file": rel})
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to convert blend: {e}")
 
 # Root now redirects to the actual web app UI
 @app.get("/")
@@ -72,6 +214,116 @@ async def api_landing():
                 </html>
                 """
         )
+
+@app.get("/filters", response_class=HTMLResponse)
+async def filters_ui():
+                html = f"""
+<!DOCTYPE html>
+<html lang=\"en\">
+<head>
+    <meta charset=\"UTF-8\" />
+    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />
+    <title>Identity Filter Controls</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <style>
+    body {{ font-family: -apple-system, system-ui; background:#0b0b0b; color:#eaeaea; margin:0; padding:24px; padding-bottom:120px; }}
+        .card {{ background:#141414; border:1px solid #222; border-radius:12px; padding:16px; max-width:720px; margin: 0 auto; }}
+        label {{ display:block; margin:12px 0 6px; }}
+        input, select, button {{ padding:8px 10px; border-radius:8px; border:1px solid #333; background:#0f0f0f; color:#eaeaea; }}
+        button {{ background:#1e88e5; border-color:#1e88e5; cursor:pointer; }}
+        .row {{ display:flex; gap:12px; align-items:center; }}
+        .row > * {{ flex: 1; }}
+        .status {{ margin-top: 12px; font-size: 13px; color:#9ad; }}
+        a {{ color:#66ccff; }}
+    </style>
+    <script>
+        async function getCfg() {{
+            const r = await fetch('/api/identity-filter/config');
+            if (!r.ok) throw new Error('get config failed');
+            return await r.json();
+        }}
+        async function setCfg(type, fps, user_id) {{
+            const body = {{}};
+            if (type) body.type = type;
+            if (fps) body.fps = parseInt(fps);
+            if (user_id) body.user_id = user_id;
+            const r = await fetch('/api/identity-filter/config', {{ method:'POST', headers:{{'Content-Type':'application/json'}}, body: JSON.stringify(body) }});
+            if (!r.ok) throw new Error('set config failed');
+            return await r.json();
+        }}
+        async function loadModel(user_id) {{
+            const fd = new FormData();
+            fd.append('user_id', user_id);
+            const r = await fetch('/api/identity-filter/load-model', {{ method:'POST', body: fd }});
+            if (!r.ok) throw new Error('load model failed');
+            return await r.json();
+        }}
+        async function init() {{
+            try {{
+                const cfg = await getCfg();
+                document.getElementById('type').value = cfg.type || 'grayscale';
+                document.getElementById('fps').value = (cfg.fps || 30);
+                document.getElementById('user_id').value = cfg.user_id || '';
+            }} catch(e) {{ console.warn(e); }}
+            document.getElementById('save').addEventListener('click', async () => {{
+                const type = document.getElementById('type').value;
+                const fps = document.getElementById('fps').value;
+                const user_id = document.getElementById('user_id').value.trim();
+                const res = await setCfg(type, fps, user_id);
+                document.getElementById('status').textContent = 'Saved: ' + JSON.stringify(res.config || res);
+            }});
+            document.getElementById('load').addEventListener('click', async () => {{
+                const user_id = document.getElementById('user_id').value.trim();
+                if (!user_id) {{ alert('Enter user_id'); return; }}
+                const res = await loadModel(user_id);
+                document.getElementById('status').textContent = 'Model: ' + JSON.stringify(res);
+            }});
+        }}
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</head>
+<body>
+    <div class=\"card\">
+        <h2>Identity Filter Controls</h2>
+        <p>Configure the browser extension and virtual camera filters. <a href=\"/api\">API Home</a></p>
+        <div class=\"row\">
+            <div>
+                <label for=\"type\">Filter Type</label>
+                <select id=\"type\">
+                    <option value=\"grayscale\">Grayscale</option>
+                    <option value=\"pixelate\">Pixelate</option>
+                    <option value=\"face_mask\">Face Mesh Mask</option>
+                    <option value=\"avatar\">Avatar Overlay</option>
+                </select>
+            </div>
+            <div>
+                <label for=\"fps\">FPS</label>
+                <input id=\"fps\" type=\"number\" min=\"5\" max=\"60\" step=\"1\" value=\"30\" />
+            </div>
+        </div>
+        <div style=\"margin-top:12px\">
+            <label for=\"user_id\">Active user_id (for model-driven filters)</label>
+            <input id=\"user_id\" placeholder=\"user_...\" />
+        </div>
+        <div style=\"display:flex; gap:10px; margin-top:12px\">
+            <button id=\"save\">Save Config</button>
+            <button id=\"load\">Load Model</button>
+        </div>
+        <div id=\"status\" class=\"status\"></div>
+    </div>
+    <div class=\"bottom-nav\" style=\"position:fixed;left:50%;bottom:16px;transform:translateX(-50%);background:rgba(255,255,255,0.08);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.2);border-radius:999px;padding:8px 10px;display:flex;gap:6px;align-items:center;box-shadow:0 12px 40px rgba(0,0,0,0.35);z-index:1000;\">
+        <a class=\"nav-item\" href=\"/static/index.html\" style=\"color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;\">🏠 Home</a>
+        <a class=\"nav-item\" href=\"/static/enhanced-pipeline.html\" style=\"color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;\">🚀 Enhanced</a>
+        <a class=\"nav-item\" href=\"/filters\" style=\"color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;\">🎭 Filters</a>
+        <a class=\"nav-item\" href=\"/static/snapchat/index.html\" style=\"color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;\">👻 Snapchat</a>
+        <a class=\"nav-item\" href=\"/dual-rig\" style=\"color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;\">🎮 Dual Rig</a>
+        <a class=\"nav-item\" href=\"/api\" style=\"color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;\">🧩 API</a>
+    </div>
+    <script> (function(){{ const here = location.pathname; document.querySelectorAll('.bottom-nav .nav-item').forEach(a=>{{ try{{ if(here === new URL(a.href, location.origin).pathname) a.style.background = 'rgba(255,255,255,0.12)'; }}catch{{}} }}); }})(); </script>
+</body>
+</html>
+                """
+                return HTMLResponse(content=html)
 
 @app.get("/healthz")
 async def healthz():
@@ -251,6 +503,7 @@ async def model_viewer(user_id: str):
     <meta charset=\"UTF-8\" />
     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />
     <title>Model Viewer - __USER_ID__</title>
+    <link rel="stylesheet" href="/static/styles.css" />
     <style>
         html, body { margin: 0; height: 100%; background: #0a0a0a; color: #eaeaea; font-family: system-ui, -apple-system; }
         #c { width: 100vw; height: 100vh; display: block; }
@@ -345,6 +598,15 @@ async def model_viewer(user_id: str):
             }
         }
     </script>
+    <div class="bottom-nav" style="position:fixed;left:50%;bottom:16px;transform:translateX(-50%);background:rgba(255,255,255,0.08);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.2);border-radius:999px;padding:8px 10px;display:flex;gap:6px;align-items:center;box-shadow:0 12px 40px rgba(0,0,0,0.35);z-index:1000;">
+        <a class="nav-item" href="/static/index.html" style="color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;">🏠 Home</a>
+        <a class="nav-item" href="/static/enhanced-pipeline.html" style="color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;">🚀 Enhanced</a>
+        <a class="nav-item" href="/filters" style="color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;">🎭 Filters</a>
+        <a class="nav-item" href="/static/snapchat/index.html" style="color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;">👻 Snapchat</a>
+        <a class="nav-item" href="/dual-rig" style="color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;">🎮 Dual Rig</a>
+        <a class="nav-item" href="/api" style="color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;">🧩 API</a>
+    </div>
+    <script> (function(){ const here = location.pathname; document.querySelectorAll('.bottom-nav .nav-item').forEach(a=>{ try{ if(here === new URL(a.href, location.origin).pathname) a.style.background = 'rgba(255,255,255,0.12)'; }catch(e){} }); })(); </script>
 </body>
 </html>
         """

@@ -4,43 +4,195 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dual Rig Live Viewer</title>
+  <link rel="stylesheet" href="styles.css" />
   <style>
     body{margin:0;background:#0b0b0b;color:#eaeaea;font-family:system-ui,-apple-system}
     header{padding:10px 16px;border-bottom:1px solid #222}
-    .row{display:flex;gap:6px;align-items:center}
-    .col{flex:1;position:relative}
-    canvas{width:100%;height:70vh;display:block;background:#111}
+  .row{display:flex;gap:6px;align-items:center}
+  .col{flex:1;position:relative;min-height:70vh}
+  .col video{position:absolute;inset:0;width:100%;height:70vh;object-fit:cover;background:#000;z-index:0}
+  .col canvas.feed{position:absolute;inset:0;width:100%;height:70vh;display:block;background:#000;z-index:1}
+  .col canvas.overlay{position:absolute;inset:0;width:100%;height:70vh;display:block;background:transparent;z-index:2}
     .panel{padding:10px 16px;border-top:1px solid #222;display:flex;gap:12px;align-items:center}
     label{font-size:12px}
     input[type=range]{width:200px}
     .meter{min-width:160px}
+    .hidden{display:none}
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r150/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/examples/js/loaders/OBJLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/examples/js/loaders/MTLLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4/face_mesh.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
 </head>
 <body>
   <header>
     <div class="row">
       <div style="font-weight:600">Dual Rig Live Viewer</div>
   <div class="meter" id="similarity">Drive energy: --</div>
-      <label>Privacy λ <input id="lambda" type="range" min="0" max="1" step="0.05" value="0.5"></label>
-      <button id="start">Start Camera</button>
+  <label>Privacy λ <input id="lambda" type="range" min="0" max="1" step="0.05" value="0.6"></label>
+      <label style="margin-left:10px;">Camera
+        <select id="camera-select" style="background:#181818;color:#eaeaea;border:1px solid #333;border-radius:6px;padding:4px 8px;">
+          <option value="">Default</option>
+        </select>
+      </label>
+      <label style="margin-left:10px;">
+        <input id="mirror-both" type="checkbox"> Mirror both </>
+      </label>
+      <label style="margin-left:10px;">Processing scale
+        <select id="proc-scale" style="background:#181818;color:#eaeaea;border:1px solid #333;border-radius:6px;padding:4px 8px;">
+          <option value="1">1.0x (full)</option>
+          <option value="0.5">0.5x</option>
+          <option value="0.33">0.33x</option>
+        </select>
+      </label>
+    <label style="margin-left:10px;">Preset
+        <select id="filter-preset" style="background:#181818;color:#eaeaea;border:1px solid #333;border-radius:6px;padding:4px 8px;">
+          <option value="none">None</option>
+      <option value="toon">Toon Avatar</option>
+          <option value="appearance">Appearance (Hue + Headshape)</option>
+          <option value="mask">Anon Mask</option>
+          <option value="puppet">Custom Puppet</option>
+        </select>
+      </label>
+      <label style="margin-left:10px;"><input id="apply-filter" type="checkbox" checked> Apply to Avatar feed</label>
+  <button id="start">Start Camera</button>
+  <button id="send-ext" title="Send current preset to the browser extension">Send to Extension</button>
+  <span id="send-status" style="font-size:12px;opacity:.8"></span>
     </div>
   </header>
   <div class="row">
-    <div class="col"><canvas id="truth"></canvas></div>
-    <div class="col"><canvas id="avatar"></canvas></div>
+    <div class="col">
+      <video id="video-truth" autoplay muted playsinline></video>
+      <canvas id="truth" class="overlay"></canvas>
+    </div>
+    <div class="col">
+      <video id="video-avatar" autoplay muted playsinline></video>
+      <canvas id="avatar-feed" class="feed" style="display:none"></canvas>
+      <canvas id="avatar" class="overlay"></canvas>
+    </div>
+  </div>
+  <div class="panel" id="background-panel">
+    <label>Background
+      <select id="bg-mode" style="background:#181818;color:#eaeaea;border:1px solid #333;border-radius:6px;padding:4px 8px;">
+        <option value="none">Original</option>
+        <option value="blur">Blur</option>
+        <option value="random">Random Color</option>
+        <option value="image">Choose Image</option>
+        <option value="generated">Generated</option>
+      </select>
+    </label>
+    <input id="bg-file" type="file" accept="image/*" style="display:none" />
   </div>
   <div class="panel">
     <label><input id="keepScars" type="checkbox" checked> Keep scars</label>
     <label><input id="keepHair" type="checkbox" checked> Keep hair</label>
   </div>
-  <video id="video" style="display:none"></video>
+  <div class="panel" id="filters-panel">
+    <div id="controls-toon" class="ctrl-group hidden" style="gap:16px;flex-wrap:wrap">
+      <label>Feature size <input id="toon-intensity" type="range" min="0.2" max="2.0" step="0.05" value="1.2"></label>
+      <label>Filter FPS <input id="filter-fps-toon" type="number" min="5" max="60" step="1" value="18" style="width:64px;background:#181818;color:#eaeaea;border:1px solid #333;border-radius:6px;padding:3px 6px;"></label>
+      <label><input id="toon-use-model" type="checkbox"> Use model stylizer</label>
+  <label>Model URL <input id="toon-model-url" type="text" placeholder="/static/models/animegan2/model.json (or CDN)" style="min-width:300px;background:#181818;color:#eaeaea;border:1px solid #333;border-radius:6px;padding:3px 6px;"></label>
+      <label>Input size
+        <select id="toon-model-size" style="background:#181818;color:#eaeaea;border:1px solid #333;border-radius:6px;padding:3px 6px;">
+          <option value="256">256</option>
+          <option value="320">320</option>
+          <option value="384">384</option>
+          <option value="512">512</option>
+        </select>
+      </label>
+      <label><input id="toon-norm" type="checkbox" checked> Normalize [-1,1]</label>
+      <button id="toon-load">Load Model</button>
+      <span id="toon-status" style="font-size:12px;color:#8fbcbb">Model: not loaded</span>
+      <div style="flex-basis:100%;height:0"></div>
+      <div id="toon-catalog-section" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <label>Name <input id="toon-model-name" type="text" placeholder="My Stylizer" style="min-width:180px;background:#181818;color:#eaeaea;border:1px solid #333;border-radius:6px;padding:3px 6px;"></label>
+        <button id="toon-save" title="Save current URL, size, and norm to catalog">Save to Catalog</button>
+        <button id="toon-export" title="Export catalog to JSON">Export</button>
+        <button id="toon-import" title="Import catalog from JSON">Import</button>
+        <input id="toon-import-file" type="file" accept="application/json" style="display:none" />
+      </div>
+      <div id="toon-catalog" style="display:flex;flex-direction:column;gap:6px;max-height:180px;overflow:auto;background:#111;padding:8px;border:1px solid #333;border-radius:8px;min-width:420px">
+        <!-- entries render here -->
+      </div>
+    </div>
+    <div id="controls-appearance" class="ctrl-group hidden" style="gap:16px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label>Hue shift (deg) <input id="appearance-hue-deg" type="range" min="-180" max="180" step="5" value="60"></label>
+        <label><input id="appearance-skin-only" type="checkbox" checked> Skin-only hue</label>
+        <label>Filter FPS <input id="filter-fps-appearance" type="number" min="5" max="60" step="1" value="24" style="width:64px;background:#181818;color:#eaeaea;border:1px solid #333;border-radius:6px;padding:3px 6px;"></label>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label>Head width <input id="head-w" type="range" min="0.6" max="1.6" step="0.02" value="1.2"></label>
+        <label>Head height <input id="head-h" type="range" min="0.6" max="1.6" step="0.02" value="0.9"></label>
+        <label>Nose warp <input id="nose-w" type="range" min="0.7" max="1.4" step="0.02" value="1.0"></label>
+        <label>Mouth warp <input id="mouth-w" type="range" min="0.7" max="1.4" step="0.02" value="1.0"></label>
+        <label><input id="freckles" type="checkbox"> Add freckles</label>
+      </div>
+    </div>
+    <div id="controls-mask" class="ctrl-group hidden">
+      <label>Color <input id="mask-color" type="color" value="#8a2be2" style="width:40px;height:24px;border:0;background:transparent;"></label>
+      <label>Opacity <input id="mask-alpha" type="range" min="0.3" max="1" step="0.05" value="0.75"></label>
+      <label>Filter FPS <input id="filter-fps-mask" type="number" min="5" max="60" step="1" value="30" style="width:64px;background:#181818;color:#eaeaea;border:1px solid #333;border-radius:6px;padding:3px 6px;"></label>
+      <label><input id="mask-toon" type="checkbox"> Replace with Toon inside mask</label>
+      <label>Morph <input id="mask-morph" type="range" min="0" max="1" step="0.05" value="0.6"></label>
+    </div>
+    <div id="controls-puppet" class="ctrl-group hidden" style="gap:16px;flex-wrap:wrap">
+      <label>Puppet image <input id="puppet-file" type="file" accept="image/*" /></label>
+      <label>Scale % <input id="puppet-scale" type="range" min="50" max="220" step="5" value="110"></label>
+      <label>Opacity <input id="puppet-alpha" type="range" min="0.3" max="1" step="0.05" value="0.9"></label>
+      <label><input id="puppet-follow" type="checkbox" checked> Follow rotation</label>
+      <label>Filter FPS <input id="filter-fps-puppet" type="number" min="5" max="60" step="1" value="24" style="width:64px;background:#181818;color:#eaeaea;border:1px solid #333;border-radius:6px;padding:3px 6px;"></label>
+  <div style="flex-basis:100%;height:0"></div>
+  <label>Alpha mask <input id="puppet-mask-file" type="file" accept="image/*" /></label>
+  <label><input id="puppet-mask-invert" type="checkbox"> Invert mask</label>
+  <label>Edge feather (px) <input id="puppet-feather" type="range" min="0" max="40" step="1" value="12"></label>
+  <div style="flex-basis:100%;height:0"></div>
+  <label><input id="puppet-dyn-blend" type="checkbox"> Blend by motion</label>
+  <label>Min alpha <input id="puppet-alpha-min" type="range" min="0" max="1" step="0.05" value="0.6"></label>
+  <label>Max alpha <input id="puppet-alpha-max" type="range" min="0.2" max="1" step="0.05" value="0.95"></label>
+    </div>
+  </div>
+  <div class="panel" id="character-panel">
+  <label>Truth model <input id="truth-upload" type="file" accept=".glb,.gltf,.obj,model/gltf-binary,model/gltf+json,model/obj" /></label>
+  <label>Avatar model <input id="avatar-upload" type="file" accept=".glb,.gltf,.obj,model/gltf-binary,model/gltf+json,model/obj" /></label>
+    <label>CGTrader avatars
+      <select id="cgtrader-list" style="background:#181818;color:#eaeaea;border:1px solid #333;border-radius:6px;padding:4px 8px;min-width:300px">
+        <option value="">— browse —</option>
+      </select>
+    </label>
+  <button id="cgtrader-refresh" title="Reload list of avatars">Refresh</button>
+    <button id="reset-models">Reset to placeholder</button>
+  <span id="rig-status" style="font-size:12px;opacity:.8"></span>
+  </div>
+  <video id="video" style="display:none" muted playsinline></video>
 
 <script>
+function _loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=()=>res(true);s.onerror=rej;document.head.appendChild(s);});}
+async function _ensureThree(){
+  if (window.THREE) return;
+  try { await _loadScript('https://unpkg.com/three@0.150.0/build/three.min.js'); }
+  catch(e){ console.error('Three.js failed to load', e); }
+  if (!window.THREE) throw new Error('Three.js unavailable');
+  if (!THREE.OrbitControls) {
+    try { await _loadScript('https://cdn.jsdelivr.net/npm/three@0.150.0/examples/js/controls/OrbitControls.js'); } catch(e){}
+  }
+  if (!THREE.GLTFLoader) {
+    try { await _loadScript('https://cdn.jsdelivr.net/npm/three@0.150.0/examples/js/loaders/GLTFLoader.js'); } catch(e){}
+  }
+  if (!THREE.OBJLoader) {
+    try { await _loadScript('https://cdn.jsdelivr.net/npm/three@0.150.0/examples/js/loaders/OBJLoader.js'); } catch(e){}
+  }
+  if (!THREE.MTLLoader) {
+    try { await _loadScript('https://cdn.jsdelivr.net/npm/three@0.150.0/examples/js/loaders/MTLLoader.js'); } catch(e){}
+  }
+}
+
 // Minimal ARKit-like subset mapping from landmarks
 const channels = ["jawOpen","mouthSmile_L","mouthSmile_R","eyeBlinkLeft","eyeBlinkRight","browInnerUp"]; // demo subset
 
@@ -85,18 +237,17 @@ function setupCanvas(canvasId){
   return {renderer, scene, camera, controls};
 }
 
-const truth = setupCanvas('truth');
-const avatar = setupCanvas('avatar');
+// Can only setup canvases once THREE is loaded
+let truth, avatar;
 
 let truthRig=null, avatarRig=null;
+// Retarget caches per rig
+const RETARGET = new WeakMap(); // rigRoot -> { bones: {jaw, head, eyeL, eyeR, browL, browR}, rest: Map(bone-> {pos,rot}) }
 
 function loadRig(url, target){
   return new Promise((resolve)=>{
-    new THREE.GLTFLoader().load(url, (gltf)=>{
-      const g = gltf.scene;
-      target.scene.add(g);
-      resolve(g);
-    }, undefined, ()=>{
+    // Choose loader by extension
+    loadModelFromUrl(url, (g)=>{ const node=g.scene||g; target.scene.add(node); resolve(node); }, ()=>{
       // Fallback primitive head-like mesh
       const geo = new THREE.IcosahedronGeometry(0.8, 3);
       const mat = new THREE.MeshStandardMaterial({color:0x88aaff, roughness:0.6, metalness:0.05});
@@ -108,7 +259,64 @@ function loadRig(url, target){
   });
 }
 
+function loadModelFromUrl(url, onLoaded, onError){
+  try{
+    const clean = (url||'').split('?')[0].split('#')[0];
+    const ext = clean.substring(clean.lastIndexOf('.')+1).toLowerCase();
+    if (ext === 'glb' || ext === 'gltf'){
+      new THREE.GLTFLoader().load(url, (g)=>onLoaded(g), undefined, (e)=>{ console.error('GLTF load failed', e); onError && onError(e); });
+      return;
+    }
+    if (ext === 'obj'){
+      return loadObjWithOptionalMtl(url, onLoaded, onError);
+    }
+    throw new Error('Unsupported model type: '+ext);
+  }catch(e){ console.error(e); onError && onError(e); }
+}
+
+function loadObjWithOptionalMtl(url, onLoaded, onError){
+  const idx = url.lastIndexOf('/');
+  const basePath = idx>=0 ? url.substring(0, idx+1) : '';
+  const fileName = idx>=0 ? url.substring(idx+1) : url;
+  const mtlGuess = fileName.replace(/\.obj$/i, '.mtl');
+  const mtlUrl = basePath + mtlGuess;
+  const tryMtl = () => {
+    if (!THREE.MTLLoader) return Promise.reject(new Error('MTLLoader missing'));
+    return new Promise((resolve, reject)=>{
+      const mtl = new THREE.MTLLoader();
+      if (basePath) mtl.setPath(basePath);
+      mtl.load(mtlGuess, (materials)=>{ try{ materials.preload(); resolve(materials); }catch(err){ resolve(null); } }, undefined, ()=>resolve(null));
+    });
+  };
+  tryMtl().then((materials)=>{
+    const loader = new THREE.OBJLoader();
+    if (materials) loader.setMaterials(materials);
+    if (basePath) loader.setPath(basePath);
+    loader.load(fileName, (group)=>{ onLoaded && onLoaded(group); }, undefined, (e)=>{ console.error('OBJ load failed', e); onError && onError(e); });
+  }).catch(()=>{
+    const loader = new THREE.OBJLoader();
+    loader.load(url, (group)=>{ onLoaded && onLoaded(group); }, undefined, (e)=>{ console.error('OBJ load failed', e); onError && onError(e); });
+  });
+}
+
+function replaceTruthRig(g){
+  try{ if (truthRig){ truth.scene.remove(truthRig); } }catch(e){}
+  const node = g.scene || g; truth.scene.add(node); truthRig = node;
+  try{ discoverBones(truthRig); }catch(e){ console.warn('Retarget discovery failed (truth)', e); }
+  updateRigStatus();
+}
+function replaceAvatarRig(g){
+  try{ if (avatarRig){ avatar.scene.remove(avatarRig); } }catch(e){}
+  const node = g.scene || g; avatar.scene.add(node); avatarRig = node;
+  try{ discoverBones(avatarRig); }catch(e){ console.warn('Retarget discovery failed (avatar)', e); }
+  updateRigStatus();
+}
+
 (async function init(){
+  try { await _ensureThree(); } catch(e){ console.error(e); return; }
+  // Now that THREE is available, setup canvases
+  truth = setupCanvas('truth');
+  avatar = setupCanvas('avatar');
   // Try to load existing exports; if not found, load a placeholder head
   const truthUrl = '/static/placeholder_head.glb';
   const avatarUrl = '/static/placeholder_head.glb';
@@ -125,40 +333,1244 @@ function loadRig(url, target){
 })();
 
 // Driving both rigs with MediaPipe FaceMesh
-const video = document.getElementById('video');
+const videoTruth = document.getElementById('video-truth');
+const videoAvatar = document.getElementById('video-avatar');
+const avatarFeed = document.getElementById('avatar-feed');
+const avatarOverlay = document.getElementById('avatar');
+const hiddenVideo = document.getElementById('video');
 const startBtn = document.getElementById('start');
+const cameraSelect = document.getElementById('camera-select');
+const mirrorBoth = document.getElementById('mirror-both');
+const procScaleSel = document.getElementById('proc-scale');
+const presetSel = document.getElementById('filter-preset');
+const applyFilterChk = document.getElementById('apply-filter');
+
+let currentStream = null;
+let processing = false;
+let fmInstance = null;
+let fmBusy = false;
+let rafId = null;
+let currentScale = 1;
+const procCanvas = document.createElement('canvas');
+const procCtx = procCanvas.getContext('2d');
+let lastLandmarks = null;
+let lastCoeffs = {};
+let filterTimer = 0;
+let filterFps = 24;
+const feedCtx = avatarFeed.getContext('2d');
+const lambdaSlider = document.getElementById('lambda');
+// TF.js stylizer state
+let toonModel = null;
+let toonBusy = false;
+const toonUseModel = () => document.getElementById('toon-use-model').checked;
+const toonModelUrlEl = () => document.getElementById('toon-model-url');
+const toonModelSizeEl = () => document.getElementById('toon-model-size');
+const toonNormEl = () => document.getElementById('toon-norm');
+const toonStatusEl = () => document.getElementById('toon-status');
+// Background replacement state
+const bgModeSel = document.getElementById('bg-mode');
+const bgFileInput = document.getElementById('bg-file');
+let bgImage = null; // HTMLImageElement for chosen image
+let segInstance = null; let segBusy = false;
+const segCanvas = document.createElement('canvas');
+const segCtx = segCanvas.getContext('2d');
+let segMaskReady = false;
+function ensureSegCanvasSize(w,h){ if(segCanvas.width!==w||segCanvas.height!==h){ segCanvas.width=w; segCanvas.height=h; } }
+function smoothstep(edge0, edge1, x){ const t = Math.min(1, Math.max(0, (x-edge0)/Math.max(1e-6, edge1-edge0))); return t*t*(3-2*t); }
+
+async function listCameras(){
+  try{
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const vids = devices.filter(d=>d.kind==='videoinput');
+    cameraSelect.innerHTML = '<option value="">Default</option>' + vids.map(d=>`<option value="${d.deviceId}">${d.label||'Camera'}</option>`).join('');
+  }catch(e){ /* ignore */ }
+}
+
+function applyMirror(){
+  const t = mirrorBoth.checked ? 'scaleX(-1)' : '';
+  videoTruth.style.transform = t;
+  videoAvatar.style.transform = t;
+  avatarFeed.style.transform = t;
+}
+
+async function startWithDevice(deviceId){
+  // stop prior
+  if (currentStream){ currentStream.getTracks().forEach(t=>t.stop()); currentStream = null; }
+  const base = { width:{ideal:1280}, height:{ideal:720}, facingMode:'user' };
+  const video = deviceId ? { deviceId: { exact: deviceId }, ...base } : base;
+  const stream = await navigator.mediaDevices.getUserMedia({ video, audio:false });
+  currentStream = stream;
+  for (const v of [videoTruth, videoAvatar, hiddenVideo]){
+    v.srcObject = stream; v.muted=true; v.playsInline=true; await v.play().catch(()=>{});
+  }
+  applyMirror();
+  await startProcessingLoop();
+}
+
+async function startProcessingLoop(){
+  if (!fmInstance){
+    fmInstance = new FaceMesh({ locateFile: (f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}` });
+    fmInstance.setOptions({maxNumFaces:1, refineLandmarks:true, minDetectionConfidence:0.5, minTrackingConfidence:0.5});
+    fmInstance.onResults(onResults);
+  }
+  if (!segInstance){
+    segInstance = new SelfieSegmentation({ locateFile: (f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${f}` });
+    segInstance.setOptions({ modelSelection: 1 });
+    segInstance.onResults((r)=>{
+      try{
+        if (!videoTruth.videoWidth) return;
+        ensureSegCanvasSize(videoTruth.videoWidth, videoTruth.videoHeight);
+        // segmentationMask is an ImageFrame; draw it to segCanvas
+        segCtx.drawImage(r.segmentationMask, 0, 0, segCanvas.width, segCanvas.height);
+        segMaskReady = true;
+      }catch(e){ /* ignore */ }
+    });
+  }
+  processing = true;
+  currentScale = parseFloat(procScaleSel.value||'1');
+  cancelAnimationFrame(rafId);
+
+  const loop = async () => {
+    if (!processing) return;
+    rafId = requestAnimationFrame(loop);
+    if (!videoTruth.videoWidth || fmBusy) return;
+    const vw = videoTruth.videoWidth, vh = videoTruth.videoHeight;
+    if (currentScale >= 0.999) {
+      fmBusy = true;
+  try { await fmInstance.send({ image: videoTruth }); } finally { fmBusy = false; }
+  if (!segBusy){ segBusy = true; try { await segInstance.send({ image: videoTruth }); } finally { segBusy=false; } }
+      return;
+    }
+    // downscale path
+    const cw = Math.max(1, Math.round(vw * currentScale));
+    const ch = Math.max(1, Math.round(vh * currentScale));
+    if (procCanvas.width !== cw || procCanvas.height !== ch){ procCanvas.width=cw; procCanvas.height=ch; }
+    procCtx.drawImage(videoTruth, 0, 0, cw, ch);
+    fmBusy = true;
+  try { await fmInstance.send({ image: procCanvas }); } finally { fmBusy = false; }
+  if (!segBusy){ segBusy = true; try { await segInstance.send({ image: procCanvas }); } finally { segBusy=false; } }
+  };
+  loop();
+}
+
 startBtn.onclick = async () => {
-  const stream = await navigator.mediaDevices.getUserMedia({video:true});
-  video.srcObject = stream; await video.play();
-  const fm = new FaceMesh({locateFile: (f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`});
-  fm.setOptions({maxNumFaces:1, refineLandmarks:true, minDetectionConfidence:0.5, minTrackingConfidence:0.5});
-  fm.onResults(onResults);
-  const camera = new Camera(video, {onFrame: async ()=>{await fm.send({image: video});}, width:640, height:480});
-  camera.start();
+  try{
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+      await listCameras();
+      await startWithDevice(cameraSelect.value||undefined);
+    } else {
+      alert('MediaDevices API not available in this browser');
+    }
+  }catch(err){
+    console.error('Failed to start camera', err);
+    alert('Unable to access camera. Please allow camera permissions and ensure you are on HTTPS.');
+  }
 };
 
+cameraSelect.addEventListener('change', async ()=>{
+  if (!currentStream) return; // not started yet
+  try { await startWithDevice(cameraSelect.value||undefined); } catch(e){ console.error(e); }
+});
+
+mirrorBoth.addEventListener('change', applyMirror);
+
+procScaleSel.addEventListener('change', ()=>{
+  if (!processing) return;
+  currentScale = parseFloat(procScaleSel.value||'1');
+});
+
+lambdaSlider.addEventListener('input', ()=>{
+  // values are read dynamically by rig mapping and drawing functions
+});
+
 function onResults(res){
-  const coeffs = landmarksToCoeffs(res.multiFaceLandmarks);
-  applyCoeffsToRig(truthRig, coeffs);
-  applyCoeffsToRig(avatarRig, coeffs);
+  lastLandmarks = res.multiFaceLandmarks;
+  const coeffs = landmarksToCoeffs(lastLandmarks);
+  // Pose from landmarks
+  const pose = estimateHeadPose(lastLandmarks);
+  applyCoeffsToRig(truthRig, coeffs, pose);
+  applyCoeffsToRig(avatarRig, coeffs, pose);
   // Simple energy readout (not identity similarity)
   const v = Object.values(coeffs);
   const energy = Math.sqrt(v.reduce((s,x)=>s+x*x,0)).toFixed(3);
   document.getElementById('similarity').textContent = `Drive energy: ${energy}`;
+  lastCoeffs = coeffs;
 }
 
-function applyCoeffsToRig(root, coeffs){
+function applyCoeffsToRig(root, coeffs, pose){
   if(!root) return;
   // If morph targets present: traverse meshes and set morphTargetInfluences by name
   root.traverse((obj)=>{
     if(obj.isMesh && obj.morphTargetDictionary && obj.morphTargetInfluences){
+      const λ = parseFloat(lambdaSlider.value||'0.6');
       for(const ch of channels){
         const idx = obj.morphTargetDictionary[ch];
-        if(idx !== undefined){ obj.morphTargetInfluences[idx] = coeffs[ch] || 0; }
+        if(idx !== undefined){ obj.morphTargetInfluences[idx] = (coeffs[ch] || 0) * (1 + 0.5*λ); }
       }
     }
   });
+  // Bone fallback: apply to common facial bones
+  try{
+    const map = RETARGET.get(root);
+    if (map && map.bones){
+      const λ = parseFloat(lambdaSlider.value||'0.6');
+      const jaw = Math.min(1, Math.max(0, coeffs.jawOpen||0));
+      const blinkL = Math.min(1, Math.max(0, coeffs.eyeBlinkLeft||0));
+      const blinkR = Math.min(1, Math.max(0, coeffs.eyeBlinkRight||0));
+      const smileL = Math.min(1, Math.max(0, coeffs.mouthSmile_L||0));
+      const smileR = Math.min(1, Math.max(0, coeffs.mouthSmile_R||0));
+      const browUp = Math.min(1, Math.max(0, coeffs.browInnerUp||0));
+      // Restore rest before applying deltas
+      const rest = map.rest;
+      function restore(b){ if(!b||!rest) return; const r=rest.get(b); if(!r) return; b.position.copy(r.pos); b.rotation.copy(r.rot); }
+      for (const key of ['jaw','head','eyeL','eyeR','browL','browR']) restore(map.bones[key]);
+      // Apply jaw open (rotate X negative)
+      if (map.bones.jaw){ map.bones.jaw.rotation.x += -jaw * (0.9 + 0.4*λ); }
+      // Blinks: rotate eyelids or eyes about X
+      if (map.bones.eyeL){ map.bones.eyeL.rotation.x += blinkL * (0.35 + 0.25*λ); }
+      if (map.bones.eyeR){ map.bones.eyeR.rotation.x += blinkR * (0.35 + 0.25*λ); }
+      // Brows: translate up slightly
+      if (map.bones.browL){ map.bones.browL.position.y += browUp * (0.005 + 0.008*λ); }
+      if (map.bones.browR){ map.bones.browR.position.y += browUp * (0.005 + 0.008*λ); }
+      // Smiles: widen mouth by moving jaw or mouth corners if bones exist
+      // Heuristic: small jaw z forward on smile
+      if (map.bones.jaw){ map.bones.jaw.position.z += (smileL+smileR)*0.002; }
+      // Head pose
+      if (pose){ setRigHeadPose(root, pose, map.bones.head); }
+    } else {
+      // No bones known: still try to set whole-rig pose
+      if (pose){ setRigHeadPose(root, pose, null); }
+    }
+  }catch(e){ /* ignore */ }
 }
+
+function discoverBones(root){
+  const bones = { jaw:null, head:null, eyeL:null, eyeR:null, browL:null, browR:null };
+  const rest = new Map();
+  root.traverse((obj)=>{
+    if (!obj.isBone) return;
+    const name = (obj.name||'').toLowerCase();
+    // cache rest pose
+    if (!rest.has(obj)) rest.set(obj, { pos: obj.position.clone(), rot: obj.rotation.clone() });
+    const isLeft = /(^|[_\- ])l(\b|$)|left/.test(name);
+    const isRight = /(^|[_\- ])r(\b|$)|right/.test(name);
+    if (!bones.jaw && (name.includes('jaw') || name.includes('mandible'))) bones.jaw = obj;
+    if (!bones.head && (name==='head' || name.includes('head'))) bones.head = obj;
+    if (!bones.eyeL && (name.includes('eye') || name.includes('lid')) && isLeft) bones.eyeL = obj;
+    if (!bones.eyeR && (name.includes('eye') || name.includes('lid')) && isRight) bones.eyeR = obj;
+    if (!bones.browL && (name.includes('brow') || name.includes('eyebrow')) && isLeft) bones.browL = obj;
+    if (!bones.browR && (name.includes('brow') || name.includes('eyebrow')) && isRight) bones.browR = obj;
+  });
+  RETARGET.set(root, { bones, rest });
+}
+
+function updateRigStatus(){
+  try{
+    const el = document.getElementById('rig-status'); if (!el) return;
+    let parts = [];
+    function scan(root){
+      let morphs = new Set();
+      root.traverse((obj)=>{ if(obj.isMesh && obj.morphTargetDictionary){ Object.keys(obj.morphTargetDictionary).forEach(k=>morphs.add(k)); } });
+      const map = RETARGET.get(root); const bones = map && map.bones ? map.bones : {};
+      const have = Object.entries(bones).filter(([k,v])=>!!v).map(([k])=>k).join(',') || 'none';
+      return `morphs: ${morphs.size} | bones: ${have}`;
+    }
+    const a = avatarRig? scan(avatarRig) : 'no avatar';
+    el.textContent = `Avatar ${a}`;
+  }catch{}
+}
+
+function estimateHeadPose(multi){
+  try{
+    if (!multi || !multi[0]) return null;
+    const lm = multi[0];
+    // roll: slope between eye outer corners 33 (left outer) and 263 (right outer)
+    const l = lm[33], r = lm[263];
+    const roll = Math.atan2((r.y - l.y), (r.x - l.x));
+    // yaw: nose tip 1 vs midpoint of 234-454 (face sides)
+    const nose = lm[1]; const ll = lm[234]; const rr = lm[454];
+    const midx = (ll.x + rr.x)/2; const dx = (nose.x - midx);
+    const yaw = -dx * 2.2; // scale factor
+    // pitch: distance between eye center and mouth center
+    const eyeC = { x:(lm[159].x+lm[386].x)/2, y:(lm[159].y+lm[386].y)/2 };
+    const mouthC = { x:(lm[13].x+lm[14].x)/2, y:(lm[13].y+lm[14].y)/2 };
+    const dy = (mouthC.y - eyeC.y);
+    const pitch = (dy - 0.12) * 3.0; // subtract neutral, scale
+    return { yaw, pitch, roll };
+  }catch{ return null; }
+}
+
+function setRigHeadPose(root, pose, headBone){
+  const λ = parseFloat(lambdaSlider.value||'0.6');
+  const k = 0.6 + 0.5*λ; // responsiveness
+  const rx = THREE.MathUtils.clamp(pose.pitch * k, -0.6, 0.6);
+  const ry = THREE.MathUtils.clamp(pose.yaw * k, -0.8, 0.8);
+  const rz = THREE.MathUtils.clamp(pose.roll * k, -0.5, 0.5);
+  if (headBone && headBone.isBone){ headBone.rotation.set(rx, ry, rz); }
+  else { root.rotation.set(rx, ry, rz); }
+}
+
+// ==== Filters (applied to avatar feed) ====
+function setFeedVisibility(){
+  const preset = presetSel.value;
+  const active = applyFilterChk.checked && preset !== 'none';
+  // toggle elements
+  avatarFeed.style.display = active ? 'block' : 'none';
+  videoAvatar.style.display = active ? 'none' : 'block';
+  // controls visibility
+  for (const id of ['controls-toon','controls-appearance','controls-mask','controls-puppet']){
+    document.getElementById(id).classList.add('hidden');
+  }
+  if (!active) return;
+  if (preset === 'toon') document.getElementById('controls-toon').classList.remove('hidden');
+  if (preset === 'appearance') document.getElementById('controls-appearance').classList.remove('hidden');
+  if (preset === 'mask') document.getElementById('controls-mask').classList.remove('hidden');
+  if (preset === 'puppet') document.getElementById('controls-puppet').classList.remove('hidden');
+}
+
+
+function ensureFeedCanvasSize(){
+  const w = avatarOverlay.clientWidth || videoAvatar.clientWidth;
+  const h = avatarOverlay.clientHeight || videoAvatar.clientHeight;
+  if (avatarFeed.width !== w || avatarFeed.height !== h){
+    avatarFeed.width = w; avatarFeed.height = h;
+  }
+}
+
+function drawGeneratedBackground(w,h){
+  // simple gradient pattern
+  const g = feedCtx.createLinearGradient(0,0,w,h);
+  g.addColorStop(0, `hsl(${Math.floor(Math.random()*360)},60%,20%)`);
+  g.addColorStop(1, `hsl(${Math.floor(Math.random()*360)},60%,10%)`);
+  feedCtx.fillStyle = g; feedCtx.fillRect(0,0,w,h);
+  // overlay dots
+  feedCtx.globalAlpha=0.15;
+  for(let i=0;i<80;i++){
+    feedCtx.fillStyle = `hsl(${Math.floor(Math.random()*360)},70%,50%)`;
+    const r = Math.random()*8+2; feedCtx.beginPath(); feedCtx.arc(Math.random()*w, Math.random()*h, r, 0, Math.PI*2); feedCtx.fill();
+  }
+  feedCtx.globalAlpha=1.0;
+}
+
+function drawBackground(w,h){
+  const mode = bgModeSel.value;
+  if (mode==='none'){ feedCtx.drawImage(videoTruth, 0, 0, w, h); return; }
+  if (mode==='random'){
+    feedCtx.fillStyle = `hsl(${Math.floor(Math.random()*360)},45%,18%)`;
+    feedCtx.fillRect(0,0,w,h);
+    return;
+  }
+  if (mode==='image' && bgImage){
+    // cover
+    const ir = bgImage.width/bgImage.height; const cr=w/h;
+    let dw=w, dh=h, dx=0, dy=0;
+    if (ir>cr){ dh=h; dw=ir*dh; dx=(w-dw)/2; } else { dw=w; dh=dw/ir; dy=(h-dh)/2; }
+    feedCtx.drawImage(bgImage, dx,dy,dw,dh);
+    return;
+  }
+  if (mode==='generated'){
+    drawGeneratedBackground(w,h);
+    return;
+  }
+  if (mode==='blur'){
+    // draw blurred original as background
+    feedCtx.save(); feedCtx.filter='blur(8px)';
+    feedCtx.drawImage(videoTruth,0,0,w,h);
+    feedCtx.restore();
+    return;
+  }
+  // fallback original
+  feedCtx.drawImage(videoTruth, 0, 0, w, h);
+}
+
+function compositePersonOverBackground(w,h){
+  const λ = parseFloat(lambdaSlider.value||'0.6');
+  // draw chosen background
+  drawBackground(w,h);
+  if (!segMaskReady){ return; }
+  const thr = 0.35 + 0.45*λ; // threshold
+  const feather = 0.08 + 0.15*λ; // feather width in normalized mask units
+  // prepare a person canvas
+  const personCanvas = document.createElement('canvas'); personCanvas.width=w; personCanvas.height=h; const pctx=personCanvas.getContext('2d');
+  pctx.drawImage(videoTruth,0,0,w,h);
+  // build a processed mask with soft edges and threshold mapping
+  let maskCanvas = document.createElement('canvas'); maskCanvas.width=w; maskCanvas.height=h; const mctx=maskCanvas.getContext('2d');
+  // draw seg mask into maskCanvas scaled
+  mctx.drawImage(segCanvas,0,0,w,h);
+  // blur the mask to feather edges
+  mctx.filter = `blur(${Math.round(6 + 10*λ)}px)`;
+  mctx.drawImage(maskCanvas,0,0); // self-blur trick
+  mctx.filter = 'none';
+  const md = mctx.getImageData(0,0,w,h);
+  const d = md.data;
+  for(let i=0;i<d.length;i+=4){
+    const v = d[i]/255; // grayscale
+    const a = smoothstep(thr - feather, thr + feather, v);
+    d[i+3] = Math.round(255 * a); // alpha
+    d[i]=d[i+1]=d[i+2]=255; // white matte
+  }
+  mctx.putImageData(md,0,0);
+  // composite: keep person where mask alpha>0 with soft edges
+  pctx.globalCompositeOperation = 'destination-in';
+  pctx.drawImage(maskCanvas,0,0,w,h);
+  pctx.globalCompositeOperation = 'source-over';
+  feedCtx.drawImage(personCanvas,0,0);
+}
+
+// Toon avatar: landmark-driven 2D drawing that anonymizes identity but mirrors actions
+function drawToonAvatar(){
+  ensureFeedCanvasSize();
+  const w = avatarFeed.width, h = avatarFeed.height;
+  const λ = parseFloat(lambdaSlider.value||'0.6');
+  const sizeK = parseFloat(document.getElementById('toon-intensity').value||'1.0');
+  // Background: replace based on λ (cut subject out)
+  compositePersonOverBackground(w,h);
+  // optional dim by λ
+  feedCtx.fillStyle = `rgba(0,0,0,${0.15*λ})`;
+  feedCtx.fillRect(0,0,w,h);
+  if (!lastLandmarks || !lastLandmarks[0]) return;
+  const lm = lastLandmarks[0];
+  if (toonUseModel() && toonModel){
+    drawToonModel(lm, w, h, λ);
+    return;
+  }
+  // Compute key points
+  const p = idx => ({x: lm[idx].x*w, y: lm[idx].y*h});
+  const nose = p(1), leftEye=p(159), rightEye=p(386), mouthT=p(13), mouthB=p(14);
+  const eyeSep = Math.hypot(leftEye.x-rightEye.x,leftEye.y-rightEye.y);
+  // Head (oval)
+  feedCtx.strokeStyle = '#ffd36b';
+  feedCtx.fillStyle = '#f6c177';
+  feedCtx.lineWidth = Math.max(2, eyeSep*0.06*sizeK);
+  feedCtx.beginPath();
+  for (let i=0;i<FACE_OVAL_IDX.length;i++){
+    const q = p(FACE_OVAL_IDX[i]); if (i===0) feedCtx.moveTo(q.x,q.y); else feedCtx.lineTo(q.x,q.y);
+  }
+  feedCtx.closePath(); feedCtx.globalAlpha = 0.9; feedCtx.fill(); feedCtx.globalAlpha = 1.0; feedCtx.stroke();
+  // Eyes
+  const eyeR = Math.max(2, eyeSep*0.18*sizeK);
+  feedCtx.fillStyle = '#2e3440';
+  feedCtx.beginPath(); feedCtx.arc(leftEye.x, leftEye.y, eyeR, 0, Math.PI*2); feedCtx.arc(rightEye.x, rightEye.y, eyeR, 0, Math.PI*2); feedCtx.fill();
+  // Pupils tied to jawOpen for fun
+  const jaw = lastCoeffs.jawOpen||0; const pupR = Math.max(2, eyeR*0.35*(1-0.5*jaw)); feedCtx.fillStyle='#000';
+  feedCtx.beginPath(); feedCtx.arc(leftEye.x, leftEye.y+eyeR*0.1, pupR, 0, Math.PI*2); feedCtx.arc(rightEye.x, rightEye.y+eyeR*0.1, pupR, 0, Math.PI*2); feedCtx.fill();
+  // Mouth
+  const mouthW = eyeSep * (0.9 + 0.6*(lastCoeffs.mouthSmile_L+lastCoeffs.mouthSmile_R));
+  const mouthH = Math.max(3, (mouthB.y-mouthT.y) * h * (0.8 + 1.2*jaw));
+  feedCtx.strokeStyle = '#2e3440'; feedCtx.lineWidth = Math.max(2, eyeSep*0.08*sizeK);
+  feedCtx.beginPath(); feedCtx.moveTo(nose.x - mouthW/2, mouthT.y);
+  feedCtx.quadraticCurveTo(nose.x, mouthT.y + mouthH, nose.x + mouthW/2, mouthT.y);
+  feedCtx.stroke();
+}
+
+function getFaceBox(lm, w, h, pad=0.25){
+  let minX=1e9,minY=1e9,maxX=-1e9,maxY=-1e9;
+  for (const i of FACE_OVAL_IDX){
+    const x = lm[i].x*w, y = lm[i].y*h; if (x<minX)minX=x; if (y<minY)minY=y; if (x>maxX)maxX=x; if (y>maxY)maxY=y;
+  }
+  const cx=(minX+maxX)/2, cy=(minY+maxY)/2; const bw=(maxX-minX), bh=(maxY-minY); const s=Math.max(bw,bh)*(1+pad);
+  const x=cx-s/2, y=cy-s/2; return {x:Math.max(0,x), y:Math.max(0,y), s:Math.min(s, Math.min(w,h))};
+}
+
+async function drawToonModel(lm, w, h, λ){
+  if (toonBusy || !toonModel) return;
+  const box = getFaceBox(lm,w,h,0.35);
+  const size = parseInt(toonModelSizeEl().value,10)||256;
+  // crop face to square offscreen
+  if (procCanvas.width!==size || procCanvas.height!==size){ procCanvas.width=size; procCanvas.height=size; }
+  // source crop
+  const sx=box.x, sy=box.y, sw=box.s, sh=box.s;
+  const morph = parseFloat(document.getElementById('mask-morph').value||'0.6');
+  try{
+    toonBusy = true;
+    // draw crop to input size
+    procCtx.drawImage(videoTruth, sx, sy, sw, sh, 0, 0, size, size);
+    const norm = toonNormEl().checked;
+    // create tensors
+    let img = tf.browser.fromPixels(procCanvas).toFloat();
+    img = norm ? img.div(127.5).sub(1.0) : img.div(255);
+    let out;
+    try{
+      out = toonModel.execute ? toonModel.execute(img.expandDims(0)) : null;
+    }catch(e){
+      out = null;
+    }
+    if (!out && toonModel.executeAsync) {
+      out = await toonModel.executeAsync(img.expandDims(0));
+    }
+    if (Array.isArray(out)) out = out[0];
+    if (out instanceof Object && out.dataSync === undefined){
+      // map/dict output: take first value
+      const firstKey = Object.keys(out)[0];
+      out = out[firstKey];
+    }
+    out = norm ? out.add(1).mul(127.5) : out.mul(255);
+    out = out.clipByValue(0,255).squeeze();
+    const outCanvas = document.createElement('canvas'); outCanvas.width=size; outCanvas.height=size;
+    await tf.browser.toPixels(out.toInt(), outCanvas);
+    tf.dispose([img, out]);
+    // blend back into frame guided by λ and morph
+    const alpha = Math.min(1, Math.max(0.4, 0.65*λ + 0.2*morph));
+    feedCtx.save();
+    // clip to face oval path
+    feedCtx.beginPath();
+    for (let i=0;i<FACE_OVAL_IDX.length;i++){
+      const p = lm[FACE_OVAL_IDX[i]]; const x = p.x*w, y = p.y*h; if (i===0) feedCtx.moveTo(x,y); else feedCtx.lineTo(x,y);
+    }
+    feedCtx.closePath(); feedCtx.clip();
+    feedCtx.globalAlpha = alpha;
+    feedCtx.drawImage(outCanvas, 0, 0, size, size, sx, sy, sw, sh);
+    feedCtx.restore();
+  }catch(e){ console.error('Toon model error', e); }
+  finally{ toonBusy = false; }
+}
+
+function rgbToHsl(r,g,b){
+  r/=255;g/=255;b/=255;const max=Math.max(r,g,b),min=Math.min(r,g,b);let h,s,l=(max+min)/2; if(max===min){h=s=0;}else{const d=max-min;s=l>0.5?d/(2-max-min):d/(max+min);switch(max){case r:h=(g-b)/d+(g<b?6:0);break;case g:h=(b-r)/d+2;break;case b:h=(r-g)/d+4;break;}h/=6;} return [h,s,l];}
+function hslToRgb(h,s,l){let r,g,b;if(s===0){r=g=b=l;}else{const hue2rgb=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};const q=l<0.5?l*(1+s):l+s-l*s;const p=2*l-q;r=hue2rgb(p,q,h+1/3);g=hue2rgb(p,q,h);b=hue2rgb(p,q,h-1/3);}return [Math.round(r*255),Math.round(g*255),Math.round(b*255)];}
+function drawAppearance(){
+  const baseDeg = parseInt(document.getElementById('appearance-hue-deg').value,10) || 40;
+  const skinOnly = document.getElementById('appearance-skin-only').checked;
+  const λ = parseFloat(lambdaSlider.value||'0.6');
+  const deg = Math.round(baseDeg * (0.5 + 0.8*λ));
+  ensureFeedCanvasSize();
+  const w = avatarFeed.width, h = avatarFeed.height;
+  // 1) background + person
+  compositePersonOverBackground(w,h);
+  // 2) headshape warp in place
+  if (lastLandmarks && lastLandmarks[0]){
+    const lm = lastLandmarks[0];
+    // source snapshot
+    if (procCanvas.width!==w || procCanvas.height!==h){ procCanvas.width=w; procCanvas.height=h; }
+    procCtx.drawImage(videoTruth, 0, 0, w, h);
+    // Clip to face oval
+    feedCtx.save();
+    feedCtx.beginPath();
+    for (let i=0;i<FACE_OVAL_IDX.length;i++){
+      const p = lm[FACE_OVAL_IDX[i]]; const x = p.x*w, y=p.y*h; if (i===0) feedCtx.moveTo(x,y); else feedCtx.lineTo(x,y);
+    }
+    feedCtx.closePath(); feedCtx.clip();
+    // clear then draw warped samples
+    feedCtx.clearRect(0,0,w,h);
+    const sx = parseFloat(document.getElementById('head-w').value||'1');
+    const sy = parseFloat(document.getElementById('head-h').value||'1');
+    const noseWarp = parseFloat(document.getElementById('nose-w')?.value||'1.0');
+    const mouthWarp = parseFloat(document.getElementById('mouth-w')?.value||'1.0');
+    const nose = {x: lm[1].x*w, y: lm[1].y*h};
+    const mouth = {x: lm[13].x*w, y: lm[13].y*h};
+    const step = Math.max(2, Math.floor(Math.min(w,h)/140));
+    for (let y=0;y<h;y+=step){
+      for (let x=0;x<w;x+=step){
+        const dxn = x - nose.x, dyn = y - nose.y;
+        const dxm = x - mouth.x, dym = y - mouth.y;
+        let rx = nose.x + dxn * sx;
+        let ry = nose.y + dyn * sy;
+        const nd = Math.hypot(dxn, dyn); const nfall = Math.max(0, 1 - nd/120);
+        rx = nose.x + (rx - nose.x) * (1 + (noseWarp-1)*nfall);
+        ry = nose.y + (ry - nose.y) * (1 + (noseWarp-1)*nfall);
+        const md = Math.hypot(dxm, dym); const mfall = Math.max(0, 1 - md/130);
+        rx = mouth.x + (rx - mouth.x) * (1 + (mouthWarp-1)*mfall);
+        ry = mouth.y + (ry - mouth.y) * (1 + (mouthWarp-1)*mfall);
+        feedCtx.drawImage(procCanvas, x, y, step, step, rx, ry, step, step);
+      }
+    }
+    // freckles
+    if (document.getElementById('freckles')?.checked){
+      feedCtx.globalAlpha = 0.25;
+      for(let i=0;i<120;i++){
+        const px = (lm[1].x*w) + (Math.random()-0.5)*220;
+        const py = (lm[1].y*h) + (Math.random()-0.2)*180;
+        const r = Math.random()*1.8+0.4; feedCtx.fillStyle = 'rgba(90,60,50,0.9)'; feedCtx.beginPath(); feedCtx.arc(px,py,r,0,Math.PI*2); feedCtx.fill();
+      }
+      feedCtx.globalAlpha = 1.0;
+    }
+    feedCtx.restore();
+  }
+  // 3) skin-only hue shift on result
+  if (skinOnly){
+    const img = feedCtx.getImageData(0,0,w,h);
+    const data = img.data; const shift = ((deg%360)+360)%360 / 360;
+    const skinMask = new Uint8Array(w*h);
+    if (lastLandmarks && lastLandmarks[0]){
+      const poly = FACE_OVAL_IDX.map(i=>({x:lastLandmarks[0][i].x*w, y:lastLandmarks[0][i].y*h}));
+      function inside(x,y){ let c=false; for(let i=0,j=poly.length-1;i<poly.length;j=i++){ const xi=poly[i].x, yi=poly[i].y, xj=poly[j].x, yj=poly[j].y; const intersect=((yi>y)!==(yj>y)) && (x < (xj-xi)*(y-yi)/(yj-yi+1e-6)+xi); if(intersect) c=!c; } return c; }
+      for(let y=0;y<h;y++){
+        for(let x=0;x<w;x++){
+          if (!inside(x,y)) continue;
+          const idx=(y*w+x)*4; const r=data[idx], g=data[idx+1], b=data[idx+2];
+          const max=Math.max(r,g,b), min=Math.min(r,g,b); const v=max/255; const s = max===0?0:(max-min)/max; let hdeg=0; const rr=r/255, gg=g/255, bb=b/255;
+          const mx=Math.max(rr,gg,bb), mn=Math.min(rr,gg,bb), d=mx-mn;
+          if (d===0) hdeg=0; else if (mx===rr) hdeg=60*(((gg-bb)/d)%6); else if (mx===gg) hdeg=60*(((bb-rr)/d)+2); else hdeg=60*(((rr-gg)/d)+4);
+          if (hdeg<0) hdeg+=360;
+          const skin = (hdeg>=0 && hdeg<=50) && (s>0.23) && (v>0.35);
+          skinMask[y*w+x] = skin?1:0;
+        }
+      }
+    }
+    let mdata = null; if (segMaskReady){ const mctx=document.createElement('canvas').getContext('2d'); const c=document.createElement('canvas'); c.width=w; c.height=h; const cz=c.getContext('2d'); cz.drawImage(segCanvas,0,0,w,h); mdata = cz.getImageData(0,0,w,h).data; }
+    for(let i=0;i<data.length;i+=4){ const pix=i/4; if (skinMask[pix]!==1) continue; const r0=data[i], g0=data[i+1], b0=data[i+2]; let [hh,ss,ll]=rgbToHsl(r0,g0,b0); hh=(hh+shift)%1; const [rr,gg,bb]=hslToRgb(hh,ss,ll); let wgt=1.0; if(mdata){ const v=mdata[i]/255; wgt=smoothstep(0.3,0.65,v); } data[i]=Math.round(r0*(1-wgt)+rr*wgt); data[i+1]=Math.round(g0*(1-wgt)+gg*wgt); data[i+2]=Math.round(b0*(1-wgt)+bb*wgt); }
+    feedCtx.putImageData(img,0,0);
+  }
+}
+
+// Puppet rendering
+let puppetImg = null; let puppetUrl = null; let puppetMasked = null; let puppetMaskReady = false;
+let puppetMaskImg = null;
+let puppetLmPx = null; // [{x,y} in puppet image pixels]
+let TRI_IDX = null; let TRI_READY = false; let TRI_LOADING = null;
+async function loadTriangulation(){
+  if (TRI_READY || TRI_LOADING) return TRI_LOADING;
+  TRI_LOADING = (async()=>{
+    const candidates = ['/static/face_mesh_tris.json','https://unpkg.com/face-geometry/triangulation.json'];
+    for (const url of candidates){
+      try{
+        const r = await fetch(url); if(!r.ok) continue; const j = await r.json();
+        // Accept common keys: direct array, 'tris', 'triangles', 'triangulation', 'TRIANGULATION'
+        let arr = null;
+        if (Array.isArray(j)) arr = j;
+        else if (Array.isArray(j.tris)) arr = j.tris;
+        else if (Array.isArray(j.triangles)) arr = j.triangles;
+        else if (Array.isArray(j.triangulation)) arr = j.triangulation;
+        else if (Array.isArray(j.TRIANGULATION)) arr = j.TRIANGULATION;
+        if(arr && arr.length){ TRI_IDX = arr; TRI_READY = true; return true; }
+      }catch{}
+    }
+    TRI_READY=false; return false;
+  })();
+  return TRI_LOADING;
+}
+function affineFromTriangles(src, dst){
+  const [x0,y0]=src[0], [x1,y1]=src[1], [x2,y2]=src[2];
+  const [u0,v0]=dst[0], [u1,v1]=dst[1], [u2,v2]=dst[2];
+  const den = x0*(y1-y2)+x1*(y2-y0)+x2*(y0-y1);
+  if (Math.abs(den) < 1e-6) return null;
+  const a = (u0*(y1-y2)+u1*(y2-y0)+u2*(y0-y1))/den;
+  const b = (v0*(y1-y2)+v1*(y2-y0)+v2*(y0-y1))/den;
+  const c = (u0*(x2-x1)+u1*(x0-x2)+u2*(x1-x0))/den;
+  const d = (v0*(x2-x1)+v1*(x0-x2)+v2*(x1-x0))/den;
+  const e = (u0*(x1*y2-x2*y1)+u1*(x2*y0-x0*y2)+u2*(x0*y1-x1*y0))/den;
+  const f = (v0*(x1*y2-x2*y1)+v1*(x2*y0-x0*y2)+v2*(x0*y1-x1*y0))/den;
+  return [a,b,c,d,e,f];
+}
+async function buildPuppetMask(img){
+  // Draw puppet image to temp canvas
+  const cw = img.naturalWidth || img.width; const ch = img.naturalHeight || img.height;
+  const tmp = document.createElement('canvas'); tmp.width=cw; tmp.height=ch; const tctx = tmp.getContext('2d');
+  tctx.drawImage(img,0,0,cw,ch);
+  // Use a dedicated FaceMesh to avoid contention
+  const FM = window.FaceMesh || window.faceMesh || window.FaceMesh; // depending on bundle
+  let fm = null; try { fm = new FaceMesh({ locateFile: (f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}` }); fm.setOptions({ maxNumFaces:1, refineLandmarks:false }); } catch {}
+  if (!fm) { puppetMasked=null; puppetMaskReady=false; return; }
+  const resP = new Promise((resolve)=>{
+    fm.onResults((r)=>{ resolve(r && r.multiFaceLandmarks && r.multiFaceLandmarks[0] ? r.multiFaceLandmarks[0] : null); });
+  });
+  try { await fm.send({ image: tmp }); } catch {}
+  const marks = await resP;
+  if (!marks) { puppetMasked=null; puppetMaskReady=false; return; }
+  puppetLmPx = marks.map(p=>({x:p.x*cw, y:p.y*ch}));
+  // Build masked canvas
+  const maskC = document.createElement('canvas'); maskC.width=cw; maskC.height=ch; const mctx = maskC.getContext('2d');
+  mctx.save(); mctx.beginPath();
+  for (let i=0;i<FACE_OVAL_IDX.length;i++){
+    const p = marks[FACE_OVAL_IDX[i]]; const x=p.x*cw, y=p.y*ch; if (i===0) mctx.moveTo(x,y); else mctx.lineTo(x,y);
+  }
+  mctx.closePath(); mctx.clip();
+  mctx.drawImage(img,0,0,cw,ch);
+  mctx.restore();
+  puppetMasked = maskC; puppetMaskReady = true;
+  await loadTriangulation().catch(()=>{});
+}
+function drawPuppet(){
+  ensureFeedCanvasSize();
+  const w = avatarFeed.width, h = avatarFeed.height;
+  compositePersonOverBackground(w,h);
+  if (!puppetImg || !lastLandmarks || !lastLandmarks[0]) return;
+  const lm = lastLandmarks[0];
+  const alpha = parseFloat(document.getElementById('puppet-alpha').value||'0.9');
+  const scalePct = parseInt(document.getElementById('puppet-scale').value,10) || 110;
+  // dynamic alpha (blend by motion)
+  const dynEnabled = document.getElementById('puppet-dyn-blend')?.checked;
+  let dynAlpha = alpha;
+  if (dynEnabled) {
+    const minA = parseFloat(document.getElementById('puppet-alpha-min').value||'0.6');
+    const maxA = parseFloat(document.getElementById('puppet-alpha-max').value||'0.95');
+    const jaw = Math.max(0, Math.min(1, (lastCoeffs && typeof lastCoeffs.jawOpen==='number') ? lastCoeffs.jawOpen : 0));
+    dynAlpha = Math.max(0.0, Math.min(1.0, minA + (maxA - minA) * (1 - jaw)));
+  }
+  // prepare optional alpha mask canvas based on uploaded image
+  function buildMaskCanvas(){
+    if (!puppetMaskImg) return null;
+    const xs = FACE_OVAL_IDX.map(i=>lm[i].x*w), ys = FACE_OVAL_IDX.map(i=>lm[i].y*h);
+    const minx=Math.min(...xs), maxx=Math.max(...xs), miny=Math.min(...ys), maxy=Math.max(...ys);
+    const bw = (maxx - minx), bh = (maxy - miny);
+    const mcan = document.createElement('canvas'); mcan.width=w; mcan.height=h; const mctx = mcan.getContext('2d');
+    // draw grayscale mask scaled to face box
+    mctx.drawImage(puppetMaskImg, 0,0, puppetMaskImg.width, puppetMaskImg.height, minx, miny, bw, bh);
+    // convert RGB to alpha based on luminance; optional invert
+    const invert = !!document.getElementById('puppet-mask-invert')?.checked;
+    const id = mctx.getImageData(0,0,w,h); const d=id.data;
+    for(let i=0;i<d.length;i+=4){ const lum = (0.2126*d[i] + 0.7152*d[i+1] + 0.0722*d[i+2]); const a = invert ? (255 - lum) : lum; d[i]=255; d[i+1]=255; d[i+2]=255; d[i+3]=a; }
+    mctx.putImageData(id,0,0);
+    // feather edges
+    const feather = parseInt(document.getElementById('puppet-feather').value,10)||0;
+    if (feather>0){ mctx.filter = `blur(${feather}px)`; mctx.drawImage(mcan,0,0); mctx.filter='none'; }
+    return mcan;
+  }
+  const maskCanvas = buildMaskCanvas();
+  // If triangulation and puppet landmarks ready, do triangle warp
+  if (TRI_READY && puppetLmPx && puppetLmPx.length>=468){
+    const scaleK = (scalePct/100);
+    // Build destination landmarks in pixels (with overall scale about face size)
+    const xs = FACE_OVAL_IDX.map(i=>lm[i].x*w), ys = FACE_OVAL_IDX.map(i=>lm[i].y*h);
+    const minx=Math.min(...xs), maxx=Math.max(...xs), miny=Math.min(...ys), maxy=Math.max(...ys);
+    const faceS = Math.max(maxx-minx, maxy-miny);
+    const dstPts = new Array(468);
+    for (let i=0;i<468;i++){ dstPts[i] = [lm[i].x*w, lm[i].y*h]; }
+    // Optionally scale about face center
+    const cx=(minx+maxx)/2, cy=(miny+maxy)/2;
+    if (Math.abs(scaleK-1) > 1e-3){ for(let i=0;i<468;i++){ const dx=dstPts[i][0]-cx, dy=dstPts[i][1]-cy; dstPts[i][0]=cx+dx*scaleK; dstPts[i][1]=cy+dy*scaleK; } }
+    // Draw each triangle to an offscreen canvas to allow mask compositing
+    const pcan = document.createElement('canvas'); pcan.width=w; pcan.height=h; const pctx = pcan.getContext('2d');
+    const Nsrc = puppetLmPx.length;
+    for (let t=0;t<TRI_IDX.length; t+=3){
+      const i0=TRI_IDX[t], i1=TRI_IDX[t+1], i2=TRI_IDX[t+2];
+      if (i0>=Nsrc || i1>=Nsrc || i2>=Nsrc) continue;
+      const s0=[puppetLmPx[i0].x, puppetLmPx[i0].y], s1=[puppetLmPx[i1].x, puppetLmPx[i1].y], s2=[puppetLmPx[i2].x, puppetLmPx[i2].y];
+      const d0=dstPts[i0], d1=dstPts[i1], d2=dstPts[i2];
+      const m = affineFromTriangles([s0,s1,s2],[d0,d1,d2]); if (!m) continue;
+      pctx.save();
+      pctx.beginPath(); pctx.moveTo(d0[0],d0[1]); pctx.lineTo(d1[0],d1[1]); pctx.lineTo(d2[0],d2[1]); pctx.closePath(); pctx.clip();
+      pctx.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]);
+      pctx.drawImage(puppetImg, 0, 0);
+      pctx.restore();
+    }
+    // Light seam fill to cover tiny gaps between triangles
+    try{ pctx.globalCompositeOperation='destination-over'; pctx.filter='blur(0.6px)'; pctx.drawImage(pcan,0,0); pctx.filter='none'; pctx.globalCompositeOperation='source-over'; }catch{}
+    // apply alpha mask in offscreen if provided
+    if (maskCanvas){ pctx.globalCompositeOperation='destination-in'; pctx.drawImage(maskCanvas,0,0); pctx.globalCompositeOperation='source-over'; }
+    // composite to feed with dynamic alpha
+    feedCtx.save(); feedCtx.globalAlpha = Math.max(0.3, Math.min(1, dynAlpha)); feedCtx.drawImage(pcan,0,0); feedCtx.restore();
+    return;
+  }
+  // Fallback: simple face-aligned overlay clipped to face oval
+  const leftEye = {x: lm[159].x*w, y: lm[159].y*h};
+  const rightEye = {x: lm[386].x*w, y: lm[386].y*h};
+  const face = getFaceBox(lm, w, h, 0.15);
+  const pw = face.s * (scalePct/100);
+  const ph = pw * (puppetImg.height/puppetImg.width);
+  const cx2 = face.x + face.s/2; const cy2 = face.y + face.s/2;
+  const angle = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
+  const polyPath = new Path2D(); for (let i=0;i<FACE_OVAL_IDX.length;i++){ const p = lm[FACE_OVAL_IDX.length?FACE_OVAL_IDX[i]:i]; const x = lm[FACE_OVAL_IDX[i]].x*w, y=lm[FACE_OVAL_IDX[i]].y*h; if (i===0) polyPath.moveTo(x,y); else polyPath.lineTo(x,y);} polyPath.closePath();
+  // draw to offscreen to apply mask then composite within face clip
+  const pcan = document.createElement('canvas'); pcan.width=w; pcan.height=h; const pctx = pcan.getContext('2d');
+  pctx.save(); pctx.translate(cx2, cy2); pctx.rotate(angle); pctx.drawImage(puppetImg, -pw/2, -ph/2, pw, ph); pctx.restore();
+  if (maskCanvas){ pctx.globalCompositeOperation='destination-in'; pctx.drawImage(maskCanvas,0,0); pctx.globalCompositeOperation='source-over'; }
+  feedCtx.save(); feedCtx.clip(polyPath); feedCtx.globalAlpha = Math.max(0.3, Math.min(1, dynAlpha)); feedCtx.drawImage(pcan,0,0); feedCtx.restore();
+}
+
+function applyHeadshape(){
+  // 3D rig scaling keeps motions, but also warp the avatar feed (video) for visible effect
+  const sx = parseFloat(document.getElementById('head-w').value||'1');
+  const sy = parseFloat(document.getElementById('head-h').value||'1');
+  if (avatarRig) avatarRig.scale.set(sx, sy, 1.0);
+  if (!lastLandmarks || !lastLandmarks[0]) return;
+  ensureFeedCanvasSize();
+  const w = avatarFeed.width, h = avatarFeed.height;
+  const lm = lastLandmarks[0];
+  // draw base with background comp + person
+  compositePersonOverBackground(w,h);
+  // Create an offscreen source of original video for sampling
+  if (procCanvas.width!==w || procCanvas.height!==h){ procCanvas.width=w; procCanvas.height=h; }
+  procCtx.drawImage(videoTruth, 0, 0, w, h);
+  // Mask to face oval
+  feedCtx.save();
+  feedCtx.beginPath();
+  for (let i=0;i<FACE_OVAL_IDX.length;i++){
+    const p = lm[FACE_OVAL_IDX[i]]; const x = p.x*w, y=p.y*h; if (i===0) feedCtx.moveTo(x,y); else feedCtx.lineTo(x,y);
+  }
+  feedCtx.closePath(); feedCtx.clip();
+  // Clear inside to avoid raw bleed
+  feedCtx.clearRect(0,0,w,h);
+  const nose = {x: lm[1].x*w, y: lm[1].y*h};
+  const mouth = {x: lm[13].x*w, y: lm[13].y*h};
+  const noseWarp = parseFloat(document.getElementById('nose-w')?.value||'1.0');
+  const mouthWarp = parseFloat(document.getElementById('mouth-w')?.value||'1.0');
+  // Sample grid warp: scale around centers with separate factors for head, nose, mouth
+  const step = Math.max(2, Math.floor(Math.min(w,h)/140));
+  for (let y=0;y<h;y+=step){
+    for (let x=0;x<w;x+=step){
+      const dxn = x - nose.x, dyn = y - nose.y; // nose-centered
+      const dxm = x - mouth.x, dym = y - mouth.y; // mouth-centered
+      let rx = x, ry=y;
+      // head scale (around nose as proxy for face center)
+      rx = nose.x + dxn * sx;
+      ry = nose.y + dyn * sy;
+      // local nose warp (slight additional scale)
+      const nd = Math.hypot(dxn, dyn);
+      const nfall = Math.max(0, 1 - nd/120);
+      rx = nose.x + (rx - nose.x) * (1 + (noseWarp-1)*nfall);
+      ry = nose.y + (ry - nose.y) * (1 + (noseWarp-1)*nfall);
+      // local mouth warp
+      const md = Math.hypot(dxm, dym);
+      const mfall = Math.max(0, 1 - md/130);
+      rx = mouth.x + (rx - mouth.x) * (1 + (mouthWarp-1)*mfall);
+      ry = mouth.y + (ry - mouth.y) * (1 + (mouthWarp-1)*mfall);
+      feedCtx.drawImage(procCanvas, x, y, step, step, rx, ry, step, step);
+    }
+  }
+  feedCtx.restore();
+  // Freckles overlay if enabled
+  const freckles = document.getElementById('freckles')?.checked;
+  if (freckles){
+    feedCtx.save();
+    feedCtx.beginPath();
+    for (let i=0;i<FACE_OVAL_IDX.length;i++){
+      const p = lm[FACE_OVAL_IDX[i]]; const x = p.x*w, y=p.y*h; if (i===0) feedCtx.moveTo(x,y); else feedCtx.lineTo(x,y);
+    }
+    feedCtx.closePath(); feedCtx.clip();
+    feedCtx.globalAlpha = 0.25;
+    for(let i=0;i<120;i++){
+      const px = (lm[1].x*w) + (Math.random()-0.5)*220;
+      const py = (lm[1].y*h) + (Math.random()-0.2)*180;
+      const r = Math.random()*1.8+0.4; feedCtx.fillStyle = 'rgba(90,60,50,0.9)'; feedCtx.beginPath(); feedCtx.arc(px,py,r,0,Math.PI*2); feedCtx.fill();
+    }
+    feedCtx.restore();
+  }
+}
+
+// Face oval indices for MediaPipe FaceMesh (subset outline for mask)
+const FACE_OVAL_IDX = [10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109,10];
+function hexToRgba(hex, alpha){
+  const v = hex.replace('#','');
+  const r = parseInt(v.substring(0,2),16);
+  const g = parseInt(v.substring(2,4),16);
+  const b = parseInt(v.substring(4,6),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+function drawMask(){
+  ensureFeedCanvasSize();
+  const w = avatarFeed.width, h = avatarFeed.height;
+  feedCtx.clearRect(0,0,w,h);
+  // draw base with background replacement and slight dim
+  const λ = parseFloat(lambdaSlider.value||'0.6');
+  compositePersonOverBackground(w,h);
+  feedCtx.fillStyle = `rgba(0,0,0,${0.15*λ})`;
+  feedCtx.fillRect(0,0,w,h);
+  if (!lastLandmarks || !lastLandmarks[0]) return;
+  const lm = lastLandmarks[0];
+  const color = document.getElementById('mask-color').value;
+  const alphaBase = parseFloat(document.getElementById('mask-alpha').value||'0.75');
+  const alpha = Math.min(1, Math.max(0.3, alphaBase * (0.7 + 0.6*λ)));
+  feedCtx.fillStyle = hexToRgba(color, alpha);
+  feedCtx.beginPath();
+  for (let i=0;i<FACE_OVAL_IDX.length;i++){
+    const p = lm[FACE_OVAL_IDX[i]]; const x = p.x * w, y = p.y * h;
+    if (i===0) feedCtx.moveTo(x,y); else feedCtx.lineTo(x,y);
+  }
+  feedCtx.closePath();
+  const replaceToon = document.getElementById('mask-toon').checked;
+  if (!replaceToon){
+    feedCtx.fill();
+  } else {
+    // Clip then draw toon, then blend border color
+    feedCtx.save();
+    feedCtx.clip();
+  if (toonUseModel() && toonModel) { drawToonModel(lm, w, h, λ); }
+  else { drawToonAvatar(); }
+    feedCtx.restore();
+    // border soft tint
+    feedCtx.globalAlpha = 0.3*alpha; feedCtx.fill(); feedCtx.globalAlpha=1.0;
+  }
+}
+
+function filterTick(ts){
+  const preset = presetSel.value;
+  const active = applyFilterChk.checked && preset !== 'none';
+  if (active){
+    // FPS throttle
+    const fpsInput = (
+      preset==='toon'? document.getElementById('filter-fps-toon'):
+    preset==='appearance'? document.getElementById('filter-fps-appearance'):
+    preset==='puppet'? document.getElementById('filter-fps-puppet'):
+      document.getElementById('filter-fps-mask')
+    );
+    filterFps = Math.max(5, Math.min(60, parseInt(fpsInput.value,10)||24));
+    if (!filterTimer) filterTimer = ts;
+    const elapsed = ts - filterTimer;
+    if (elapsed >= (1000 / filterFps)){
+      filterTimer = ts;
+  if (preset==='toon') drawToonAvatar();
+  else if (preset==='appearance') drawAppearance();
+  else if (preset==='mask') drawMask();
+  else if (preset==='puppet') { drawPuppet(); }
+    }
+  }
+  requestAnimationFrame(filterTick);
+}
+
+  presetSel.addEventListener('change', ()=>{
+    // disable mask->toon checkbox when not relevant
+    const maskToon = document.getElementById('mask-toon');
+    maskToon.disabled = presetSel.value!=='mask';
+  });
+requestAnimationFrame(filterTick);
+
+
+  // Load model button
+  document.getElementById('toon-load').addEventListener('click', async ()=>{
+    try{
+      toonStatusEl().textContent = 'Model: loading…';
+      const url = toonModelUrlEl().value || '/static/models/animegan2/model.json';
+      toonModel = await tf.loadGraphModel(url);
+      // warmup
+      const size = parseInt(toonModelSizeEl().value,10)||256;
+      tf.tidy(()=>{
+        const warm = tf.zeros([1,size,size,3]);
+        const out = toonModel.execute(warm);
+        if (Array.isArray(out)) out.forEach(t=>t.dataSync()); else out.dataSync();
+      });
+      toonStatusEl().textContent = 'Model: loaded';
+    }catch(e){
+      console.error('Failed to load toon model', e);
+      toonStatusEl().textContent = 'Model: failed';
+      toonModel = null;
+    }
+  });
+  // Model catalog
+  const CATALOG_KEY = 'toonModelCatalog.v1';
+  function getCatalog(){ try{ return JSON.parse(localStorage.getItem(CATALOG_KEY)||'[]'); }catch{ return []; } }
+  function setCatalog(items){ localStorage.setItem(CATALOG_KEY, JSON.stringify(items)); renderCatalog(); }
+  function renderCatalog(){
+    const box = document.getElementById('toon-catalog');
+    const items = getCatalog();
+    if (!box) return;
+    if (!items.length){ box.innerHTML = '<div style="opacity:.7">No saved models. Add one above.</div>'; return; }
+    box.innerHTML = '';
+    for (let i=0;i<items.length;i++){
+      const it = items[i];
+      const row = document.createElement('div'); row.style.display='flex'; row.style.alignItems='center'; row.style.gap='8px';
+      const name = document.createElement('span'); name.textContent = it.name || '(unnamed)'; name.style.minWidth='160px';
+      const url = document.createElement('a'); url.textContent = it.url; url.href = it.url; url.target='_blank'; url.style.color='#88c0d0'; url.style.flex='1'; url.style.overflow='hidden'; url.style.textOverflow='ellipsis'; url.style.whiteSpace='nowrap';
+      const meta = document.createElement('span'); meta.textContent = `${it.size||256}px ${it.norm? 'norm[-1,1]':'norm[0,1]'}`; meta.style.opacity='.8';
+      const useBtn = document.createElement('button'); useBtn.textContent='Use'; useBtn.onclick = ()=>{
+        document.getElementById('toon-model-url').value = it.url;
+        document.getElementById('toon-model-size').value = String(it.size||256);
+        document.getElementById('toon-norm').checked = !!it.norm;
+      };
+      const loadBtn = document.createElement('button'); loadBtn.textContent='Load'; loadBtn.onclick = ()=>{
+        document.getElementById('toon-model-url').value = it.url;
+        document.getElementById('toon-model-size').value = String(it.size||256);
+        document.getElementById('toon-norm').checked = !!it.norm;
+        document.getElementById('toon-load').click();
+      };
+      const delBtn = document.createElement('button'); delBtn.textContent='✕'; delBtn.title='Remove'; delBtn.onclick = ()=>{
+        const items = getCatalog(); items.splice(i,1); setCatalog(items);
+      };
+      row.appendChild(name); row.appendChild(url); row.appendChild(meta); row.appendChild(useBtn); row.appendChild(loadBtn); row.appendChild(delBtn);
+      box.appendChild(row);
+    }
+  }
+  document.getElementById('toon-save').addEventListener('click', ()=>{
+    const name = document.getElementById('toon-model-name').value.trim() || 'Model';
+    const url = document.getElementById('toon-model-url').value.trim(); if (!url) return alert('Enter a Model URL first');
+    const size = parseInt(document.getElementById('toon-model-size').value,10)||256;
+    const norm = document.getElementById('toon-norm').checked;
+    const items = getCatalog(); items.unshift({name, url, size, norm, savedAt: Date.now()}); setCatalog(items);
+  });
+  document.getElementById('toon-export').addEventListener('click', ()=>{
+    const blob = new Blob([JSON.stringify(getCatalog(), null, 2)], {type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'toon-model-catalog.json'; a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+  });
+  document.getElementById('toon-import').addEventListener('click', ()=>{
+    document.getElementById('toon-import-file').click();
+  });
+  document.getElementById('toon-import-file').addEventListener('change', ()=>{
+    const f = document.getElementById('toon-import-file').files?.[0]; if (!f) return;
+    const reader = new FileReader(); reader.onload = ()=>{
+      try{ const items = JSON.parse(String(reader.result)||'[]'); if (!Array.isArray(items)) throw new Error('Invalid file'); setCatalog(items); }
+      catch(e){ alert('Import failed: invalid JSON'); }
+    }; reader.readAsText(f);
+  });
+  // Preload some official TF.js entries if catalog empty
+  window.addEventListener('load', ()=>{
+    const items = getCatalog(); if (items.length) { renderCatalog(); return; }
+    const preload = [
+      {name:'Selfie Segmentation (TFJS)', url:'https://storage.googleapis.com/tfjs-models/savedmodel/selfie_segmentation/model.json', size:256, norm:false},
+      {name:'BodyPix ResNet50 stride16', url:'https://storage.googleapis.com/tfjs-models/savedmodel/bodypix/resnet50/float/model-stride16.json', size:256, norm:false},
+    ];
+    setCatalog(preload);
+  });
+// UI bindings for filters
+presetSel.addEventListener('change', ()=>{
+  setFeedVisibility();
+});
+applyFilterChk.addEventListener('change', ()=>{
+  setFeedVisibility();
+});
+// Legacy immediate draw handlers removed; the realtime loop will reflect changes automatically
+// document.getElementById('head-w').addEventListener('input', ()=>{});
+// document.getElementById('head-h').addEventListener('input', ()=>{});
+// Puppet image loader for live preview
+document.getElementById('puppet-file').addEventListener('change', ()=>{
+  const f = document.getElementById('puppet-file').files?.[0]; if (!f) { puppetImg=null; return; }
+  const url = URL.createObjectURL(f);
+  const img = new Image(); img.onload = async ()=>{ puppetImg = img; await buildPuppetMask(img).catch(()=>{}); URL.revokeObjectURL(url); };
+  img.src = url;
+});
+// Puppet alpha mask loader
+document.getElementById('puppet-mask-file')?.addEventListener('change', ()=>{
+  const f = document.getElementById('puppet-mask-file').files?.[0]; if (!f) { puppetMaskImg=null; return; }
+  const url = URL.createObjectURL(f);
+  const img = new Image(); img.onload = ()=>{ puppetMaskImg = img; URL.revokeObjectURL(url); };
+  img.src = url;
+});
+// Character uploads
+document.getElementById('truth-upload').addEventListener('change', ()=>{
+  const f = document.getElementById('truth-upload').files?.[0]; if (!f) return;
+  const url = URL.createObjectURL(f);
+  const name = (f.name||'').toLowerCase();
+  if (name.endsWith('.obj')){
+    // No MTL with single file upload; load geometry only
+    new THREE.OBJLoader().load(url, (g)=>{ replaceTruthRig(g); }, undefined, (e)=>{ console.error('Load truth OBJ failed', e); alert('Failed to load OBJ model'); });
+  } else {
+    new THREE.GLTFLoader().load(url, (g)=>{ replaceTruthRig(g);}, undefined, (e)=>{ console.error('Load truth model failed', e); alert('Failed to load model'); });
+  }
+});
+document.getElementById('avatar-upload').addEventListener('change', ()=>{
+  const f = document.getElementById('avatar-upload').files?.[0]; if (!f) return;
+  const url = URL.createObjectURL(f);
+  const name = (f.name||'').toLowerCase();
+  if (name.endsWith('.obj')){
+    new THREE.OBJLoader().load(url, (g)=>{ replaceAvatarRig(g); }, undefined, (e)=>{ console.error('Load avatar OBJ failed', e); alert('Failed to load OBJ model'); });
+  } else {
+    new THREE.GLTFLoader().load(url, (g)=>{ replaceAvatarRig(g);}, undefined, (e)=>{ console.error('Load avatar model failed', e); alert('Failed to load avatar model'); });
+  }
+});
+document.getElementById('reset-models').addEventListener('click', async ()=>{
+  try{ const g1 = await new Promise(res=> new THREE.GLTFLoader().load('/static/placeholder_head.glb', d=>res(d), undefined, ()=>res(null)));
+        if (g1) replaceTruthRig(g1);
+        const g2 = await new Promise(res=> new THREE.GLTFLoader().load('/static/placeholder_head.glb', d=>res(d), undefined, ()=>res(null)));
+        if (g2) replaceAvatarRig(g2);
+  }catch(e){ console.error(e); }
+});
+// Load list of CGTrader models
+async function loadCgTraderList(){
+  const sel = document.getElementById('cgtrader-list');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Loading…</option>';
+  let items = [];
+  try{
+    const r1 = await fetch('/api/avatars/list?subdir=cgtrader');
+    if (r1.ok){ const j1 = await r1.json(); items = (j1.items||[]); }
+  }catch(e){ console.warn('cgtrader list fetch failed', e); }
+  // Fallback: list everything, then filter for cgtrader/, else show all
+  if (!items.length){
+    try{
+      const r2 = await fetch('/api/avatars/list');
+      if (r2.ok){
+        const j2 = await r2.json();
+        const all = (j2.items||[]);
+        const filtered = all.filter(it => String(it.file||'').toLowerCase().startsWith('cgtrader/'));
+        items = filtered.length ? filtered : all;
+      }
+    }catch(e){ console.warn('root avatars list fetch failed', e); }
+  }
+  if (!items.length){
+    sel.innerHTML = '<option value="">— none found —</option>';
+  } else {
+    sel.innerHTML = '<option value="">— browse —</option>' + items.map(it=>{
+      const file = it.file||''; const ext = file.slice(file.lastIndexOf('.')+1).toLowerCase();
+      const unsupported = (ext === 'blend');
+      const label = (it.name || file.split('/').pop()) + (unsupported ? ' [blend: export to glTF/OBJ]' : '');
+      // include data-file for backend convert API
+      return `<option value=\"${it.url}\" data-file=\"${file}\">${label}</option>`;
+    }).join('');
+  }
+}
+window.addEventListener('DOMContentLoaded', loadCgTraderList);
+document.getElementById('cgtrader-refresh').addEventListener('click', loadCgTraderList);
+document.getElementById('cgtrader-list').addEventListener('change', async ()=>{
+  const sel = document.getElementById('cgtrader-list');
+  const url = sel.value; if (!url) return;
+  try{
+    const clean = (url||'').split('?')[0].split('#')[0];
+    const ext = clean.substring(clean.lastIndexOf('.')+1).toLowerCase();
+    if (ext === 'blend'){
+      // Attempt server-side conversion via backend then auto-load resulting .glb
+      const opt = sel.selectedOptions && sel.selectedOptions[0];
+      const fileRel = (opt && opt.dataset && opt.dataset.file) ? opt.dataset.file : clean.replace(/^\/avatars\//,'');
+      const status = document.getElementById('rig-status'); if (status) status.textContent = 'Converting .blend → .glb…';
+      try{
+        const r = await fetch(`/api/avatars/convert-blend?file=${encodeURIComponent(fileRel)}`, { method:'POST' });
+        if (!r.ok){ const txt = await r.text(); throw new Error(`HTTP ${r.status}: ${txt}`); }
+        const j = await r.json();
+        const outUrl = j && (j.url || (j.file? `/avatars/${j.file}` : null));
+        if (!outUrl) throw new Error('Conversion returned no URL');
+        if (status) status.textContent = 'Loading converted model…';
+        loadModelFromUrl(outUrl, (g)=>{ replaceAvatarRig(g); if(status) status.textContent='Converted and loaded ✓'; setTimeout(()=>{ if(status.textContent.includes('✓')) status.textContent=''; }, 3000); }, (e)=>{ console.error('Load converted model failed', e); alert('Converted file load failed'); if(status) status.textContent=''; });
+      }catch(err){
+        console.error('Conversion failed', err);
+        alert('Blend conversion failed on server. Ensure Blender is installed or export to GLB/OBJ manually.');
+        if (status) status.textContent = '';
+      }
+      return;
+    }
+    loadModelFromUrl(url, (g)=>{ replaceAvatarRig(g); }, (e)=>{ console.error('Load avatar model failed', e); alert('Failed to load avatar model'); });
+  }catch(e){ console.error(e); }
+});
+// Background file handler
+bgModeSel.addEventListener('change', ()=>{
+  bgFileInput.style.display = bgModeSel.value==='image' ? 'inline-block' : 'none';
+});
+bgFileInput.addEventListener('change', ()=>{
+  const f = bgFileInput.files?.[0]; if (!f) return;
+  const url = URL.createObjectURL(f); const img = new Image();
+  img.onload = ()=>{ bgImage = img; URL.revokeObjectURL(url); };
+  img.src = url;
+});
+
+// initialize controls state
+setFeedVisibility();
+
+// --- Send to Extension: package current settings and POST to backend config ---
+async function toDataUrlIfNeeded() {
+  if (bgModeSel.value !== 'image') return null;
+  const f = bgFileInput.files && bgFileInput.files[0];
+  if (!f) return null;
+  const p = new Promise((resolve)=>{
+    const r = new FileReader();
+    r.onload = ()=>resolve(String(r.result));
+    r.onerror = ()=>resolve(null);
+    r.readAsDataURL(f);
+  });
+  return await p;
+}
+
+function currentFpsForPreset(preset){
+  if (preset==='toon') return parseInt(document.getElementById('filter-fps-toon').value,10)||18;
+  if (preset==='appearance') return parseInt(document.getElementById('filter-fps-appearance').value,10)||24;
+  if (preset==='mask') return parseInt(document.getElementById('filter-fps-mask').value,10)||30;
+  if (preset==='puppet') return parseInt(document.getElementById('filter-fps-puppet').value,10)||24;
+  return 24;
+}
+
+async function sendToExtension(){
+  const status = document.getElementById('send-status');
+  status.textContent = 'Preparing…';
+  const preset = presetSel.value;
+  const λ = parseFloat(lambdaSlider.value||'0.6');
+  const bgDataUrl = await toDataUrlIfNeeded();
+  // Prepare puppet image if selected
+  async function puppetDataUrl(){
+    const f = document.getElementById('puppet-file').files?.[0]; if (!f) return null;
+    return await new Promise((resolve)=>{ const r=new FileReader(); r.onload=()=>resolve(String(r.result)); r.onerror=()=>resolve(null); r.readAsDataURL(f); });
+  }
+  const params = {
+    preset,
+    lambda: λ,
+    background: { mode: bgModeSel.value, imageDataUrl: bgDataUrl },
+    toon: {
+      useModel: document.getElementById('toon-use-model').checked,
+      url: document.getElementById('toon-model-url').value || '',
+      size: parseInt(document.getElementById('toon-model-size').value,10)||256,
+      norm: document.getElementById('toon-norm').checked,
+    },
+    appearance: {
+      hueDeg: parseInt(document.getElementById('appearance-hue-deg').value,10)||40,
+      skinOnly: !!document.getElementById('appearance-skin-only').checked,
+      headshape: {
+        sx: parseFloat(document.getElementById('head-w').value||'1'),
+        sy: parseFloat(document.getElementById('head-h').value||'1'),
+        nose: parseFloat(document.getElementById('nose-w')?.value||'1.0'),
+        mouth: parseFloat(document.getElementById('mouth-w')?.value||'1.0'),
+        freckles: !!document.getElementById('freckles')?.checked,
+      }
+    },
+    mask: {
+      color: document.getElementById('mask-color').value,
+      alpha: parseFloat(document.getElementById('mask-alpha').value||'0.75'),
+      toonInside: !!document.getElementById('mask-toon').checked,
+      morph: parseFloat(document.getElementById('mask-morph').value||'0.6')
+    },
+    puppet: {
+      imageDataUrl: await puppetDataUrl(),
+      scalePct: parseInt(document.getElementById('puppet-scale').value,10)||110,
+      alpha: parseFloat(document.getElementById('puppet-alpha').value||'0.9'),
+  follow: !!document.getElementById('puppet-follow').checked,
+  maskImageDataUrl: await (async ()=>{ const f=document.getElementById('puppet-mask-file').files?.[0]; if(!f) return null; return await new Promise((res)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result)); r.onerror=()=>res(null); r.readAsDataURL(f); }); })(),
+  maskInvert: !!document.getElementById('puppet-mask-invert').checked,
+  feather: parseInt(document.getElementById('puppet-feather').value,10)||0,
+  dynamic: !!document.getElementById('puppet-dyn-blend').checked,
+  alphaMin: parseFloat(document.getElementById('puppet-alpha-min').value||'0.6'),
+  alphaMax: parseFloat(document.getElementById('puppet-alpha-max').value||'0.95')
+    }
+  };
+  const body = {
+    type: 'dual_rig',
+    fps: currentFpsForPreset(preset),
+    params
+  };
+  try{
+    const r = await fetch('/api/identity-filter/config', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    const j = await r.json();
+    status.textContent = 'Sent ✓';
+    setTimeout(()=>{ status.textContent=''; }, 3000);
+  }catch(e){
+    console.error('Send failed', e);
+    status.textContent = 'Failed to send';
+  }
+}
+
+// Extension install detection: ping content script, expect PONG.
+(function(){
+  const btn = document.getElementById('send-ext');
+  const status = document.getElementById('send-status');
+  let installed = false; let tried = false; let timer = null;
+  function onPong(ev){
+    const d = ev && ev.data; if (!d || typeof d !== 'object') return;
+    if (d.type === 'IDENTITY_FILTER_PONG') {
+      installed = true; window.removeEventListener('message', onPong);
+      if (timer) { clearTimeout(timer); timer = null; }
+      btn.textContent = 'Save Config to Extension';
+      status.textContent = 'Extension detected';
+      setTimeout(()=>{ if(status.textContent==='Extension detected') status.textContent=''; }, 2000);
+    }
+  }
+  window.addEventListener('message', onPong);
+  function ping(){
+    if (tried || installed) return; tried = true;
+    try { window.postMessage({ type: 'IDENTITY_FILTER_PING' }, '*'); } catch {}
+    timer = setTimeout(()=>{
+      if (!installed) {
+        btn.textContent = 'Send to Extension (Install extension)';
+        status.textContent = 'Extension not detected';
+      }
+    }, 1200);
+  }
+  // Try soon after load
+  if (document.readyState === 'complete' || document.readyState === 'interactive') ping();
+  else window.addEventListener('DOMContentLoaded', ping);
+  // Click handler remains same
+  btn.addEventListener('click', ()=>{ sendToExtension(); });
+})();
 </script>
+<footer class="bottom-nav">
+  <a class="nav-item" href="/static/index.html">🏠 Home</a>
+  <a class="nav-item" href="/static/enhanced-pipeline.html">🚀 Enhanced</a>
+  <a class="nav-item" href="/filters">🎭 Filters</a>
+  <a class="nav-item" href="/static/snapchat/index.html">👻 Snapchat</a>
+  <a class="nav-item" href="/dual-rig">🎮 Dual Rig</a>
+  <a class="nav-item" href="/api">🧩 API</a>
+</footer>
+<script>
+  (function(){
+    const here = location.pathname;
+    document.querySelectorAll('.bottom-nav .nav-item').forEach(a=>{
+      try{ if(here === new URL(a.href, location.origin).pathname) a.classList.add('active'); }catch{}
+    });
+  })();
+ </script>
 </body>
 </html>
