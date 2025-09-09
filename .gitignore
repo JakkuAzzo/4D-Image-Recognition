@@ -97,3 +97,4 @@ processed_*
 output_*
 result_*
 temp_*
+shape_predictor_68_face_landmarks.dat
