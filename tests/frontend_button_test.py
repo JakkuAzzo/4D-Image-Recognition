@@ -14,7 +14,6 @@ except Exception:  # pragma: no cover
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from selenium.common.exceptions import SessionNotCreatedException, WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -38,13 +37,7 @@ def _make_driver():
     opts.add_argument('--ignore-certificate-errors')
     opts.add_argument('--allow-insecure-localhost')
     service = Service(chromedriver)
-    try:
-        return webdriver.Chrome(options=opts, service=service)
-    except (SessionNotCreatedException, WebDriverException) as e:
-        # Skip test if ChromeDriver/Chrome mismatch or driver cannot start in env
-        if pytest:
-            pytest.skip(f'Selenium WebDriver not usable: {e}')
-        raise unittest.SkipTest(f'Selenium WebDriver not usable: {e}')
+    return webdriver.Chrome(options=opts, service=service)
 
 
 def test_frontend_buttons_render():

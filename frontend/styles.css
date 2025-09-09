@@ -28,51 +28,6 @@ body {
     overflow-x: hidden;
 }
 
-/* Reserve space for fixed bottom nav */
-body { padding-bottom: 96px; }
-
-/* Bottom navigation bar */
-.bottom-nav {
-    position: fixed;
-    left: 50%;
-    bottom: 16px;
-    transform: translateX(-50%);
-    background: var(--glass-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--glass-border);
-    border-radius: 999px;
-    padding: 8px 10px;
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
-    z-index: 1000;
-}
-
-.bottom-nav .nav-item {
-    color: var(--text-primary);
-    text-decoration: none;
-    font-weight: 600;
-    padding: 8px 12px;
-    border-radius: 999px;
-    display: inline-flex;
-    gap: 6px;
-    align-items: center;
-    transition: background 0.2s ease, color 0.2s ease;
-    white-space: nowrap;
-}
-
-.bottom-nav .nav-item:hover,
-.bottom-nav .nav-item.active {
-    background: var(--glass-hover);
-}
-
-@media (max-width: 540px) {
-    .bottom-nav { bottom: 12px; padding: 6px 8px; gap: 4px; }
-    .bottom-nav .nav-item { padding: 6px 10px; font-size: 14px; }
-}
-
 /* Animated background */
 body::before {
     content: '';

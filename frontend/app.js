@@ -3969,7 +3969,7 @@ console.log('All UI functions loaded successfully');
  * Main function called when user clicks "Process Images" button
  * This is the critical missing function that was breaking the frontend
  */
-async function startProcessing() {
+function startProcessing() {
     console.log('🚀 START PROCESSING CALLED - This function was missing!');
     
     const fileInput = document.getElementById('scan-files');
@@ -3997,38 +3997,8 @@ async function startProcessing() {
     // Show all processing sections
     showProcessingSections();
     
-    // Build form data and call backend pipeline
-    try {
-        const form = new FormData();
-        files.forEach((f) => form.append('files', f, f.name));
-
-        // Hit the backend pipeline
-        const resp = await fetch('/process-pipeline', { method: 'POST', body: form });
-        if (!resp.ok) {
-            console.error('Pipeline request failed:', resp.status, await resp.text());
-            alert('Pipeline failed. Please try again.');
-            return;
-        }
-        const data = await resp.json();
-        console.log('Pipeline response:', data);
-
-        // Update simple status UI
-        const statusEl = document.getElementById('processing-status');
-        if (statusEl) {
-            statusEl.textContent = 'Complete';
-        }
-
-        // Load 4D model into viewer if available
-        if (data && data.user_id) {
-            try {
-                await fetchAndRender4DModel(data.user_id);
-            } catch (e) {
-                console.warn('Could not render 4D model:', e);
-            }
-        }
-    } catch (err) {
-        console.error('startProcessing error:', err);
-    }
+    // Start the integrated 4D visualization pipeline
+    startIntegratedVisualization();
 }
 
 /**

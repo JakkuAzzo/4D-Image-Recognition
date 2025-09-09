@@ -31,7 +31,6 @@ import json
 import hashlib
 from datetime import datetime
 from pathlib import Path
-import os
 import logging
 from typing import List, Dict, Tuple, Optional, Any
 
@@ -678,9 +677,7 @@ class FacialPipeline:
                 try:
                     # Try to use the built-in cascade classifier
                     if hasattr(cv2, 'data'):
-                        _cv2data = getattr(cv2, 'data', None)
-                        haar_root = getattr(_cv2data, 'haarcascades', '') if _cv2data is not None else ''
-                        cascade_path = os.path.join(haar_root, 'haarcascade_frontalface_default.xml')
+                        cascade_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'  # type: ignore
                         face_cascade = cv2.CascadeClassifier(cascade_path)
                     else:
                         # Fallback - try default constructor
