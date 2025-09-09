@@ -7,11 +7,16 @@ let currentStep = 0;
 let pipelineData = {};
 let selectedFiles = [];
 let scene, camera, renderer;
+let currentPointCloud = null;
+let currentMesh = null;
+let autorotate = false;
+let pipelineStartTime = null;
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     initializeUploadArea();
     initializeThreeJS();
+    bindViewerControls();
     console.log('🚀 Enhanced 7-Step Facial Pipeline initialized');
 });
 
@@ -56,6 +61,7 @@ function handleFileSelection(files) {
     console.log(`📁 Selected ${imageFiles.length} image files`);
     
     // Auto-start Step 1
+    pipelineStartTime = (typeof performance !== 'undefined' ? performance.now() : Date.now());
     executeStep1();
 }
 
@@ -70,6 +76,7 @@ async function startPipeline() {
     
     try {
         showLoading('Starting Pipeline', 'Processing all 7 steps automatically...');
+    pipelineStartTime = (typeof performance !== 'undefined' ? performance.now() : Date.now());
         
         // Execute complete pipeline
         const formData = new FormData();
@@ -90,6 +97,12 @@ async function startPipeline() {
             updateAllStepsFromResults(result.results);
             showSuccess('Pipeline completed successfully!');
             updateProgress(100);
+            // Update processing time
+            if (pipelineStartTime) {
+                const end = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+                const secs = ((end - pipelineStartTime) / 1000).toFixed(1);
+                setStat('stat-processing-time', `${secs}s`);
+            }
         } else {
             throw new Error(result.message || 'Pipeline execution failed');
         }
@@ -125,6 +138,7 @@ async function executeStep1() {
             pipelineData.step1 = result.data;
             updateStepStatus(1, 'completed');
             displayStep1Results(result.data);
+            updateGlobalStatsFromStep1(result.data);
             
             // Auto-continue to step 2
             setTimeout(() => executeStep2(), 1000);
@@ -159,6 +173,7 @@ async function executeStep2() {
             pipelineData.step2 = result.data;
             updateStepStatus(2, 'completed');
             displayStep2Results(result.data);
+            updateGlobalStatsFromStep2(result.data);
             showStepContent(2);
             
             // Auto-continue to step 3
@@ -194,6 +209,7 @@ async function executeStep3() {
             pipelineData.step3 = result.data;
             updateStepStatus(3, 'completed');
             displayStep3Results(result.data);
+            updateGlobalStatsFromStep3(result.data);
             showStepContent(3);
             
             // Auto-continue to step 4
@@ -232,6 +248,7 @@ async function executeStep4() {
             pipelineData.step4 = result.data;
             updateStepStatus(4, 'completed');
             displayStep4Results(result.data);
+            updateGlobalStatsFromStep4(result.data);
             showStepContent(4);
             
             // Auto-continue to step 5
@@ -267,6 +284,7 @@ async function executeStep5() {
             pipelineData.step5 = result.data;
             updateStepStatus(5, 'completed');
             displayStep5Results(result.data);
+            updateGlobalStatsFromStep5(result.data);
             showStepContent(5);
             
             // Auto-continue to step 6
@@ -302,6 +320,7 @@ async function executeStep6() {
             pipelineData.step6 = result.data;
             updateStepStatus(6, 'completed');
             displayStep6Results(result.data);
+            updateGlobalStatsFromStep6(result.data);
             showStepContent(6);
             
             // Auto-continue to step 7
@@ -337,6 +356,7 @@ async function executeStep7() {
             pipelineData.step7 = result.data;
             updateStepStatus(7, 'completed');
             displayStep7Results(result.data);
+            updateGlobalStatsFromStep7(result.data);
             showStepContent(7);
             updateProgress(100);
             
@@ -346,6 +366,11 @@ async function executeStep7() {
             }
             
             showSuccess('🎉 Complete 7-step pipeline finished successfully!');
+            if (pipelineStartTime) {
+                const end = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+                const secs = ((end - pipelineStartTime) / 1000).toFixed(1);
+                setStat('stat-processing-time', `${secs}s`);
+            }
         } else {
             throw new Error(result.message);
         }
@@ -703,8 +728,12 @@ function initializeThreeJS() {
         
         // Rotate scene based on mouse
         if (scene.children.length > 2) {
-            scene.rotation.y = mouseX * 0.5;
-            scene.rotation.x = mouseY * 0.3;
+            if (autorotate) {
+                scene.rotation.y += 0.005;
+            } else {
+                scene.rotation.y = mouseX * 0.5;
+                scene.rotation.x = mouseY * 0.3;
+            }
         }
         
         renderer.render(scene, camera);
@@ -717,6 +746,8 @@ function display4DVisualization(modelData) {
     while (scene.children.length > 2) {
         scene.remove(scene.children[2]);
     }
+    currentPointCloud = null;
+    currentMesh = null;
 
     try {
         // Create facial landmark points
@@ -748,6 +779,7 @@ function display4DVisualization(modelData) {
             });
 
             const pointCloud = new THREE.Points(pointsGeometry, pointsMaterial);
+            currentPointCloud = pointCloud;
             scene.add(pointCloud);
         }
 
@@ -780,6 +812,7 @@ function display4DVisualization(modelData) {
             });
             
             const mesh = new THREE.Mesh(meshGeometry, meshMaterial);
+            currentMesh = mesh;
             scene.add(mesh);
         }
 
@@ -788,6 +821,96 @@ function display4DVisualization(modelData) {
     } catch (error) {
         console.error('Error displaying 4D visualization:', error);
     }
+}
+
+// Viewer controls
+function bindViewerControls() {
+    const togglePoints = document.getElementById('toggle-points');
+    const toggleMesh = document.getElementById('toggle-mesh');
+    const pointSize = document.getElementById('point-size');
+    const meshOpacity = document.getElementById('mesh-opacity');
+    const resetBtn = document.getElementById('reset-camera');
+    const autoRotate = document.getElementById('toggle-autorotate');
+
+    if (togglePoints) togglePoints.addEventListener('change', () => {
+        if (currentPointCloud) currentPointCloud.visible = togglePoints.checked;
+    });
+    if (toggleMesh) toggleMesh.addEventListener('change', () => {
+        if (currentMesh) currentMesh.visible = toggleMesh.checked;
+    });
+    if (pointSize) pointSize.addEventListener('input', () => {
+        if (currentPointCloud && currentPointCloud.material) {
+            currentPointCloud.material.size = Math.max(0.005, Number(pointSize.value) / 100);
+            currentPointCloud.material.needsUpdate = true;
+        }
+    });
+    if (meshOpacity) meshOpacity.addEventListener('input', () => {
+        if (currentMesh && currentMesh.material) {
+            currentMesh.material.opacity = Number(meshOpacity.value) / 100;
+            currentMesh.material.transparent = true;
+            currentMesh.material.needsUpdate = true;
+        }
+    });
+    if (resetBtn) resetBtn.addEventListener('click', () => {
+        if (camera) {
+            camera.position.set(0, 0, 5);
+            scene.rotation.set(0, 0, 0);
+        }
+    });
+    if (autoRotate) autoRotate.addEventListener('change', () => {
+        autorotate = autoRotate.checked;
+    });
+}
+
+// Stats updaters
+function updateGlobalStatsFromStep1(data) {
+    const imagesProcessed = data.images?.length || 0;
+    const meta = data.metadata_summary || {};
+    setStat('stat-images-processed', imagesProcessed);
+    // Approx processing time placeholder (front-end measured could be added)
+}
+
+function updateGlobalStatsFromStep2(data) {
+    const summary = data.face_detection_summary || {};
+    setStat('stat-face-detection', `${summary.faces_detected || 0}/${summary.total_images || 0}`);
+    const features = (data.images_with_tracking || []).reduce((acc, img) => acc + (img.face_analysis?.mediapipe_landmarks?.length || 0), 0);
+    setStat('stat-feature-extraction', features);
+}
+
+function updateGlobalStatsFromStep3(data) {
+    const summary = data.validation_summary || {};
+    // Use valid_faces as a proxy quality metric when available
+    if (typeof summary.valid_faces === 'number' && data.similarity_matrix) {
+        const quality = Math.min(100, Math.round((summary.valid_faces / Math.max(1, data.similarity_matrix.length)) * 100));
+        setStat('stat-quality-score', `${quality}%`);
+    }
+}
+
+function updateGlobalStatsFromStep4(data) {
+    // No direct fields for global, keep existing
+}
+
+function updateGlobalStatsFromStep5(data) {
+    const iso = data.isolation_summary || {};
+    // Could reflect isolation count in images processed
+    if (typeof iso.isolated_count === 'number') {
+        setStat('stat-images-processed', iso.isolated_count);
+    }
+}
+
+function updateGlobalStatsFromStep6(data) {
+    const merged = data.merging_summary || {};
+    setStat('stat-3d-reconstruction', `${merged.merged_landmarks || 0} / ${merged.original_landmarks || 0}`);
+}
+
+function updateGlobalStatsFromStep7(data) {
+    const summary = data.refinement_summary || {};
+    setStat('stat-3d-reconstruction', `${summary.landmark_count || 0} / ${summary.landmark_count || 0}`);
+}
+
+function setStat(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = String(value);
 }
 
 // Utility functions
@@ -840,26 +963,32 @@ function updateAllStepsFromResults(results) {
     if (results.step1) {
         updateStepStatus(1, 'completed');
         displayStep1Results(results.step1);
+    updateGlobalStatsFromStep1(results.step1);
     }
     if (results.step2) {
         updateStepStatus(2, 'completed');
         displayStep2Results(results.step2);
+    updateGlobalStatsFromStep2(results.step2);
     }
     if (results.step3) {
         updateStepStatus(3, 'completed');
         displayStep3Results(results.step3);
+    updateGlobalStatsFromStep3(results.step3);
     }
     if (results.step4) {
         updateStepStatus(4, 'completed');
         displayStep4Results(results.step4);
+    updateGlobalStatsFromStep4(results.step4);
     }
     if (results.step5) {
         updateStepStatus(5, 'completed');
         displayStep5Results(results.step5);
+    updateGlobalStatsFromStep5(results.step5);
     }
     if (results.step6) {
         updateStepStatus(6, 'completed');
         displayStep6Results(results.step6);
+    updateGlobalStatsFromStep6(results.step6);
     }
     if (results.step7) {
         updateStepStatus(7, 'completed');

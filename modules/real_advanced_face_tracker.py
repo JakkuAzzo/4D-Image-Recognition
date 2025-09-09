@@ -140,6 +140,23 @@ class RealAdvancedFaceTracker:
         
         logger.info("✅ RealAdvancedFaceTracker initialized successfully")
 
+    def _add_to_faiss_database(self, encoding: Optional[np.ndarray], meta: Dict[str, Any]) -> None:
+        """Add an encoding to FAISS (if available) and store metadata locally."""
+        try:
+            if encoding is None:
+                return
+            v = encoding.astype('float32').reshape(1, -1)
+            if self.faiss_index is not None:
+                try:
+                    self.faiss_index.add(v)  # type: ignore[arg-type]
+                except Exception:
+                    pass
+            # Store plain float32 vector for portability
+            self.face_database.append({"encoding": v[0], **meta})
+        except Exception:
+            # Best-effort; ignore
+            pass
+
     def _create_3d_face_template(self) -> np.ndarray:
         """Create a basic 3D face template for pose estimation"""
         # Simplified 3D model points (nose tip, chin, left/right eye corners, mouth corners)
@@ -266,12 +283,18 @@ class RealAdvancedFaceTracker:
                 image_area = image.shape[0] * image.shape[1]
                 confidence = min(1.0, face_area / (image_area * 0.05))
                 
-                face_landmarks.append(FacialLandmarks(
+                item = FacialLandmarks(
                     face_recognition_encoding=face_encoding,
                     confidence_score=confidence,
                     detection_method="face_recognition",
                     timestamp=time.time()
-                ))
+                )
+                # Store in local DB (graceful FAISS fallback)
+                try:
+                    self._add_to_faiss_database(face_encoding, {"i": i})
+                except Exception:
+                    pass
+                face_landmarks.append(item)
             
             return face_landmarks
             
@@ -406,11 +429,10 @@ class RealAdvancedFaceTracker:
                 if i < len(face_rec_faces):
                     encoding = face_rec_faces[i].face_recognition_encoding
                     if encoding is not None:
-                    # Store in FAISS database
+                        # Store in FAISS database with metadata
                         self._add_to_faiss_database(
                             encoding,
-                            user_id,
-                            frame_id
+                            {"user_id": user_id, "frame_id": frame_id, "timestamp": time.time()}
                         )
                 
                 face_model = Face3DModel(
@@ -476,29 +498,7 @@ class RealAdvancedFaceTracker:
             logger.error(f"Quality metrics calculation error: {e}")
             return {"overall_quality": 0.5}
 
-    def _add_to_faiss_database(self, face_encoding: np.ndarray, user_id: str, frame_id: int):
-        """Add face encoding to FAISS database for similarity search"""
-        try:
-            # Reshape encoding for FAISS
-            if self.faiss_index is None:
-                return
-            encoding_reshaped = face_encoding.reshape(1, -1).astype('float32')
-            
-            # Add to FAISS index
-            self.faiss_index.add(encoding_reshaped)  # type: ignore[union-attr]
-            
-            # Store metadata
-            self.face_database.append({
-                "user_id": user_id,
-                "frame_id": frame_id,
-                "timestamp": time.time(),
-                "encoding": face_encoding
-            })
-            
-            logger.debug(f"Added face encoding to database. Total entries: {len(self.face_database)}")
-            
-        except Exception as e:
-            logger.error(f"FAISS database error: {e}")
+    
 
     def find_similar_faces(self, query_encoding: np.ndarray, k: int = 5) -> List[Dict]:
         """Find similar faces in the database using FAISS"""

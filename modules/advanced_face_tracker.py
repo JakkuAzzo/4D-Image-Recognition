@@ -18,6 +18,7 @@ import time
 import hashlib
 from typing import List, Dict, Any, Tuple, Optional, TYPE_CHECKING
 from pathlib import Path
+import os
 from dataclasses import dataclass
 from scipy.optimize import least_squares
 from scipy.spatial.distance import cdist
@@ -100,7 +101,10 @@ class AdvancedFaceTracker:
             try:
                 haar_base = getattr(cv2, "data", None)
                 if haar_base is not None and hasattr(haar_base, "haarcascades"):
-                    cascade_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'  # type: ignore[attr-defined]
+                    # Some analyzers flag cv2.data as unknown; resolve robustly
+                    _cv2data = getattr(cv2, 'data', None)
+                    haar_root = getattr(_cv2data, 'haarcascades', '') if _cv2data is not None else ''
+                    cascade_path = os.path.join(haar_root, 'haarcascade_frontalface_default.xml')
                 else:
                     cascade_path = str(Path(cv2.__file__).resolve().parent / "data" / "haarcascade_frontalface_default.xml")
                 self.face_cascade = cv2.CascadeClassifier(cascade_path)

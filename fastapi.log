@@ -1,355 +1,190 @@
+INFO:     Will watch for changes in these directories: ['/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition']
+INFO:     Uvicorn running on https://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [83667] using StatReload
 INFO:faiss.loader:Loading faiss.
 INFO:faiss.loader:Successfully loaded faiss.
 INFO:faiss:Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
 WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
-I0000 00:00:1755607577.270146  320577 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M4
+I0000 00:00:1757423941.183653 5489380 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
 INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
-W0000 00:00:1755607577.436531  320880 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
-W0000 00:00:1755607577.443464  320885 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1757423941.194667 5489441 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1757423941.201758 5489441 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 INFO:modules.advanced_face_tracker:✅ Face detectors initialized
-I0000 00:00:1755607578.646657  320577 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M4
-I0000 00:00:1755607578.651300  320577 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 89.4), renderer: Apple M4
-W0000 00:00:1755607578.653040  321070 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
-W0000 00:00:1755607578.659222  321067 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
-W0000 00:00:1755607578.661751  321060 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
-WARNING:modules.facial_pipeline:68-point facial landmark predictor not found. Some features may be limited.
+I0000 00:00:1757423942.434756 5489380 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+I0000 00:00:1757423942.438999 5489380 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+W0000 00:00:1757423942.441762 5489532 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1757423942.451502 5489539 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1757423942.451685 5489525 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 INFO:backend.api:Vector database initialized with FAISS
-INFO:     Started server process [64636]
+INFO:     Started server process [83683]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
-ERROR:    [Errno 48] error while attempting to bind on address ('0.0.0.0'INFO:backend.api:Starting integrated 4D visualization for user proxy_test_user with 1 files
-INFO:backend.api:Processing file 1/1: tiny.jpg
-WARNING:backend.api:No face landmarks found in tiny.jpg
-INFO:backend.api:Running complete facial pipeline...
-INFO:backend.api:Step 1: Scan Ingestion
-INFO:modules.facial_pipeline:🔍 Step 1: Scan Ingestion - Processing uploaded images
-INFO:modules.facial_pipeline:✅ Processed image 1/1: uploaded_image_000
-ERROR:backend.api:Error in facial pipeline: 'NoneType' object has no attribute 'get'
-WARNING:modules.reconstruction_orchestrator:GLB export failed: No module named 'trimesh'
-WARNING:backend.api:2D→3D reconstruction orchestrator failed in integrated flow: Embedding dimension mismatch: expected 1024, got 128
-INFO:backend.api:Integrated 4D visualization completed for proxy_test_user
-INFO:backend.api:Face orientations detected: {'unknown': 1}
-INFO:backend.api:🚀 Starting 7-step pipeline processing for 6 files
-INFO:backend.api:📸 Step 1: Loading and validating images...
-INFO:backend.api:✅ Loaded image 1: 280332C2-C4ED-472E-B749-D3962B3ADFE9.jpg
-INFO:backend.api:✅ Loaded image 2: 4FC5C07A-005C-4D02-AA96-1939FDAD4B79.jpg
-INFO:backend.api:✅ Loaded image 3: A4F4CC7A-23B3-4FD8-8C22-22E19DB9440B.jpg
-INFO:backend.api:✅ Loaded image 4: 97CE627D-A49B-42A1-9BFE-CCD5570FDE91.jpg
-INFO:backend.api:✅ Loaded image 5: 479926582_2134123993673834_1270801714858167817_n.jpg
-INFO:backend.api:✅ Loaded image 6: A480A7D0-CEA0-45C0-B323-24065C543F72.jpg
-INFO:backend.api:👤 Step 2: Detecting and cropping faces...
-INFO:backend.api:✅ Face detected in image 1 at (888,1036,1185,1333)
-INFO:backend.api:✅ Face detected in image 2 at (149,611,1039,1501)
-INFO:backend.api:✅ Face detected in image 3 at (888,296,1185,593)
-INFO:backend.api:✅ Face detected in image 4 at (296,1036,593,1333)
-INFO:backend.api:✅ Face detected in image 5 at (405,0,675,270)
-INFO:backend.api:✅ Face detected in image 6 at (0,1332,297,1629)
-INFO:backend.api:🧊 Step 3: Performing 3D reconstruction...
-INFO:backend.api:✅ 3D facial model reconstructed
-INFO:backend.api:🧬 Step 4: Computing 4D embeddings...
-INFO:backend.api:✅ 4D embeddings computed
-INFO:backend.api:🆔 Step 5: Generating user ID...
-INFO:backend.api:✅ Generated user ID: user_20250819_140239_tx0lkq
-INFO:backend.api:💾 Step 6: Storing in vector database...
-INFO:backend.api:✅ Data stored in vector database
-INFO:backend.api:📊 Step 7: Generating 4D model...
-INFO:backend.api:✅ 4D model saved: 4d_models/user_20250819_140239_tx0lkq_latest.json
-INFO:backend.api:🎉 7-step pipeline processing completed successfully
-INFO:backend.api:Starting integrated 4D visualization for user proxy_test_user with 1 files
-INFO:backend.api:Processing file 1/1: tiny.jpg
-WARNING:backend.api:No face landmarks found in tiny.jpg
-INFO:backend.api:Running complete facial pipeline...
-INFO:backend.api:Step 1: Scan Ingestion
-INFO:modules.facial_pipeline:🔍 Step 1: Scan Ingestion - Processing uploaded images
-INFO:modules.facial_pipeline:✅ Processed image 1/1: uploaded_image_000
-ERROR:backend.api:Error in facial pipeline: 'NoneType' object has no attribute 'get'
-WARNING:modules.reconstruction_orchestrator:GLB export failed: No module named 'trimesh'
-WARNING:backend.api:2D→3D reconstruction orchestrator failed in integrated flow: Embedding dimension mismatch: expected 1024, got 128
-INFO:backend.api:Integrated 4D visualization completed for proxy_test_user
-INFO:backend.api:Face orientations detected: {'unknown': 1}
-INFO:backend.api:Starting integrated 4D visualization for user proxy_test_user with 1 files
-INFO:backend.api:Processing file 1/1: tiny.jpg
-WARNING:backend.api:No face landmarks found in tiny.jpg
-INFO:backend.api:Running complete facial pipeline...
-INFO:backend.api:Step 1: Scan Ingestion
-INFO:modules.facial_pipeline:🔍 Step 1: Scan Ingestion - Processing uploaded images
-INFO:modules.facial_pipeline:✅ Processed image 1/1: uploaded_image_000
-ERROR:backend.api:Error in facial pipeline: 'NoneType' object has no attribute 'get'
-WARNING:modules.reconstruction_orchestrator:GLB export failed: No module named 'trimesh'
-WARNING:backend.api:2D→3D reconstruction orchestrator failed in integrated flow: Embedding dimension mismatch: expected 1024, got 128
-INFO:backend.api:Integrated 4D visualization completed for proxy_test_user
-INFO:backend.api:Face orientations detected: {'unknown': 1}
-INFO:backend.api:🚀 Starting 7-step pipeline processing for 6 files
-INFO:backend.api:📸 Step 1: Loading and validating images...
-INFO:backend.api:✅ Loaded image 1: 280332C2-C4ED-472E-B749-D3962B3ADFE9.jpg
-INFO:backend.api:✅ Loaded image 2: 4FC5C07A-005C-4D02-AA96-1939FDAD4B79.jpg
-INFO:backend.api:✅ Loaded image 3: A4F4CC7A-23B3-4FD8-8C22-22E19DB9440B.jpg
-INFO:backend.api:✅ Loaded image 4: 97CE627D-A49B-42A1-9BFE-CCD5570FDE91.jpg
-INFO:backend.api:✅ Loaded image 5: 479926582_2134123993673834_1270801714858167817_n.jpg
-INFO:backend.api:✅ Loaded image 6: A480A7D0-CEA0-45C0-B323-24065C543F72.jpg
-INFO:backend.api:👤 Step 2: Detecting and cropping faces...
-INFO:backend.api:✅ Face detected in image 1 at (888,1036,1185,1333)
-INFO:backend.api:✅ Face detected in image 2 at (149,611,1039,1501)
-INFO:backend.api:✅ Face detected in image 3 at (888,296,1185,593)
-INFO:backend.api:✅ Face detected in image 4 at (296,1036,593,1333)
-INFO:backend.api:✅ Face detected in image 5 at (405,0,675,270)
-INFO:backend.api:✅ Face detected in image 6 at (0,1332,297,1629)
-INFO:backend.api:🧊 Step 3: Performing 3D reconstruction...
-INFO:backend.api:✅ 3D facial model reconstructed
-INFO:backend.api:🧬 Step 4: Computing 4D embeddings...
-INFO:backend.api:✅ 4D embeddings computed
-INFO:backend.api:🆔 Step 5: Generating user ID...
-INFO:backend.api:✅ Generated user ID: user_20250819_140730_m6iymg
-INFO:backend.api:💾 Step 6: Storing in vector database...
-INFO:backend.api:✅ Data stored in vector database
-INFO:backend.api:📊 Step 7: Generating 4D model...
-INFO:backend.api:✅ 4D model saved: 4d_models/user_20250819_140730_m6iymg_latest.json
-INFO:backend.api:🎉 7-step pipeline processing completed successfully
-INFO:backend.api:Starting integrated 4D visualization for user proxy_test_user with 1 files
-INFO:backend.api:Processing file 1/1: tiny.jpg
-WARNING:backend.api:No face landmarks found in tiny.jpg
-INFO:backend.api:Running complete facial pipeline...
-INFO:backend.api:Step 1: Scan Ingestion
-INFO:modules.facial_pipeline:🔍 Step 1: Scan Ingestion - Processing uploaded images
-INFO:modules.facial_pipeline:✅ Processed image 1/1: uploaded_image_000
-ERROR:backend.api:Error in facial pipeline: 'NoneType' object has no attribute 'get'
-WARNING:modules.reconstruction_orchestrator:GLB export failed: No module named 'trimesh'
-WARNING:backend.api:2D→3D reconstruction orchestrator failed in integrated flow: Embedding dimension mismatch: expected 1024, got 128
-INFO:backend.api:Integrated 4D visualization completed for proxy_test_user
-INFO:backend.api:Face orientations detected: {'unknown': 1}
-INFO:backend.api:🚀 Starting 7-step pipeline processing for 6 files
-INFO:backend.api:📸 Step 1: Loading and validating images...
-INFO:backend.api:✅ Loaded image 1: 280332C2-C4ED-472E-B749-D3962B3ADFE9.jpg
-INFO:backend.api:✅ Loaded image 2: 4FC5C07A-005C-4D02-AA96-1939FDAD4B79.jpg
-INFO:backend.api:✅ Loaded image 3: A4F4CC7A-23B3-4FD8-8C22-22E19DB9440B.jpg
-INFO:backend.api:✅ Loaded image 4: 97CE627D-A49B-42A1-9BFE-CCD5570FDE91.jpg
-INFO:backend.api:✅ Loaded image 5: 479926582_2134123993673834_1270801714858167817_n.jpg
-INFO:backend.api:✅ Loaded image 6: A480A7D0-CEA0-45C0-B323-24065C543F72.jpg
-INFO:backend.api:👤 Step 2: Detecting and cropping faces...
-INFO:backend.api:✅ Face detected in image 1 at (888,1036,1185,1333)
-INFO:backend.api:✅ Face detected in image 2 at (149,611,1039,1501)
-INFO:backend.api:✅ Face detected in image 3 at (888,296,1185,593)
-INFO:backend.api:✅ Face detected in image 4 at (296,1036,593,1333)
-INFO:backend.api:✅ Face detected in image 5 at (405,0,675,270)
-INFO:backend.api:✅ Face detected in image 6 at (0,1332,297,1629)
-INFO:backend.api:🧊 Step 3: Performing 3D reconstruction...
-INFO:backend.api:✅ 3D facial model reconstructed
-INFO:backend.api:🧬 Step 4: Computing 4D embeddings...
-INFO:backend.api:✅ 4D embeddings computed
-INFO:backend.api:🆔 Step 5: Generating user ID...
-INFO:backend.api:✅ Generated user ID: user_20250819_140854_vxza2f
-INFO:backend.api:💾 Step 6: Storing in vector database...
-INFO:backend.api:✅ Data stored in vector database
-INFO:backend.api:📊 Step 7: Generating 4D model...
-INFO:backend.api:✅ 4D model saved: 4d_models/user_20250819_140854_vxza2f_latest.json
-INFO:backend.api:🎉 7-step pipeline processing completed successfully
-INFO:backend.api:Starting integrated 4D visualization for user proxy_test_user with 1 files
-INFO:backend.api:Processing file 1/1: tiny.jpg
-WARNING:backend.api:No face landmarks found in tiny.jpg
-INFO:backend.api:Running complete facial pipeline...
-INFO:backend.api:Step 1: Scan Ingestion
-INFO:modules.facial_pipeline:🔍 Step 1: Scan Ingestion - Processing uploaded images
-INFO:modules.facial_pipeline:✅ Processed image 1/1: uploaded_image_000
-ERROR:backend.api:Error in facial pipeline: 'NoneType' object has no attribute 'get'
-WARNING:modules.reconstruction_orchestrator:GLB export failed: No module named 'trimesh'
-WARNING:backend.api:2D→3D reconstruction orchestrator failed in integrated flow: Embedding dimension mismatch: expected 1024, got 128
-INFO:backend.api:Integrated 4D visualization completed for proxy_test_user
-INFO:backend.api:Face orientations detected: {'unknown': 1}
-INFO:backend.api:🚀 Starting 7-step pipeline processing for 6 files
-INFO:backend.api:📸 Step 1: Loading and validating images...
-INFO:backend.api:✅ Loaded image 1: 280332C2-C4ED-472E-B749-D3962B3ADFE9.jpg
-INFO:backend.api:✅ Loaded image 2: 4FC5C07A-005C-4D02-AA96-1939FDAD4B79.jpg
-INFO:backend.api:✅ Loaded image 3: A4F4CC7A-23B3-4FD8-8C22-22E19DB9440B.jpg
-INFO:backend.api:✅ Loaded image 4: 97CE627D-A49B-42A1-9BFE-CCD5570FDE91.jpg
-INFO:backend.api:✅ Loaded image 5: 479926582_2134123993673834_1270801714858167817_n.jpg
-INFO:backend.api:✅ Loaded image 6: A480A7D0-CEA0-45C0-B323-24065C543F72.jpg
-INFO:backend.api:👤 Step 2: Detecting and cropping faces...
-INFO:backend.api:✅ Face detected in image 1 at (888,1036,1185,1333)
-INFO:backend.api:✅ Face detected in image 2 at (149,611,1039,1501)
-INFO:backend.api:✅ Face detected in image 3 at (888,296,1185,593)
-INFO:backend.api:✅ Face detected in image 4 at (296,1036,593,1333)
-INFO:backend.api:✅ Face detected in image 5 at (405,0,675,270)
-INFO:backend.api:✅ Face detected in image 6 at (0,1332,297,1629)
-INFO:backend.api:🧊 Step 3: Performing 3D reconstruction...
-INFO:backend.api:✅ 3D facial model reconstructed
-INFO:backend.api:🧬 Step 4: Computing 4D embeddings...
-INFO:backend.api:✅ 4D embeddings computed
-INFO:backend.api:🆔 Step 5: Generating user ID...
-INFO:backend.api:✅ Generated user ID: user_20250819_141849_cgv1my
-INFO:backend.api:💾 Step 6: Storing in vector database...
-INFO:backend.api:✅ Data stored in vector database
-INFO:backend.api:📊 Step 7: Generating 4D model...
-INFO:backend.api:✅ 4D model saved: 4d_models/user_20250819_141849_cgv1my_latest.json
-INFO:backend.api:🎉 7-step pipeline processing completed successfully
-INFO:backend.api:Starting integrated 4D visualization for user proxy_test_user with 1 files
-INFO:backend.api:Processing file 1/1: tiny.jpg
-WARNING:backend.api:No face landmarks found in tiny.jpg
-INFO:backend.api:Running complete facial pipeline...
-INFO:backend.api:Step 1: Scan Ingestion
-INFO:modules.facial_pipeline:🔍 Step 1: Scan Ingestion - Processing uploaded images
-INFO:modules.facial_pipeline:✅ Processed image 1/1: uploaded_image_000
-ERROR:backend.api:Error in facial pipeline: 'NoneType' object has no attribute 'get'
-WARNING:modules.reconstruction_orchestrator:GLB export failed: No module named 'trimesh'
-WARNING:backend.api:2D→3D reconstruction orchestrator failed in integrated flow: Embedding dimension mismatch: expected 1024, got 128
-INFO:backend.api:Integrated 4D visualization completed for proxy_test_user
-INFO:backend.api:Face orientations detected: {'unknown': 1}
-INFO:backend.api:🚀 Starting 7-step pipeline processing for 6 files
-INFO:backend.api:📸 Step 1: Loading and validating images...
-INFO:backend.api:✅ Loaded image 1: 280332C2-C4ED-472E-B749-D3962B3ADFE9.jpg
-INFO:backend.api:✅ Loaded image 2: 4FC5C07A-005C-4D02-AA96-1939FDAD4B79.jpg
-INFO:backend.api:✅ Loaded image 3: A4F4CC7A-23B3-4FD8-8C22-22E19DB9440B.jpg
-INFO:backend.api:✅ Loaded image 4: 97CE627D-A49B-42A1-9BFE-CCD5570FDE91.jpg
-INFO:backend.api:✅ Loaded image 5: 479926582_2134123993673834_1270801714858167817_n.jpg
-INFO:backend.api:✅ Loaded image 6: A480A7D0-CEA0-45C0-B323-24065C543F72.jpg
-INFO:backend.api:👤 Step 2: Detecting and cropping faces...
-INFO:backend.api:✅ Face detected in image 1 at (888,1036,1185,1333)
-INFO:backend.api:✅ Face detected in image 2 at (149,611,1039,1501)
-INFO:backend.api:✅ Face detected in image 3 at (888,296,1185,593)
-INFO:backend.api:✅ Face detected in image 4 at (296,1036,593,1333)
-INFO:backend.api:✅ Face detected in image 5 at (405,0,675,270)
-INFO:backend.api:✅ Face detected in image 6 at (0,1332,297,1629)
-INFO:backend.api:🧊 Step 3: Performing 3D reconstruction...
-INFO:backend.api:✅ 3D facial model reconstructed
-INFO:backend.api:🧬 Step 4: Computing 4D embeddings...
-INFO:backend.api:✅ 4D embeddings computed
-INFO:backend.api:🆔 Step 5: Generating user ID...
-INFO:backend.api:✅ Generated user ID: user_20250819_141902_y9t349
-INFO:backend.api:💾 Step 6: Storing in vector database...
-INFO:backend.api:✅ Data stored in vector database
-INFO:backend.api:📊 Step 7: Generating 4D model...
-INFO:backend.api:✅ 4D model saved: 4d_models/user_20250819_141902_y9t349_latest.json
-INFO:backend.api:🎉 7-step pipeline processing completed successfully
-INFO:backend.api:Starting integrated 4D visualization for user proxy_test_user with 1 files
-INFO:backend.api:Processing file 1/1: tiny.jpg
-WARNING:backend.api:No face landmarks found in tiny.jpg
-INFO:backend.api:Running complete facial pipeline...
-INFO:backend.api:Step 1: Scan Ingestion
-INFO:modules.facial_pipeline:🔍 Step 1: Scan Ingestion - Processing uploaded images
-INFO:modules.facial_pipeline:✅ Processed image 1/1: uploaded_image_000
-ERROR:backend.api:Error in facial pipeline: 'NoneType' object has no attribute 'get'
-WARNING:modules.reconstruction_orchestrator:GLB export failed: No module named 'trimesh'
-WARNING:backend.api:2D→3D reconstruction orchestrator failed in integrated flow: Embedding dimension mismatch: expected 1024, got 128
-INFO:backend.api:Integrated 4D visualization completed for proxy_test_user
-INFO:backend.api:Face orientations detected: {'unknown': 1}
-INFO:backend.api:🚀 Starting 7-step pipeline processing for 6 files
-INFO:backend.api:📸 Step 1: Loading and validating images...
-INFO:backend.api:✅ Loaded image 1: 280332C2-C4ED-472E-B749-D3962B3ADFE9.jpg
-INFO:backend.api:✅ Loaded image 2: 4FC5C07A-005C-4D02-AA96-1939FDAD4B79.jpg
-INFO:backend.api:✅ Loaded image 3: A4F4CC7A-23B3-4FD8-8C22-22E19DB9440B.jpg
-INFO:backend.api:✅ Loaded image 4: 97CE627D-A49B-42A1-9BFE-CCD5570FDE91.jpg
-INFO:backend.api:✅ Loaded image 5: 479926582_2134123993673834_1270801714858167817_n.jpg
-INFO:backend.api:✅ Loaded image 6: A480A7D0-CEA0-45C0-B323-24065C543F72.jpg
-INFO:backend.api:👤 Step 2: Detecting and cropping faces...
-INFO:backend.api:✅ Face detected in image 1 at (888,1036,1185,1333)
-INFO:backend.api:✅ Face detected in image 2 at (149,611,1039,1501)
-INFO:backend.api:✅ Face detected in image 3 at (888,296,1185,593)
-INFO:backend.api:✅ Face detected in image 4 at (296,1036,593,1333)
-INFO:backend.api:✅ Face detected in image 5 at (405,0,675,270)
-INFO:backend.api:✅ Face detected in image 6 at (0,1332,297,1629)
-INFO:backend.api:🧊 Step 3: Performing 3D reconstruction...
-INFO:backend.api:✅ 3D facial model reconstructed
-INFO:backend.api:🧬 Step 4: Computing 4D embeddings...
-INFO:backend.api:✅ 4D embeddings computed
-INFO:backend.api:🆔 Step 5: Generating user ID...
-INFO:backend.api:✅ Generated user ID: user_20250819_151157_36ppvp
-INFO:backend.api:💾 Step 6: Storing in vector database...
-INFO:backend.api:✅ Data stored in vector database
-INFO:backend.api:📊 Step 7: Generating 4D model...
-INFO:backend.api:✅ 4D model saved: 4d_models/user_20250819_151157_36ppvp_latest.json
-INFO:backend.api:🎉 7-step pipeline processing completed successfully
-INFO:backend.api:Starting integrated 4D visualization for user proxy_test_user with 1 files
-INFO:backend.api:Processing file 1/1: tiny.jpg
-WARNING:backend.api:No face landmarks found in tiny.jpg
-INFO:backend.api:Running complete facial pipeline...
-INFO:backend.api:Step 1: Scan Ingestion
-INFO:modules.facial_pipeline:🔍 Step 1: Scan Ingestion - Processing uploaded images
-INFO:modules.facial_pipeline:✅ Processed image 1/1: uploaded_image_000
-ERROR:backend.api:Error in facial pipeline: 'NoneType' object has no attribute 'get'
-WARNING:modules.reconstruction_orchestrator:GLB export failed: No module named 'trimesh'
-WARNING:backend.api:2D→3D reconstruction orchestrator failed in integrated flow: Embedding dimension mismatch: expected 1024, got 128
-INFO:backend.api:Integrated 4D visualization completed for proxy_test_user
-INFO:backend.api:Face orientations detected: {'unknown': 1}
-INFO:backend.api:Generating basic OSINT data for user: test_user_genuine_osint
-INFO:backend.api:Generating basic OSINT data for user: test_user_no_data
-INFO:backend.api:🚀 Starting 7-step pipeline processing for 6 files
-INFO:backend.api:📸 Step 1: Loading and validating images...
-INFO:backend.api:✅ Loaded image 1: 280332C2-C4ED-472E-B749-D3962B3ADFE9.jpg
-INFO:backend.api:✅ Loaded image 2: 4FC5C07A-005C-4D02-AA96-1939FDAD4B79.jpg
-INFO:backend.api:✅ Loaded image 3: A4F4CC7A-23B3-4FD8-8C22-22E19DB9440B.jpg
-INFO:backend.api:✅ Loaded image 4: 97CE627D-A49B-42A1-9BFE-CCD5570FDE91.jpg
-INFO:backend.api:✅ Loaded image 5: 479926582_2134123993673834_1270801714858167817_n.jpg
-INFO:backend.api:✅ Loaded image 6: A480A7D0-CEA0-45C0-B323-24065C543F72.jpg
-INFO:backend.api:👤 Step 2: Detecting and cropping faces...
-INFO:backend.api:✅ Face detected in image 1 at (888,1036,1185,1333)
-INFO:backend.api:✅ Face detected in image 2 at (149,611,1039,1501)
-INFO:backend.api:✅ Face detected in image 3 at (888,296,1185,593)
-INFO:backend.api:✅ Face detected in image 4 at (296,1036,593,1333)
-INFO:backend.api:✅ Face detected in image 5 at (405,0,675,270)
-INFO:backend.api:✅ Face detected in image 6 at (0,1332,297,1629)
-INFO:backend.api:🧊 Step 3: Performing 3D reconstruction...
-INFO:backend.api:✅ 3D facial model reconstructed
-INFO:backend.api:🧬 Step 4: Computing 4D embeddings...
-INFO:backend.api:✅ 4D embeddings computed
-INFO:backend.api:🆔 Step 5: Generating user ID...
-INFO:backend.api:✅ Generated user ID: user_20250819_151422_tdkd63
-INFO:backend.api:💾 Step 6: Storing in vector database...
-INFO:backend.api:✅ Data stored in vector database
-INFO:backend.api:📊 Step 7: Generating 4D model...
-INFO:backend.api:✅ 4D model saved: 4d_models/user_20250819_151422_tdkd63_latest.json
-INFO:backend.api:🎉 7-step pipeline processing completed successfully
-INFO:backend.api:Starting integrated 4D visualization for user proxy_test_user with 1 files
-INFO:backend.api:Processing file 1/1: tiny.jpg
-WARNING:backend.api:No face landmarks found in tiny.jpg
-INFO:backend.api:Running complete facial pipeline...
-INFO:backend.api:Step 1: Scan Ingestion
-INFO:modules.facial_pipeline:🔍 Step 1: Scan Ingestion - Processing uploaded images
-INFO:modules.facial_pipeline:✅ Processed image 1/1: uploaded_image_000
-ERROR:backend.api:Error in facial pipeline: 'NoneType' object has no attribute 'get'
-WARNING:modules.reconstruction_orchestrator:GLB export failed: No module named 'trimesh'
-WARNING:backend.api:2D→3D reconstruction orchestrator failed in integrated flow: Embedding dimension mismatch: expected 1024, got 128
-INFO:backend.api:Integrated 4D visualization completed for proxy_test_user
-INFO:backend.api:Face orientations detected: {'unknown': 1}
-INFO:backend.api:Generating basic OSINT data for user: test_user_genuine_osint
-INFO:backend.api:Generating basic OSINT data for user: test_user_no_data
-INFO:backend.api:🚀 Starting 7-step pipeline processing for 6 files
-INFO:backend.api:📸 Step 1: Loading and validating images...
-INFO:backend.api:✅ Loaded image 1: 280332C2-C4ED-472E-B749-D3962B3ADFE9.jpg
-INFO:backend.api:✅ Loaded image 2: 4FC5C07A-005C-4D02-AA96-1939FDAD4B79.jpg
-INFO:backend.api:✅ Loaded image 3: A4F4CC7A-23B3-4FD8-8C22-22E19DB9440B.jpg
-INFO:backend.api:✅ Loaded image 4: 97CE627D-A49B-42A1-9BFE-CCD5570FDE91.jpg
-INFO:backend.api:✅ Loaded image 5: 479926582_2134123993673834_1270801714858167817_n.jpg
-INFO:backend.api:✅ Loaded image 6: A480A7D0-CEA0-45C0-B323-24065C543F72.jpg
-INFO:backend.api:👤 Step 2: Detecting and cropping faces...
-INFO:backend.api:✅ Face detected in image 1 at (888,1036,1185,1333)
-INFO:backend.api:✅ Face detected in image 2 at (149,611,1039,1501)
-INFO:backend.api:✅ Face detected in image 3 at (888,296,1185,593)
-INFO:backend.api:✅ Face detected in image 4 at (296,1036,593,1333)
-INFO:backend.api:✅ Face detected in image 5 at (405,0,675,270)
-INFO:backend.api:✅ Face detected in image 6 at (0,1332,297,1629)
-INFO:backend.api:🧊 Step 3: Performing 3D reconstruction...
-INFO:backend.api:✅ 3D facial model reconstructed
-INFO:backend.api:🧬 Step 4: Computing 4D embeddings...
-INFO:backend.api:✅ 4D embeddings computed
-INFO:backend.api:🆔 Step 5: Generating user ID...
-INFO:backend.api:✅ Generated user ID: user_20250819_151717_1arnal
-INFO:backend.api:💾 Step 6: Storing in vector database...
-INFO:backend.api:✅ Data stored in vector database
-INFO:backend.api:📊 Step 7: Generating 4D model...
-INFO:backend.api:✅ 4D model saved: 4d_models/user_20250819_151717_1arnal_latest.json
-INFO:backend.api:🎉 7-step pipeline processing completed successfully
-INFO:backend.api:Starting integrated 4D visualization for user proxy_test_user with 1 files
-INFO:backend.api:Processing file 1/1: tiny.jpg
-WARNING:backend.api:No face landmarks found in tiny.jpg
-INFO:backend.api:Running complete facial pipeline...
-INFO:backend.api:Step 1: Scan Ingestion
-INFO:modules.facial_pipeline:🔍 Step 1: Scan Ingestion - Processing uploaded images
-INFO:modules.facial_pipeline:✅ Processed image 1/1: uploaded_image_000
-ERROR:backend.api:Error in facial pipeline: 'NoneType' object has no attribute 'get'
-WARNING:modules.reconstruction_orchestrator:GLB export failed: No module named 'trimesh'
-WARNING:backend.api:2D→3D reconstruction orchestrator failed in integrated flow: Embedding dimension mismatch: expected 1024, got 128
-INFO:backend.api:Integrated 4D visualization completed for proxy_test_user
-INFO:backend.api:Face orientations detected: {'unknown': 1}
+INFO:     10.154.72.125:50874 - "GET /dual-rig HTTP/1.1" 200 OK
+INFO:     10.154.72.125:50874 - "GET /styles.css HTTP/1.1" 200 OK
+INFO:     10.154.72.125:50902 - "GET /static/face_mesh_tris.json HTTP/1.1" 200 OK
+INFO:     10.154.72.125:50976 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+WARNING:  StatReload detected changes in 'backend/api.py'. Reloading...
 INFO:     Shutting down
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
-INFO:     Finished server process [63798]
+INFO:     Finished server process [83683]
+INFO:faiss.loader:Loading faiss.
+INFO:faiss.loader:Successfully loaded faiss.
+INFO:faiss:Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1757425033.543981 5533397 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1757425033.560507 5533540 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1757425033.565868 5533540 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+INFO:modules.advanced_face_tracker:✅ Face detectors initialized
+I0000 00:00:1757425034.592837 5533397 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+I0000 00:00:1757425034.597391 5533397 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+W0000 00:00:1757425034.598383 5533592 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1757425034.604014 5533591 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1757425034.604691 5533582 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+INFO:backend.api:Vector database initialized with FAISS
+INFO:     Started server process [95379]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'backend/api.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [95379]
+INFO:faiss.loader:Loading faiss.
+INFO:faiss.loader:Successfully loaded faiss.
+INFO:faiss:Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1757425421.473285 5548912 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1757425421.475702 5548985 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1757425421.486775 5548986 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+INFO:modules.advanced_face_tracker:✅ Face detectors initialized
+I0000 00:00:1757425422.444148 5548912 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+I0000 00:00:1757425422.448522 5548912 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+W0000 00:00:1757425422.450013 5549032 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1757425422.455526 5549026 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1757425422.457423 5549037 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+INFO:backend.api:Vector database initialized with FAISS
+INFO:     Started server process [99477]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     10.154.72.125:51940 - "GET /dual-rig HTTP/1.1" 200 OK
+INFO:     10.154.72.125:51940 - "GET /styles.css HTTP/1.1" 200 OK
+INFO:     10.154.72.125:51940 - "GET /api/avatars/list?subdir=cgtrader HTTP/1.1" 200 OK
+WARNING:  StatReload detected changes in 'backend/api.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [99477]
+Process SpawnProcess-4:
+Traceback (most recent call last):
+  File "/Users/nathanbrown-bennett/.pyenv/versions/3.10.17/lib/python3.10/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/Users/nathanbrown-bennett/.pyenv/versions/3.10.17/lib/python3.10/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/venv/lib/python3.10/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+  File "/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/venv/lib/python3.10/site-packages/uvicorn/server.py", line 67, in run
+    return asyncio.run(self.serve(sockets=sockets))
+  File "/Users/nathanbrown-bennett/.pyenv/versions/3.10.17/lib/python3.10/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "/Users/nathanbrown-bennett/.pyenv/versions/3.10.17/lib/python3.10/asyncio/base_events.py", line 649, in run_until_complete
+    return future.result()
+  File "/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/venv/lib/python3.10/site-packages/uvicorn/server.py", line 71, in serve
+    await self._serve(sockets)
+  File "/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/venv/lib/python3.10/site-packages/uvicorn/server.py", line 78, in _serve
+    config.load()
+  File "/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/venv/lib/python3.10/site-packages/uvicorn/config.py", line 436, in load
+    self.loaded_app = import_from_string(self.app)
+  File "/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/venv/lib/python3.10/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+  File "/Users/nathanbrown-bennett/.pyenv/versions/3.10.17/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 879, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 1017, in get_code
+  File "<frozen importlib._bootstrap_external>", line 947, in source_to_code
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/Users/nathanbrown-bennett/4D-Image-Recognition/4D-Image-Recognition/backend/api.py", line 119
+    exts = {".glb", ".gltf", ".obj"}
+    ^^^^
+SyntaxError: expected 'except' or 'finally' block
+WARNING:  StatReload detected changes in 'backend/api.py'. Reloading...
+INFO:faiss.loader:Loading faiss.
+INFO:faiss.loader:Successfully loaded faiss.
+INFO:faiss:Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1757425691.903535 5559894 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1757425691.913888 5559933 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1757425691.919850 5559933 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+INFO:modules.advanced_face_tracker:✅ Face detectors initialized
+I0000 00:00:1757425692.929289 5559894 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+I0000 00:00:1757425692.932733 5559894 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+W0000 00:00:1757425692.933803 5560015 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1757425692.940572 5560017 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1757425692.942896 5560006 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+INFO:backend.api:Vector database initialized with FAISS
+INFO:     Started server process [2696]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'backend/api.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2696]
+INFO:faiss.loader:Loading faiss.
+INFO:faiss.loader:Successfully loaded faiss.
+INFO:faiss:Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1757426808.806204 5602437 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1757426808.819264 5602538 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1757426808.824997 5602538 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+INFO:modules.advanced_face_tracker:✅ Face detectors initialized
+I0000 00:00:1757426809.850657 5602437 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+I0000 00:00:1757426809.853980 5602437 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+W0000 00:00:1757426809.855502 5602584 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1757426809.861284 5602587 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1757426809.862365 5602576 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+INFO:backend.api:Vector database initialized with FAISS
+INFO:     Started server process [14582]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     10.154.72.125:52625 - "GET /dual-rig HTTP/1.1" 200 OK
+INFO:     10.154.72.125:52625 - "GET /api/avatars/list?subdir=cgtrader HTTP/1.1" 200 OK
+INFO:     10.154.72.125:52645 - "GET /static/face_mesh_tris.json HTTP/1.1" 200 OK
+INFO:     10.154.72.125:52651 - "GET /api/avatars/list?subdir=cgtrader HTTP/1.1" 200 OK
+INFO:     10.154.72.125:52744 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+WARNING:  StatReload detected changes in 'backend/api.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [14582]
+INFO:faiss.loader:Loading faiss.
+INFO:faiss.loader:Successfully loaded faiss.
+INFO:faiss:Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1757429414.977951 5705456 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1757429414.994306 5705633 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1757429415.000918 5705633 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+INFO:modules.advanced_face_tracker:✅ Face detectors initialized
+I0000 00:00:1757429416.109531 5705456 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+I0000 00:00:1757429416.114531 5705456 gl_context.cc:369] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+W0000 00:00:1757429416.116218 5705689 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1757429416.120371 5705682 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1757429416.121367 5705689 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+INFO:backend.api:Vector database initialized with FAISS
+INFO:     Started server process [43731]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [43731]
+INFO:     Stopping reloader process [83667]

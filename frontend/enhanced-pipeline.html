@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>7-Step Facial Recognition & 4D Visualization Pipeline</title>
+    <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * {
@@ -451,6 +452,35 @@
                     <button class="btn btn-secondary" id="reset-pipeline" onclick="resetPipeline()">Reset</button>
                 </div>
             </div>
+            <!-- Global Processing Statistics -->
+            <div id="global-stats" style="margin-top:15px;">
+                <div class="summary-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
+                    <div class="stat-item">
+                        <span class="stat-number" id="stat-images-processed">0</span>
+                        <span class="stat-label">Images Processed</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="stat-processing-time">0.0s</span>
+                        <span class="stat-label">Processing Time</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="stat-quality-score">—</span>
+                        <span class="stat-label">Quality Score</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="stat-face-detection">0/0</span>
+                        <span class="stat-label">Face Detection</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="stat-feature-extraction">0</span>
+                        <span class="stat-label">Feature Extraction</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="stat-3d-reconstruction">0 / 0</span>
+                        <span class="stat-label">3D Reconstruction</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Step 1: Scan Ingestion -->
@@ -591,6 +621,29 @@
                 <div class="visualization-container">
                     <div id="threejs-container"></div>
                 </div>
+                <!-- Viewer Controls -->
+                <div class="controls-panel" id="viewer-controls" style="margin-top:15px;">
+                    <div class="control-group">
+                        <label><input type="checkbox" id="toggle-points" checked> Show Points</label>
+                    </div>
+                    <div class="control-group">
+                        <label><input type="checkbox" id="toggle-mesh" checked> Show Mesh</label>
+                    </div>
+                    <div class="control-group" style="min-width:220px;">
+                        <label for="point-size">Point Size</label>
+                        <input id="point-size" type="range" min="1" max="10" value="5">
+                    </div>
+                    <div class="control-group" style="min-width:220px;">
+                        <label for="mesh-opacity">Mesh Opacity</label>
+                        <input id="mesh-opacity" type="range" min="10" max="100" value="70">
+                    </div>
+                    <div class="control-group">
+                        <label><input type="checkbox" id="toggle-autorotate"> Auto-rotate</label>
+                    </div>
+                    <div class="control-group">
+                        <button class="btn btn-secondary" id="reset-camera">Reset View</button>
+                    </div>
+                </div>
                 <div id="final-model-info"></div>
             </div>
         </div>
@@ -611,4 +664,20 @@
 
     <script src="enhanced-pipeline.js"></script>
 </body>
+<footer class="bottom-nav">
+    <a class="nav-item" href="/static/index.html">🏠 Home</a>
+    <a class="nav-item" href="/static/enhanced-pipeline.html">🚀 Enhanced</a>
+    <a class="nav-item" href="/filters">🎭 Filters</a>
+    <a class="nav-item" href="/static/snapchat/index.html">👻 Snapchat</a>
+    <a class="nav-item" href="/dual-rig">🎮 Dual Rig</a>
+    <a class="nav-item" href="/api">🧩 API</a>
+</footer>
+<script>
+    (function(){
+        const here = location.pathname;
+        document.querySelectorAll('.bottom-nav .nav-item').forEach(a=>{
+            try{ if(here === new URL(a.href, location.origin).pathname) a.classList.add('active'); }catch{}
+        });
+    })();
+ </script>
 </html>
