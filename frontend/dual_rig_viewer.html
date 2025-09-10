@@ -30,6 +30,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
 </head>
 <body>
+<script defer src="nav.js"></script>
   <header>
     <div class="row">
       <div style="font-weight:600">Dual Rig Live Viewer</div>
@@ -1556,21 +1557,6 @@ async function sendToExtension(){
   btn.addEventListener('click', ()=>{ sendToExtension(); });
 })();
 </script>
-<footer class="bottom-nav">
-  <a class="nav-item" href="/static/index.html">🏠 Home</a>
-  <a class="nav-item" href="/static/enhanced-pipeline.html">🚀 Enhanced</a>
-  <a class="nav-item" href="/filters">🎭 Filters</a>
-  <a class="nav-item" href="/static/snapchat/index.html">👻 Snapchat</a>
-  <a class="nav-item" href="/dual-rig">🎮 Dual Rig</a>
-  <a class="nav-item" href="/api">🧩 API</a>
-</footer>
-<script>
-  (function(){
-    const here = location.pathname;
-    document.querySelectorAll('.bottom-nav .nav-item').forEach(a=>{
-      try{ if(here === new URL(a.href, location.origin).pathname) a.classList.add('active'); }catch{}
-    });
-  })();
- </script>
+
 </body>
 </html>
