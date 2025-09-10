@@ -33,7 +33,7 @@ def test_filters_ui_roundtrip(api_server: str):
         return  # skip when chromedriver isn't available
     base = api_server
     try:
-        drv.get(f"{base}/filters")
+        drv.get(f"{base}/filters-legacy")
         time.sleep(0.2)
         # Change filter type to pixelate and fps to 24
         sel = drv.find_element(By.ID, "type")

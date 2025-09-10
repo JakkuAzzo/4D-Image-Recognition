@@ -11,7 +11,6 @@
     var links = [
       { href: '/static/index.html', label: '🏠 Home' },
       { href: '/static/enhanced-pipeline.html', label: '🚀 Enhanced' },
-      { href: '/filters', label: '🎭 Filters' },
       { href: '/static/snapchat/index.html', label: '👻 Snapchat' },
       { href: '/dual-rig', label: '🎮 Dual Rig' },
       { href: '/api', label: '🧩 API' }

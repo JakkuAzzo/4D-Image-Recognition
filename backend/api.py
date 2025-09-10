@@ -215,8 +215,13 @@ async def api_landing():
                 """
         )
 
-@app.get("/filters", response_class=HTMLResponse)
-async def filters_ui():
+@app.get("/filters")
+async def filters_redirect():
+                # Legacy route: redirect Filters UI to Dual Rig, per consolidation request
+                return RedirectResponse(url="/dual-rig", status_code=307)
+
+@app.get("/filters-legacy", response_class=HTMLResponse)
+async def filters_ui_legacy():
                 html = f"""
 <!DOCTYPE html>
 <html lang=\"en\">
@@ -314,7 +319,6 @@ async def filters_ui():
     <div class=\"bottom-nav\" style=\"position:fixed;left:50%;bottom:16px;transform:translateX(-50%);background:rgba(255,255,255,0.08);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.2);border-radius:999px;padding:8px 10px;display:flex;gap:6px;align-items:center;box-shadow:0 12px 40px rgba(0,0,0,0.35);z-index:1000;\">
         <a class=\"nav-item\" href=\"/static/index.html\" style=\"color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;\">🏠 Home</a>
         <a class=\"nav-item\" href=\"/static/enhanced-pipeline.html\" style=\"color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;\">🚀 Enhanced</a>
-        <a class=\"nav-item\" href=\"/filters\" style=\"color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;\">🎭 Filters</a>
         <a class=\"nav-item\" href=\"/static/snapchat/index.html\" style=\"color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;\">👻 Snapchat</a>
         <a class=\"nav-item\" href=\"/dual-rig\" style=\"color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;\">🎮 Dual Rig</a>
         <a class=\"nav-item\" href=\"/api\" style=\"color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;\">🧩 API</a>
@@ -601,7 +605,6 @@ async def model_viewer(user_id: str):
     <div class="bottom-nav" style="position:fixed;left:50%;bottom:16px;transform:translateX(-50%);background:rgba(255,255,255,0.08);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.2);border-radius:999px;padding:8px 10px;display:flex;gap:6px;align-items:center;box-shadow:0 12px 40px rgba(0,0,0,0.35);z-index:1000;">
         <a class="nav-item" href="/static/index.html" style="color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;">🏠 Home</a>
         <a class="nav-item" href="/static/enhanced-pipeline.html" style="color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;">🚀 Enhanced</a>
-        <a class="nav-item" href="/filters" style="color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;">🎭 Filters</a>
         <a class="nav-item" href="/static/snapchat/index.html" style="color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;">👻 Snapchat</a>
         <a class="nav-item" href="/dual-rig" style="color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;">🎮 Dual Rig</a>
         <a class="nav-item" href="/api" style="color:#fff;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:999px;">🧩 API</a>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Install Browser Extension</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <style>
+    body { background:#0b0b0b; color:#eaeaea; font-family:-apple-system, system-ui; padding:24px; }
+    .card { background:#141414; border:1px solid #222; border-radius:12px; padding:16px; max-width:720px; margin: 0 auto; }
+    a { color:#66ccff; }
+  </style>
+  <script defer src="/static/nav.js"></script>
+  </head>
+<body>
+  <div class="card">
+    <h2>Install the Identity Protection Extension</h2>
+    <p>This project includes a reference browser extension under <code>tools/identity_protection/browser_extension</code> you can load unpacked for development.</p>
+    <h3>Chromium (Chrome/Edge/Brave)</h3>
+    <ol>
+      <li>Open chrome://extensions or edge://extensions</li>
+      <li>Enable Developer Mode</li>
+      <li>Click "Load unpacked" and select the <code>tools/identity_protection/browser_extension</code> folder.</li>
+    </ol>
+    <h3>Firefox</h3>
+    <ol>
+      <li>Open about:debugging#/runtime/this-firefox</li>
+      <li>Click "Load Temporary Add-on…" and select the <code>manifest.json</code> inside <code>tools/identity_protection/browser_extension</code>.</li>
+    </ol>
+    <p>After installing, return to Dual Rig and the button will switch to "Save Config to Extension" automatically.</p>
+  </div>
+</body>
+</html>
