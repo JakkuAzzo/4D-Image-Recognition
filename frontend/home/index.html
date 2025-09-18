@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4D Image Recognition System</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script defer src="/static/nav.js"></script>
+    <!-- Three.js for 3D visualization -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🧠 4D Image Recognition System</h1>
+            <p class="subtitle">Advanced Facial Analysis & Intelligence Pipeline</p>
+            <nav style="margin-top:8px;">
+                <a href="/static/snapchat/index.html" style="color:#00ff88; text-decoration:none; font-weight:600;">👻 Snapchat Intelligence</a>
+            </nav>
+        </header>
+
+        <!-- Main Upload Interface -->
+        <section class="upload-section">
+            <div class="upload-container">
+                <div class="upload-zone" id="upload-area">
+                    <div class="upload-icon">📸</div>
+                    <h3>Select Multiple Face Images</h3>
+                    <p>Choose images for comprehensive 4D facial analysis</p>
+                    
+                    <input type="file" id="scan-files" multiple accept="image/*" style="display: none;">
+                    <button class="upload-btn" onclick="document.getElementById('scan-files').click()">
+                        Select Images
+                    </button>
+                    
+                    <div class="file-requirements">
+                        <span>📋 Requirements:</span>
+                        <ul>
+                            <li>Multiple face photos from different angles</li>
+                            <li>Good lighting, clear facial features</li>
+                            <li>JPG, PNG, or WebP format</li>
+                            <li>Face orientation detection enabled</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="selected-files" id="selected-files" style="display: none;">
+                    <h4>Selected Files <span id="file-count">(0)</span>:</h4>
+                    <div class="file-list" id="preview-grid"></div>
+                    <button class="process-btn" id="start-processing-btn" onclick="startProcessing()">
+                        🚀 Process Images
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Processing Indicator -->
+        <div class="processing-indicator" id="processing-indicator" style="display: none;">
+            <div class="spinner"></div>
+            <span>Processing your images through the 4D pipeline...</span>
+            <div class="progress-text" id="progress-text">Initializing...</div>
+        </div>
+
+        <!-- Step Processing Section -->
+        <section class="step-processing" id="step-processing" style="display: none;">
+            <h2>🔄 4D Processing Pipeline</h2>
+            <div class="step-progress">
+                <div class="step-item active" data-step="1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Scan Ingestion</div>
+                </div>
+                <div class="step-item" data-step="2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Face Detection</div>
+                </div>
+                <div class="step-item" data-step="3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Feature Extraction</div>
+                </div>
+                <div class="step-item" data-step="4">
+                    <div class="step-number">4</div>
+                    <div class="step-label">Face Comparison</div>
+                </div>
+                <div class="step-item" data-step="5">
+                    <div class="step-number">5</div>
+                    <div class="step-label">Liveness Assessment</div>
+                </div>
+                <div class="step-item" data-step="6">
+                    <div class="step-number">6</div>
+                    <div class="step-label">Mesh Fusion</div>
+                </div>
+                <div class="step-item" data-step="7">
+                    <div class="step-number">7</div>
+                    <div class="step-label">Final Results</div>
+                </div>
+            </div>
+            <div class="step-content" id="step-content">
+                <div class="step-visualization" id="step-visualization">
+                    <!-- Step visualization content will be inserted here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 3D Visualization Section -->
+        <section class="visualization-section" id="visualization-section" style="display: none;">
+            <h2>🎯 Interactive 4D Model</h2>
+            <div class="visualization-container">
+                <div id="visualization-placeholder" class="placeholder">
+                    <div class="placeholder-content">
+                        <div class="loading-spinner"></div>
+                        <p>Preparing 3D visualization...</p>
+                    </div>
+                </div>
+                <canvas id="model-canvas" style="display: none;"></canvas>
+                <div class="visualization-controls">
+                    <div class="control-group">
+                        <label>Rotation Speed:</label>
+                        <input type="range" id="rotation-speed" min="0" max="3" step="0.1" value="1" class="slider">
+                        <span id="rotation-value">1.0</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Model Detail:</label>
+                        <input type="range" id="detail-level" min="1" max="5" step="1" value="3" class="slider">
+                        <span id="detail-value">3</span>
+                    </div>
+                    <div class="control-group">
+                        <button onclick="resetCamera()" class="control-btn">Reset View</button>
+                        <button onclick="toggleAutoRotate()" class="control-btn" id="auto-rotate-btn">Auto Rotate</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Container -->
+        <section class="results-section" id="results-container" style="display: none;">
+            <h2>📊 4D Analysis Results</h2>
+            
+            <!-- Enhanced Model Preview Container with Step Navigation -->
+            <div class="model-preview-container">
+                <h4>🔬 Interactive 4D Pipeline Analysis</h4>
+                
+                <!-- Step Navigation -->
+                <div class="step-navigation">
+                    <div class="step-nav-btn" data-step="1">
+                        <div class="step-number">1</div>
+                        <div class="step-name">Upload</div>
+                    </div>
+                    <div class="step-nav-btn" data-step="2">
+                        <div class="step-number">2</div>
+                        <div class="step-name">Detect</div>
+                    </div>
+                    <div class="step-nav-btn" data-step="3">
+                        <div class="step-number">3</div>
+                        <div class="step-name">Extract</div>
+                    </div>
+                    <div class="step-nav-btn" data-step="4">
+                        <div class="step-number">4</div>
+                        <div class="step-name">Compare</div>
+                    </div>
+                    <div class="step-nav-btn" data-step="5">
+                        <div class="step-number">5</div>
+                        <div class="step-name">Assess</div>
+                    </div>
+                    <div class="step-nav-btn" data-step="6">
+                        <div class="step-number">6</div>
+                        <div class="step-name">Merge</div>
+                    </div>
+                    <div class="step-nav-btn" data-step="7">
+                        <div class="step-number">7</div>
+                        <div class="step-name">Result</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Dashboard -->
+            <div class="results-dashboard">
+                <div class="result-card">
+                    <h5>📈 Processing Statistics</h5>
+                    <div id="processing-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Images Processed:</span>
+                            <span class="stat-value" id="images-count">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Processing Time:</span>
+                            <span class="stat-value" id="processing-time">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Quality Score:</span>
+                            <span class="stat-value" id="quality-score">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <h5>🎯 Facial Analysis</h5>
+                    <div id="facial-analysis">
+                        <div class="analysis-item">
+                            <span class="analysis-label">Face Detection:</span>
+                            <span class="analysis-status" id="face-detection-status">Pending</span>
+                        </div>
+                        <div class="analysis-item">
+                            <span class="analysis-label">Feature Extraction:</span>
+                            <span class="analysis-status" id="feature-extraction-status">Pending</span>
+                        </div>
+                        <div class="analysis-item">
+                            <span class="analysis-label">3D Reconstruction:</span>
+                            <span class="analysis-status" id="reconstruction-status">Pending</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OSINT Intelligence Section -->
+            <div class="osint-intelligence" id="osint-section">
+                <h6>🕵️ OSINT Intelligence Analysis</h6>
+                <div class="intelligence-grid">
+                    <div class="intel-category">
+                        <h7>Facial Recognition</h7>
+                        <ul id="facial-intel">
+                            <li>High-confidence facial matching</li>
+                            <li>Advanced feature comparison</li>
+                            <li>Multi-angle verification</li>
+                        </ul>
+                    </div>
+                    <div class="intel-category">
+                        <h7>Biometric Analysis</h7>
+                        <ul id="biometric-intel">
+                            <li>Liveness assessment completed</li>
+                            <li>Geometric feature mapping</li>
+                            <li>Identity verification score</li>
+                        </ul>
+                    </div>
+                    <div class="intel-category">
+                        <h7>Intelligence Summary</h7>
+                        <ul id="intelligence-summary">
+                            <li>Processing pipeline complete</li>
+                            <li>Model reconstruction successful</li>
+                            <li>Ready for analysis export</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Display -->
+            <div class="results-display" id="results-display">
+                <!-- Results will be populated by JavaScript -->
+            </div>
+
+            <!-- Download Options -->
+            <div class="download-section" id="download-section" style="display: none;">
+                <h5>📥 Export Results</h5>
+                <div class="download-options">
+                    <button class="download-btn" onclick="downloadResults('json')">
+                        📄 Download JSON Report
+                    </button>
+                    <button class="download-btn" onclick="downloadResults('model')">
+                        🎯 Download 3D Model
+                    </button>
+                    <button class="download-btn" onclick="downloadResults('analysis')">
+                        📊 Download Analysis
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="/static/app.js"></script>
+    <script>
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('4D Image Recognition System loaded');
+            
+            // Set up step navigation
+            const stepButtons = document.querySelectorAll('.step-nav-btn');
+            stepButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const step = this.getAttribute('data-step');
+                    if (typeof showPipelineStep === 'function') {
+                        showPipelineStep(parseInt(step));
+                    }
+                });
+            });
+        });
+
+        // Add missing functions that the HTML expects
+        function startProcessing() {
+            console.log('Start Processing clicked');
+            if (typeof startIntegratedVisualization === 'function') {
+                startIntegratedVisualization();
+            }
+        }
+
+        function downloadResults(type) {
+            console.log('Download:', type);
+            // Implementation for download functionality
+        }
+
+        function resetCamera() {
+            if (typeof resetVisualizationCamera === 'function') {
+                resetVisualizationCamera();
+            }
+        }
+
+        function toggleAutoRotate() {
+            if (typeof toggleAutoRotation === 'function') {
+                toggleAutoRotation();
+            }
+        }
+    </script>
+
+    <!-- Main application JavaScript -->
+    <script src="/static/app.js"></script>
+    
+    <!-- Initialize the application when DOM is loaded -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 4D Image Recognition App - DOM Ready');
+            
+            // Initialize file handling
+            if (typeof setupFileHandling === 'function') {
+                setupFileHandling();
+            } else {
+                console.error('❌ setupFileHandling function not found');
+            }
+            
+            // Initialize camera functionality
+            if (typeof initializeCameraSystem === 'function') {
+                initializeCameraSystem();
+            }
+            
+            // Initialize 3D visualization
+            if (typeof init3DVisualization === 'function') {
+                init3DVisualization();
+            }
+            
+            // Initialize OSINT search functionality
+            if (typeof initializeOSINTSearch === 'function') {
+                initializeOSINTSearch();
+            }
+            
+            console.log('✅ 4D Image Recognition App - Initialization Complete');
+        });
+    </script>
+</body>
+</html>

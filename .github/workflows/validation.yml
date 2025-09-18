@@ -1,0 +1,227 @@
+name: Validation Suite
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        min_speedup: ["1.00", "1.05", "1.10"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-glx libglib2.0-0 libgtk-3-0 libnss3 libxss1 libasound2
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-timeout ruff black isort
+
+      - name: Run validation (no UI tests) MIN_SPEEDUP=${{ matrix.min_speedup }}
+        env:
+          IMG_DIR: sample_images
+          MIN_SPEEDUP: ${{ matrix.min_speedup }}
+        run: |
+          make validate-all || true
+
+      - name: Generate provenance artifacts for bundle
+        run: |
+          set -e
+          mkdir -p exports/validation_${{ matrix.min_speedup }}/provenance
+          # pHash calibration (lightweight)
+          python -m scripts.phash_calibration \
+            --output exports/validation_${{ matrix.min_speedup }}/provenance/phash_threshold.json \
+            --roc-csv exports/validation_${{ matrix.min_speedup }}/provenance/phash_roc.csv \
+            --roc-png exports/validation_${{ matrix.min_speedup }}/provenance/phash_roc.png \
+            --samples 20 --positives 40 --negatives 40 --target-fpr 0.02 || true
+          # Watermark robustness + metrics
+          python - <<'PY'
+          from PIL import Image
+          import numpy as np, json, statistics, os
+          d = f"exports/validation_${{ matrix.min_speedup }}/provenance"
+          os.makedirs(d, exist_ok=True)
+          arr = (np.random.default_rng(0).integers(0,256,size=(128,128,3),dtype='uint8'))
+          Image.fromarray(arr,'RGB').save(f"{d}/synthetic.png")
+          import subprocess, sys
+          subprocess.run([sys.executable,'-m','scripts.watermark_robustness','--image',f"{d}/synthetic.png",'--length','64','--output',f"{d}/watermark_robustness.json"], check=False)
+          try:
+              data=json.load(open(f"{d}/watermark_robustness.json"))
+              bers=[s.get('ber',0.0) for s in data.get('scenarios',[])]
+              med=statistics.median(bers) if bers else 0.0
+          except Exception:
+              med=0.0
+          json.dump({'ber_median': float(med)}, open(f"{d}/watermark_metrics.json",'w'), indent=2)
+          PY
+          # Fusion report + schema validation (non-blocking)
+          python - <<'PY'
+          from PIL import Image
+          import os, subprocess, sys
+          d = f"exports/validation_${{ matrix.min_speedup }}/provenance"
+          a=Image.new('RGB',(64,64),'white'); b=Image.new('RGB',(64,64),'lightgray')
+          a.save(f"{d}/a.png"); b.save(f"{d}/b.png")
+          # produce a tiny ledger
+          from modules.ledger import Ledger
+          led=Ledger(secret_key=b'validations3cret', persist_path=f"{d}/ledger.jsonl")
+          led.append({'event':'ingest','id':1}); led.append({'event':'process','id':1})
+          subprocess.run([sys.executable,'-m','scripts.fusion_report','--original-img',f"{d}/a.png",'--suspect-img',f"{d}/b.png",'--ledger-json',f"{d}/ledger.jsonl",'--ledger-secret','validations3cret','--no-semantic','--output',f"{d}/fusion_report.json"], check=False)
+          # schema validate (non-blocking)
+          if os.path.exists(f"{d}/fusion_report.json"):
+              subprocess.run([sys.executable,'-m','scripts.validate_fusion_schema','--input',f"{d}/fusion_report.json",'--schema','schemas/fusion_report.schema.json'], check=False)
+          PY
+          # Ledger metrics for archive
+          python -m scripts.compute_ledger_metrics --ledger exports/validation_${{ matrix.min_speedup }}/provenance/ledger.jsonl --output exports/validation_${{ matrix.min_speedup }}/provenance/ledger_metrics.json --secret validations3cret || true
+          # Consolidated provenance drift (non-blocking; baselines may be bootstrapped separately)
+          python -m scripts.check_provenance_drift \
+            --current-phash exports/validation_${{ matrix.min_speedup }}/provenance/phash_threshold.json \
+            --baseline-phash metrics/phash_baseline.json \
+            --current-watermark exports/validation_${{ matrix.min_speedup }}/provenance/watermark_metrics.json \
+            --baseline-watermark metrics/watermark_baseline.json \
+            --output exports/validation_${{ matrix.min_speedup }}/provenance/provenance_drift.json || true
+
+      - name: Write compact provenance summary
+        run: |
+          python - <<'PY'
+          import json, os
+          d = f"exports/validation_${{ matrix.min_speedup }}/provenance"
+          def _safe(path, default=None):
+              try:
+                  with open(path) as f:
+                      return json.load(f)
+              except Exception:
+                  return default
+          phash = _safe(f"{d}/phash_threshold.json", {}) or {}
+          wm = _safe(f"{d}/watermark_metrics.json", {}) or {}
+          drift = _safe(f"{d}/provenance_drift.json", {}) or {}
+          fusion = _safe(f"{d}/fusion_report.json", {}) or {}
+
+          lines = [
+              "# Provenance Summary", "",
+              f"- pHash AUC: {phash.get('auc_estimate', phash.get('auc','N/A'))}",
+              f"- Watermark median BER: {wm.get('ber_median', wm.get('median_ber','N/A'))}",
+              f"- Drift overall alert: {drift.get('overall_alert','N/A')}",
+          ]
+          # Fusion quick view
+          if isinstance(fusion, dict) and 'fusion' in fusion:
+              f = fusion['fusion']
+              lines += [
+                  "", "## Fusion", f"- Score: {f.get('score','N/A')} ({f.get('category','N/A')})", "- Components:",
+              ]
+              comps = f.get('components', {}) or {}
+              for k,v in comps.items():
+                  lines.append(f"  - {k}: {v}")
+          os.makedirs(d, exist_ok=True)
+          with open(f"{d}/provenance_summary.md", 'w') as md:
+              md.write("\n".join(lines) + "\n")
+          print(f"Wrote {d}/provenance_summary.md")
+          PY
+
+      - name: Archive validation artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-artifacts-${{ matrix.min_speedup }}
+          path: exports/validation_*/
+          if-no-files-found: warn
+
+      - name: Show combined benchmark history
+        if: always()
+        run: |
+          python scripts/benchmark_history_view.py || true
+
+      - name: Update latest validation manifest
+        if: always()
+        run: |
+          python scripts/update_latest_validation.py || true
+
+  ui-smoke:
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install system deps (for Chrome & Selenium)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget unzip gnupg2 libglib2.0-0 libnss3 libgconf-2-4 libfontconfig1 libxss1 libappindicator1 libasound2 libatk-bridge2.0-0 libgtk-3-0 xvfb
+      - name: Install Google Chrome
+        run: |
+          wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+      - name: Install ChromeDriver matching Chrome
+        run: |
+          CHROME_VERSION=$(google-chrome --version | awk '{print $3}')
+          BASE_VERSION=${CHROME_VERSION%%.*}
+          LATEST=$(wget -qO- https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${BASE_VERSION})
+          wget -q https://chromedriver.storage.googleapis.com/${LATEST}/chromedriver_linux64.zip
+          unzip -q chromedriver_linux64.zip
+          sudo mv chromedriver /usr/local/bin/chromedriver
+          sudo chmod +x /usr/local/bin/chromedriver
+      - name: Install Python deps (app + tests + selenium)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install selenium
+      - name: Start HTTPS server (background)
+        env:
+          APP_HOST: 0.0.0.0
+          APP_PORT: 8000
+        run: |
+          nohup uvicorn backend.app.main:app \
+            --host 0.0.0.0 --port 8000 \
+            --ssl-keyfile ssl/key.pem --ssl-certfile ssl/cert.pem \
+            --log-level info > server.log 2>&1 &
+          echo $! > server.pid
+          # wait for health
+          for i in {1..30}; do
+            if curl -k -sSf https://localhost:8000/healthz >/dev/null; then echo "Server healthy"; break; fi; sleep 1; done
+          curl -k -sS https://localhost:8000/healthz | head -c 200 || true
+      - name: Run UI smoke (capture homepage, api, docs screenshots)
+        env:
+          RUN_UI_SMOKE: '1'
+          APP_BASE_URL: https://localhost:8000
+        run: |
+          pytest -q tests/test_ui_smoke.py || true
+      - name: Upload landing screenshot artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-screenshots
+          path: |
+            exports/ui-smoke/landing_screenshot.png
+            exports/ui-smoke/api_screenshot.png
+            exports/ui-smoke/docs_screenshot.png
+          if-no-files-found: warn
+      - name: Upload server logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-smoke-server-logs
+          path: server.log
+          if-no-files-found: warn
+      - name: Stop server
+        if: always()
+        run: |
+          if [ -f server.pid ]; then kill $(cat server.pid) || true; fi

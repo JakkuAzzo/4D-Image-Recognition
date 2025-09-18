@@ -1,0 +1,14 @@
+Metric,Baseline,Enhanced,Diff
+Reverse Strength Mean,,0.0,
+Brightness Mean Avg,124.41,124.41,0.0
+
+Distribution,Baseline Count,Baseline Mean,Baseline StDev,Baseline Median,Enhanced Count,Enhanced Mean,Enhanced StDev,Enhanced Median,Diff Mean,Diff StDev,Diff Median
+reverse_strengths,0,,,,23,0.0,0.0,0.0,,,
+brightness_mean_values,23,124.41,47.293,161.414,23,124.41,47.293,161.414,0.0,0.0,0.0
+
+Anomaly Type,Baseline,Enhanced,Diff
+hash_duplicates,10,10,0
+gps_location_anomalies,0,0,0
+timestamp_anomalies,0,0,0
+device_inconsistencies,0,0,0
+brightness_outliers,0,0,0

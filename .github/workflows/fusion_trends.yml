@@ -1,0 +1,63 @@
+name: Weekly Fusion Trends
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'  # Every Monday 03:00 UTC
+  workflow_dispatch:
+
+jobs:
+  fusion-trends:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Generate sample fusion runs
+        run: |
+          python - <<'PY'
+          from PIL import Image
+          import numpy as np
+          from modules.ledger import Ledger
+          import subprocess, json
+          import os, random
+          # Create or clear history
+          open('fusion_history.csv','w').close()
+          for i in range(10):
+              rng = np.random.default_rng(i)
+              a = rng.integers(0,256,size=(32,32,3),dtype='uint8')
+              b = a.copy(); b[0,0,0] = (b[0,0,0] + (i+7)) % 255
+              from pathlib import Path
+              ap = Path(f'a_{i}.png')
+              bp = Path(f'b_{i}.png')
+              Image.fromarray(a,'RGB').save(ap)
+              Image.fromarray(b,'RGB').save(bp)
+              ledger = Ledger(secret_key=b'weeklysecret', persist_path=f'ledger_{i}.jsonl')
+              ledger.append({'event':'ingest','i':i})
+              ledger.append({'event':'process','i':i})
+              subprocess.run([
+                  'python','-m','scripts.fusion_report',
+                  '--original-img', str(ap),
+                  '--suspect-img', str(bp),
+                  '--ledger-json', f'ledger_{i}.jsonl',
+                  '--ledger-secret','weeklysecret',
+                  '--no-semantic',
+                  '--output', f'fusion_{i}.json',
+                  '--csv-append','fusion_history.csv'
+              ], check=True)
+          PY
+      - name: Aggregate fusion history
+        run: |
+          python -m scripts.aggregate_fusion_history --input fusion_history.csv --output fusion_history_summary.json
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: fusion-trends
+          path: |
+            fusion_history.csv
+            fusion_history_summary.json

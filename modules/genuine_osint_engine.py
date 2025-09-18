@@ -25,6 +25,7 @@ from selenium.webdriver.chrome.webdriver import WebDriver as ChromeWebDriver
 import logging
 from urllib.parse import urlparse
 import urllib3
+from contextlib import suppress
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -53,6 +54,10 @@ class GenuineOSINTEngine:
         })
         self.driver = None
         self.temp_dir = Path(tempfile.mkdtemp())
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.artifacts_root = Path("exports") / "osint_engine_artifacts" / ts
+        with suppress(Exception):
+            self.artifacts_root.mkdir(parents=True, exist_ok=True)
         
     def setup_browser(self):
         """Setup Chrome browser for real web automation"""
@@ -201,26 +206,35 @@ class GenuineOSINTEngine:
         
         try:
             driver = self._require_driver()
-            driver.get("https://images.google.com")
-            time.sleep(3)
-            
-            # Click camera icon for reverse search
-            camera_btn = WebDriverWait(driver, 15).until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR, "[aria-label='Search by image']"))
-            )
-            camera_btn.click()
-            time.sleep(2)
-            
+            self._navigate_and_save(driver, "https://images.google.com", "google", stage="loaded")
+
+            # Click camera icon for reverse search (try multiple selectors)
+            self._click_any(driver, [
+                (By.CSS_SELECTOR, "[aria-label='Search by image']"),
+                (By.CSS_SELECTOR, "div[aria-label='Search by image']"),
+                (By.CSS_SELECTOR, "button[aria-label='Search by image']"),
+            ], timeout=15)
+            time.sleep(1)
+
             # Upload image
-            file_input = WebDriverWait(driver, 15).until(
+            file_input = WebDriverWait(driver, 20).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "input[type='file']"))
             )
             file_input.send_keys(str(image_path.resolve()))
-            time.sleep(8)  # Wait for processing
-            
+            self._save_screenshot(driver, "google", "uploaded")
+
+            # Wait for results
+            with suppress(TimeoutException):
+                WebDriverWait(driver, 25).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "#search, a[href*='imgrefurl'], a[href^='http']"))
+                )
+            time.sleep(2)
+            self._save_page(driver, "google", "results.html")
+            self._save_screenshot(driver, "google", "results.png")
+
             # Extract URLs from results
             urls = self._extract_google_urls()
-            
+
             return {
                 "engine": "Google Images",
                 "status": "success",
@@ -230,6 +244,9 @@ class GenuineOSINTEngine:
             
         except Exception as e:
             logger.error(f"❌ Google search failed: {e}")
+            with suppress(Exception):
+                self._save_page(self._require_driver(), "google", "error.html")
+                self._save_screenshot(self._require_driver(), "google", "error.png")
             return {
                 "engine": "Google Images",
                 "status": "failed",
@@ -244,26 +261,35 @@ class GenuineOSINTEngine:
         
         try:
             driver = self._require_driver()
-            driver.get("https://yandex.com/images/")
-            time.sleep(3)
-            
-            # Click camera icon
-            camera_btn = WebDriverWait(driver, 15).until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR, ".input__camera"))
-            )
-            camera_btn.click()
-            time.sleep(2)
-            
+            self._navigate_and_save(driver, "https://yandex.com/images/", "yandex", stage="loaded")
+
+            # Click camera icon (multiple variants)
+            self._click_any(driver, [
+                (By.CSS_SELECTOR, ".input__camera"),
+                (By.CSS_SELECTOR, "button[aria-label*='image']"),
+                (By.CSS_SELECTOR, "button[title*='image']"),
+                (By.CSS_SELECTOR, "a[aria-label*='image']"),
+            ], timeout=20)
+            time.sleep(1)
+
             # Upload image
-            file_input = WebDriverWait(driver, 15).until(
+            file_input = WebDriverWait(driver, 20).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "input[type='file']"))
             )
             file_input.send_keys(str(image_path.resolve()))
-            time.sleep(8)
-            
+            self._save_screenshot(driver, "yandex", "uploaded")
+
+            with suppress(TimeoutException):
+                WebDriverWait(driver, 25).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "a[href^='http']"))
+                )
+            time.sleep(2)
+            self._save_page(driver, "yandex", "results.html")
+            self._save_screenshot(driver, "yandex", "results.png")
+
             # Extract URLs from results
             urls = self._extract_yandex_urls()
-            
+
             return {
                 "engine": "Yandex Images",
                 "status": "success", 
@@ -273,6 +299,9 @@ class GenuineOSINTEngine:
             
         except Exception as e:
             logger.error(f"❌ Yandex search failed: {e}")
+            with suppress(Exception):
+                self._save_page(self._require_driver(), "yandex", "error.html")
+                self._save_screenshot(self._require_driver(), "yandex", "error.png")
             return {
                 "engine": "Yandex Images",
                 "status": "failed",
@@ -287,19 +316,26 @@ class GenuineOSINTEngine:
         
         try:
             driver = self._require_driver()
-            driver.get("https://tineye.com")
-            time.sleep(3)
-            
+            self._navigate_and_save(driver, "https://tineye.com", "tineye", stage="loaded")
+
             # Upload image
-            file_input = WebDriverWait(driver, 15).until(
+            file_input = WebDriverWait(driver, 20).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "input[type='file']"))
             )
             file_input.send_keys(str(image_path.resolve()))
-            time.sleep(8)
-            
+            self._save_screenshot(driver, "tineye", "uploaded")
+
+            with suppress(TimeoutException):
+                WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, ".match, .result, a[href^='http']"))
+                )
+            time.sleep(2)
+            self._save_page(driver, "tineye", "results.html")
+            self._save_screenshot(driver, "tineye", "results.png")
+
             # Extract URLs from results
             urls = self._extract_tineye_urls()
-            
+
             return {
                 "engine": "TinEye",
                 "status": "success",
@@ -309,6 +345,9 @@ class GenuineOSINTEngine:
             
         except Exception as e:
             logger.error(f"❌ TinEye search failed: {e}")
+            with suppress(Exception):
+                self._save_page(self._require_driver(), "tineye", "error.html")
+                self._save_screenshot(self._require_driver(), "tineye", "error.png")
             return {
                 "engine": "TinEye",
                 "status": "failed",
@@ -323,7 +362,7 @@ class GenuineOSINTEngine:
         try:
             # Look for actual result links
             driver = self._require_driver()
-            link_elements = driver.find_elements(By.CSS_SELECTOR, "a[href*='://']")
+            link_elements = driver.find_elements(By.CSS_SELECTOR, "#search a[href^='http'], a[jsname][href^='http'], a[href*='imgrefurl=']")
             
             for element in link_elements[:30]:  # Top 30 results
                 try:
@@ -344,7 +383,7 @@ class GenuineOSINTEngine:
         try:
             # Look for result links
             driver = self._require_driver()
-            link_elements = driver.find_elements(By.CSS_SELECTOR, "a[href*='://']")
+            link_elements = driver.find_elements(By.CSS_SELECTOR, "a[href^='http']")
             
             for element in link_elements[:30]:
                 try:
@@ -365,7 +404,7 @@ class GenuineOSINTEngine:
         try:
             # Look for match links
             driver = self._require_driver()
-            match_elements = driver.find_elements(By.CSS_SELECTOR, ".match .domain a")
+            match_elements = driver.find_elements(By.CSS_SELECTOR, ".match .domain a, .result .domain a, a[href^='http']")
             
             for element in match_elements:
                 try:
@@ -407,12 +446,12 @@ class GenuineOSINTEngine:
     async def _verify_url(self, url: str) -> bool:
         """Verify if a URL is actually accessible"""
         try:
-            response = requests.head(url, timeout=10, allow_redirects=True)
+            response = self.session.head(url, timeout=10, allow_redirects=True, verify=False)
             return response.status_code < 400
         except:
             try:
                 # Try GET request if HEAD fails
-                response = requests.get(url, timeout=10, allow_redirects=True)
+                response = self.session.get(url, timeout=10, allow_redirects=True, verify=False)
                 return response.status_code < 400 and "404" not in response.text.lower()
             except:
                 return False
@@ -448,6 +487,56 @@ class GenuineOSINTEngine:
             shutil.rmtree(self.temp_dir)
         except:
             pass
+
+    # Helpers
+    def _engine_artifacts_dir(self, engine: str) -> Path:
+        d = self.artifacts_root / engine
+        with suppress(Exception):
+            d.mkdir(parents=True, exist_ok=True)
+        return d
+
+    def _save_screenshot(self, driver: ChromeWebDriver, engine: str, name: str) -> None:
+        try:
+            if not name.endswith(".png"):
+                name = f"{name}.png"
+            out = self._engine_artifacts_dir(engine) / name
+            with suppress(Exception):
+                out.parent.mkdir(parents=True, exist_ok=True)
+            driver.save_screenshot(str(out))
+            logger.info(f"📸 Saved screenshot: {out}")
+        except Exception as e:
+            logger.debug(f"Could not save screenshot for {engine}: {e}")
+
+    def _save_page(self, driver: ChromeWebDriver, engine: str, name: str = "page.html") -> None:
+        try:
+            if not name.endswith(".html"):
+                name = f"{name}.html"
+            out = self._engine_artifacts_dir(engine) / name
+            with open(out, "w", encoding="utf-8") as f:
+                f.write(driver.page_source or "")
+            logger.info(f"📝 Saved HTML: {out}")
+        except Exception as e:
+            logger.debug(f"Could not save HTML for {engine}: {e}")
+
+    def _navigate_and_save(self, driver: ChromeWebDriver, url: str, engine: str, stage: str = "loaded") -> None:
+        driver.get(url)
+        time.sleep(2)
+        self._save_screenshot(driver, engine, f"{stage}.png")
+        with suppress(Exception):
+            self._save_page(driver, engine, f"{stage}.html")
+
+    def _click_any(self, driver: ChromeWebDriver, selectors: List[tuple], timeout: int = 10) -> None:
+        last_exc: Optional[Exception] = None
+        for by, sel in selectors:
+            try:
+                el = WebDriverWait(driver, timeout).until(EC.element_to_be_clickable((by, sel)))
+                el.click()
+                return
+            except Exception as e:
+                last_exc = e
+                continue
+        if last_exc:
+            raise last_exc
 
 # Create global instance
 genuine_osint_engine = GenuineOSINTEngine()

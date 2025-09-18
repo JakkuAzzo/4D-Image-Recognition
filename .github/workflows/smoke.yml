@@ -1,0 +1,226 @@
+name: Smoke Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    env:
+      SKIP_SERVER_TESTS: 1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install dependencies (core subset)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run fast unit tests
+        run: |
+          pytest --maxfail=1 --disable-warnings \
+            --json-report --json-report-file=smoke_pytest_report.json \
+            tests/test_watermarking.py tests/test_perceptual_fingerprint.py tests/test_ledger.py tests/test_privacy.py tests/test_screenshot_diff.py
+      - name: Build smoke summary JSON
+        run: |
+          python -m scripts.generate_smoke_summary --input smoke_pytest_report.json --output smoke_summary.json
+      - name: Post smoke notification (optional)
+        run: |
+          python -m scripts.notification_dispatch --input smoke_summary.json --title "Smoke Tests"
+  robustness:
+    runs-on: ubuntu-latest
+    needs: smoke
+    if: always()
+    env:
+      SKIP_SERVER_TESTS: 1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Generate synthetic image
+        run: |
+          python - <<'PY'
+          from PIL import Image
+          import numpy as np
+          arr = (np.random.default_rng(0).integers(0,256,size=(128,128,3),dtype='uint8'))
+          Image.fromarray(arr,'RGB').save('synthetic.png')
+          PY
+      - name: Run watermark robustness harness
+        run: |
+          python -m scripts.watermark_robustness --image synthetic.png --length 64 --output robustness_report.json
+      - name: Compute watermark median BER metrics
+        run: |
+          python - <<'PY'
+          import json, statistics
+          data = json.load(open('robustness_report.json'))
+          bers = [s['ber'] for s in data.get('scenarios', [])]
+          med = statistics.median(bers) if bers else 0.0
+          out = {'ber_median': float(med)}
+          json.dump(out, open('watermark_metrics.json','w'))
+          print('watermark ber_median =', med)
+          PY
+      - name: Report summary
+        run: |
+          cat robustness_report.json
+      - name: Post (optional) notification
+        run: |
+          python -m scripts.notification_dispatch --input robustness_report.json --title "Watermark Robustness"
+      - name: Upload watermark metrics
+        uses: actions/upload-artifact@v4
+        with:
+          name: watermark-metrics
+          path: watermark_metrics.json
+  phash-calibration:
+    runs-on: ubuntu-latest
+    needs: smoke
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install dependencies (subset)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run calibration (with ROC export + PNG)
+        run: |
+          python -m scripts.phash_calibration --output phash_threshold.json --roc-csv phash_roc.csv --roc-png phash_roc.png --samples 30 --positives 80 --negatives 80 --target-fpr 0.02 || true
+      - name: AUC drift check
+        run: |
+          python -m scripts.check_auc_drift --current phash_threshold.json --baseline metrics/phash_baseline.json --max-delta 0.05 --output phash_auc_drift.json || true
+          cat phash_auc_drift.json || true
+      - name: Upload threshold artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: phash-threshold
+          path: phash_threshold.json
+      - name: Upload ROC CSV artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: phash-roc
+          path: phash_roc.csv
+      - name: Upload ROC PNG artifact (if exists)
+        if: hashFiles('phash_roc.png') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: phash-roc-png
+          path: phash_roc.png
+      - name: Upload AUC drift artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: phash-auc-drift
+          path: phash_auc_drift.json
+  fusion-provenance:
+    runs-on: ubuntu-latest
+    needs: smoke
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+            python-version: '3.10'
+      - name: Install dependencies (subset)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Generate tiny test images & ledger
+        run: |
+          python - <<'PY'
+          from PIL import Image
+          import numpy as np, json
+          from modules.ledger import Ledger
+          # Deterministic small images
+          rng = np.random.default_rng(42)
+          a = (rng.integers(0,256,size=(32,32,3),dtype='uint8'))
+          b = a.copy(); b[0,0,0] = (b[0,0,0] + 13) % 255
+          Image.fromarray(a,'RGB').save('fusion_a.png')
+          Image.fromarray(b,'RGB').save('fusion_b.png')
+          ledger = Ledger(secret_key=b'fusionsecret', persist_path='fusion_ledger.jsonl')
+          ledger.append({'event':'ingest','id':1})
+          ledger.append({'event':'process','id':1})
+          PY
+      - name: Run fusion_report
+        run: |
+          python -m scripts.fusion_report --original-img fusion_a.png --suspect-img fusion_b.png \
+            --ledger-json fusion_ledger.jsonl --ledger-secret fusionsecret --no-semantic \
+            --output fusion_report.json --csv-append fusion_history.csv || true
+      - name: Compute ledger metrics (anomaly_rate)
+        env:
+          LEDGER_SECRET: fusionsecret
+        run: |
+          python -m scripts.compute_ledger_metrics --ledger fusion_ledger.jsonl --output ledger_metrics.json
+      - name: Validate fusion_report against JSON schema
+        run: |
+          python -m scripts.validate_fusion_schema --input fusion_report.json --schema schemas/fusion_report.schema.json || true
+      - name: Show fusion report
+        run: |
+          cat fusion_report.json || true
+          head -n 5 fusion_history.csv || true
+      - name: Upload fusion report artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: fusion-provenance
+          path: |
+            fusion_report.json
+            fusion_history.csv
+            ledger_metrics.json
+
+  provenance-drift:
+    runs-on: ubuntu-latest
+    needs: [phash-calibration, robustness]
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Download pHash threshold artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: phash-threshold
+          path: phash-threshold
+      - name: Download watermark metrics artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: watermark-metrics
+          path: watermark-metrics
+      - name: Download fusion-provenance artifact (for ledger metrics)
+        uses: actions/download-artifact@v4
+        with:
+          name: fusion-provenance
+          path: fusion-provenance
+      - name: Run consolidated provenance drift check
+        run: |
+          python -m scripts.check_provenance_drift \
+            --current-phash phash-threshold/phash_threshold.json \
+            --baseline-phash metrics/phash_baseline.json \
+            --current-watermark watermark-metrics/watermark_metrics.json \
+            --baseline-watermark metrics/watermark_baseline.json \
+            --current-ledger fusion-provenance/ledger_metrics.json \
+            --baseline-ledger metrics/ledger_baseline.json \
+            --output provenance_drift.json || true
+          cat provenance_drift.json || true
+      - name: Upload provenance drift artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: provenance-drift
+          path: provenance_drift.json

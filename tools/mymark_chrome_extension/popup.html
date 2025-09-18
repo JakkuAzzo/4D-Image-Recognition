@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>MyMark Webcam Protector</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 12px; width: 280px; }
+      .row { display:flex; align-items:center; justify-content:space-between; margin: 8px 0; }
+      .note { color:#666; font-size:12px; }
+      button { padding:8px 12px; }
+      select { width: 100%; padding:6px; }
+    </style>
+  </head>
+  <body>
+    <h3>MyMark Webcam Protector</h3>
+    <div class="row">
+      <label>
+        <input type="checkbox" id="enabledToggle" /> Enable protection
+      </label>
+      <button id="applyBtn">Apply</button>
+    </div>
+    <div class="row">
+      <label>
+        <input type="checkbox" id="vocalToggle" /> Vocal modification (beta)
+      </label>
+    </div>
+    <div class="row">
+      <label for="vocalMode">Vocal mode</label>
+      <select id="vocalMode">
+        <option value="none">None</option>
+        <option value="low-pitch">Low pitch</option>
+        <option value="high-pitch">High pitch</option>
+        <option value="robotic">Robotic</option>
+      </select>
+    </div>
+    <div class="row">
+      <label for="mode">Mode</label>
+      <select id="mode">
+        <option value="logo-mask">Logo mask (fast)</option>
+        <option value="avatar">Avatar overlay (beta)</option>
+      </select>
+    </div>
+    <p class="note">Intercepts getUserMedia and returns a processed canvas stream with a MyMark logo face mask or avatar overlay.</p>
+    <script>
+      const enabledEl = document.getElementById('enabledToggle');
+      const modeEl = document.getElementById('mode');
+      const applyBtn = document.getElementById('applyBtn');
+      const vocalEl = document.getElementById('vocalToggle');
+      const vocalModeEl = document.getElementById('vocalMode');
+      async function init() {
+        const { mymarkEnabled = false, mymarkMode = 'logo-mask', mymarkVocal = false, mymarkVocalMode = 'none' } = await chrome.storage.sync.get(['mymarkEnabled','mymarkMode','mymarkVocal','mymarkVocalMode']);
+        enabledEl.checked = mymarkEnabled;
+        modeEl.value = mymarkMode;
+        vocalEl.checked = mymarkVocal;
+        vocalModeEl.value = mymarkVocalMode;
+      }
+      applyBtn.addEventListener('click', async () => {
+        await chrome.storage.sync.set({ mymarkEnabled: enabledEl.checked, mymarkMode: modeEl.value, mymarkVocal: vocalEl.checked, mymarkVocalMode: vocalModeEl.value });
+        window.close();
+      });
+      init();
+    </script>
+  </body>
+  </html>

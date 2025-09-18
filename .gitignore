@@ -114,3 +114,6 @@ DerivedData/
 *.pcm
 *.swiftmodule
 *.swiftsourceinfo
+
+# Ignore OSINT engine artifacts
+exports/osint_engine_artifacts/

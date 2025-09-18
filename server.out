@@ -1,0 +1,371 @@
+INFO:faiss.loader:Loading faiss.
+INFO:faiss.loader:Successfully loaded faiss.
+INFO:faiss:Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+/Users/nathanbrown-bennett/.pyenv/versions/3.10.17/lib/python3.10/site-packages/face_recognition_models/__init__.py:7: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_filename
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1758210264.344775  394924 gl_context.cc:357] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+I0000 00:00:1758210264.348975  394924 gl_context.cc:357] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1758210264.355966  395161 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1758210264.362197  395161 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1758210264.364169  395149 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+I0000 00:00:1758210264.755886  394924 gl_context.cc:357] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+W0000 00:00:1758210264.756612  395172 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1758210264.760456  395170 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+INFO:modules.advanced_face_tracker:✅ Face detectors initialized
+INFO:backend.app.core.di:Vector database initialized with FAISS
+INFO:     Started server process [12686]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on https://0.0.0.0:8000 (Press CTRL+C to quit)
+[reconstruct3d] Failed to import PRNet: No module named 'tensorflow'
+INFO:     127.0.0.1:57101 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57101 - "GET /static/nav.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57101 - "GET /api/capabilities HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57101 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:backend.api:📊 Pipeline status requested
+INFO:modules.complete_4d_osint_pipeline:✅ dlib shape predictor loaded
+I0000 00:00:1758212225.284320  394924 gl_context.cc:357] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+INFO:modules.complete_4d_osint_pipeline:✅ MediaPipe face mesh initialized
+INFO:modules.complete_4d_osint_pipeline:✅ Genuine OSINT Engine initialized
+INFO:backend.api:✅ Pipeline status: integrated=True, step_by_step=False
+INFO:     127.0.0.1:57123 - "GET /api/pipeline/status HTTP/1.1" 200 OK
+W0000 00:00:1758212225.297495  469441 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1758212225.305089  469441 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+INFO:backend.api:🚀 Starting complete 4D OSINT pipeline for user: webapp_user_1758212225297
+INFO:modules.complete_4d_osint_pipeline:✅ dlib shape predictor loaded
+I0000 00:00:1758212225.681675  394924 gl_context.cc:357] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+INFO:modules.complete_4d_osint_pipeline:✅ MediaPipe face mesh initialized
+INFO:modules.complete_4d_osint_pipeline:✅ Genuine OSINT Engine initialized
+INFO:backend.api:📥 Loaded image: 4FC5C07A-005C-4D02-AA96-1939FDAD4B79.jpg (672079 bytes)
+INFO:backend.api:📥 Loaded image: 97CE627D-A49B-42A1-9BFE-CCD5570FDE91.jpg (562103 bytes)
+W0000 00:00:1758212225.682436  469454 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+INFO:backend.api:📥 Loaded image: 280332C2-C4ED-472E-B749-D3962B3ADFE9.jpg (372415 bytes)
+INFO:backend.api:📥 Loaded image: 479926582_2134123993673834_1270801714858167817_n.jpg (117534 bytes)
+INFO:backend.api:📥 Loaded image: A4F4CC7A-23B3-4FD8-8C22-22E19DB9440B.jpg (541967 bytes)
+INFO:backend.api:📥 Loaded image: A480A7D0-CEA0-45C0-B323-24065C543F72.jpg (545430 bytes)
+INFO:backend.api:📥 Loaded image: Screenshot 2025-07-17 at 2.24.20 PM.png (381947 bytes)
+INFO:backend.api:📥 Loaded image: Screenshot 2025-07-17 at 2.24.43 PM.png (334905 bytes)
+INFO:backend.api:📥 Loaded image: Screenshot 2025-07-17 at 2.26.30 PM.png (830507 bytes)
+INFO:backend.api:📥 Loaded image: Screenshot 2025-07-17 at 2.26.47 PM.png (433287 bytes)
+INFO:backend.api:📥 Loaded image: Screenshot 2025-07-17 at 2.27.09 PM.png (659709 bytes)
+INFO:modules.complete_4d_osint_pipeline:🚀 Starting complete 4D OSINT pipeline for user webapp_user_1758212225297
+INFO:modules.complete_4d_osint_pipeline:📸 Processing image 1/11
+W0000 00:00:1758212225.686807  469452 inference_feedback_manager.cc:114] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+INFO:modules.complete_4d_osint_pipeline:HOG model found no faces, trying CNN...
+INFO:modules.complete_4d_osint_pipeline:CNN model detected 1 faces
+INFO:modules.complete_4d_osint_pipeline:Face detection complete for image 0: 1 faces found using cnn model
+INFO:modules.genuine_osint_engine:🔍 Starting GENUINE comprehensive OSINT search
+INFO:modules.genuine_osint_engine:📷 Saved search image: /var/folders/jh/m1g0hwlx02ddpx4nsr880w_c0000gn/T/tmpp8a0a1su/search_image_1758212247.jpg
+INFO:modules.genuine_osint_engine:✅ Browser setup complete for genuine OSINT
+INFO:modules.genuine_osint_engine:🔍 Searching Google Images...
+ERROR:modules.genuine_osint_engine:❌ Google search failed: Message: element click intercepted: Element <div jscontroller="lpsUAf" jsname="R5mgy" class="nDcEnd" data-base-lens-url="https://lens.google.com" data-is-images-mode="true" data-propagated-experiment-ids="" aria-label="Search by image" role="button" tabindex="0" jsaction="rcuQ6b:npT2md;h5M12e;AMruCe:Zpug7c" data-ved="0ahUKEwjW9c2E2-KPAxUWX0EAHX68ILMQhqEICAY">...</div> is not clickable at point (1223, 402). Other element would receive the click: <div class="eLZYyf">...</div>
+  (Session info: chrome=140.0.7339.133); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementclickinterceptedexception
+Stacktrace:
+0   chromedriver                        0x0000000104f37418 cxxbridge1$str$ptr + 2882044
+1   chromedriver                        0x0000000104f2f3b4 cxxbridge1$str$ptr + 2849176
+2   chromedriver                        0x0000000104a59050 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 73436
+3   chromedriver                        0x0000000104aa5f6c _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 388600
+4   chromedriver                        0x0000000104aa44d8 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 381796
+5   chromedriver                        0x0000000104aa22ec _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 373112
+6   chromedriver                        0x0000000104aa16e8 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 370036
+7   chromedriver                        0x0000000104a96220 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 323756
+8   chromedriver                        0x0000000104a95cac _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 322360
+9   chromedriver                        0x0000000104ae1604 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 631952
+10  chromedriver                        0x0000000104a940d0 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 315228
+11  chromedriver                        0x0000000104efbb08 cxxbridge1$str$ptr + 2638060
+12  chromedriver                        0x0000000104efed20 cxxbridge1$str$ptr + 2650884
+13  chromedriver                        0x0000000104edce58 cxxbridge1$str$ptr + 2511932
+14  chromedriver                        0x0000000104eff5cc cxxbridge1$str$ptr + 2653104
+15  chromedriver                        0x0000000104ece59c cxxbridge1$str$ptr + 2452352
+16  chromedriver                        0x0000000104f1e9f0 cxxbridge1$str$ptr + 2781140
+17  chromedriver                        0x0000000104f1eb70 cxxbridge1$str$ptr + 2781524
+18  chromedriver                        0x0000000104f2f000 cxxbridge1$str$ptr + 2848228
+19  libsystem_pthread.dylib             0x0000000182ca8c08 _pthread_start + 136
+20  libsystem_pthread.dylib             0x0000000182ca3ba8 thread_start + 8
+
+INFO:modules.genuine_osint_engine:🔍 Searching Yandex Images...
+ERROR:modules.genuine_osint_engine:❌ Yandex search failed: Message: 
+Stacktrace:
+0   chromedriver                        0x0000000104f37418 cxxbridge1$str$ptr + 2882044
+1   chromedriver                        0x0000000104f2f3b4 cxxbridge1$str$ptr + 2849176
+2   chromedriver                        0x0000000104a59050 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 73436
+3   chromedriver                        0x0000000104aa0410 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 365212
+4   chromedriver                        0x0000000104ae1604 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 631952
+5   chromedriver                        0x0000000104a940d0 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 315228
+6   chromedriver                        0x0000000104efbb08 cxxbridge1$str$ptr + 2638060
+7   chromedriver                        0x0000000104efed20 cxxbridge1$str$ptr + 2650884
+8   chromedriver                        0x0000000104edce58 cxxbridge1$str$ptr + 2511932
+9   chromedriver                        0x0000000104eff5cc cxxbridge1$str$ptr + 2653104
+10  chromedriver                        0x0000000104ece59c cxxbridge1$str$ptr + 2452352
+11  chromedriver                        0x0000000104f1e9f0 cxxbridge1$str$ptr + 2781140
+12  chromedriver                        0x0000000104f1eb70 cxxbridge1$str$ptr + 2781524
+13  chromedriver                        0x0000000104f2f000 cxxbridge1$str$ptr + 2848228
+14  libsystem_pthread.dylib             0x0000000182ca8c08 _pthread_start + 136
+15  libsystem_pthread.dylib             0x0000000182ca3ba8 thread_start + 8
+
+INFO:modules.genuine_osint_engine:🔍 Searching TinEye...
+INFO:modules.genuine_osint_engine:🔗 Total unique URLs found: 0
+INFO:modules.genuine_osint_engine:🎯 Search complete - 0 verified URLs out of 0 found
+INFO:modules.complete_4d_osint_pipeline:✅ Reverse image search complete for image 0
+INFO:modules.complete_4d_osint_pipeline:📸 Processing image 2/11
+INFO:modules.complete_4d_osint_pipeline:HOG model detected 1 faces
+/Users/nathanbrown-bennett/.pyenv/versions/3.10.17/lib/python3.10/site-packages/google/protobuf/symbol_database.py:55: UserWarning: SymbolDatabase.GetPrototype() is deprecated. Please use message_factory.GetMessageClass() instead. SymbolDatabase.GetPrototype() will be removed soon.
+  warnings.warn('SymbolDatabase.GetPrototype() is deprecated. Please '
+INFO:modules.complete_4d_osint_pipeline:Face detection complete for image 1: 1 faces found using hog model
+INFO:modules.genuine_osint_engine:🔍 Starting GENUINE comprehensive OSINT search
+INFO:modules.genuine_osint_engine:📷 Saved search image: /var/folders/jh/m1g0hwlx02ddpx4nsr880w_c0000gn/T/tmpp8a0a1su/search_image_1758212301.jpg
+INFO:modules.genuine_osint_engine:✅ Browser setup complete for genuine OSINT
+INFO:modules.genuine_osint_engine:🔍 Searching Google Images...
+ERROR:modules.genuine_osint_engine:❌ Google search failed: Message: element click intercepted: Element <div jscontroller="lpsUAf" jsname="R5mgy" class="nDcEnd" data-base-lens-url="https://lens.google.com" data-is-images-mode="true" data-propagated-experiment-ids="" aria-label="Search by image" role="button" tabindex="0" jsaction="rcuQ6b:npT2md;h5M12e;AMruCe:Zpug7c" data-ved="0ahUKEwi0gu2d2-KPAxW_U0EAHQcrJ7sQhqEICAY">...</div> is not clickable at point (1223, 402). Other element would receive the click: <div class="eLZYyf">...</div>
+  (Session info: chrome=140.0.7339.133); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementclickinterceptedexception
+Stacktrace:
+0   chromedriver                        0x0000000104647418 cxxbridge1$str$ptr + 2882044
+1   chromedriver                        0x000000010463f3b4 cxxbridge1$str$ptr + 2849176
+2   chromedriver                        0x0000000104169050 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 73436
+3   chromedriver                        0x00000001041b5f6c _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 388600
+4   chromedriver                        0x00000001041b44d8 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 381796
+5   chromedriver                        0x00000001041b22ec _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 373112
+6   chromedriver                        0x00000001041b16e8 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 370036
+7   chromedriver                        0x00000001041a6220 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 323756
+8   chromedriver                        0x00000001041a5cac _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 322360
+9   chromedriver                        0x00000001041f1604 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 631952
+10  chromedriver                        0x00000001041a40d0 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 315228
+11  chromedriver                        0x000000010460bb08 cxxbridge1$str$ptr + 2638060
+12  chromedriver                        0x000000010460ed20 cxxbridge1$str$ptr + 2650884
+13  chromedriver                        0x00000001045ece58 cxxbridge1$str$ptr + 2511932
+14  chromedriver                        0x000000010460f5cc cxxbridge1$str$ptr + 2653104
+15  chromedriver                        0x00000001045de59c cxxbridge1$str$ptr + 2452352
+16  chromedriver                        0x000000010462e9f0 cxxbridge1$str$ptr + 2781140
+17  chromedriver                        0x000000010462eb70 cxxbridge1$str$ptr + 2781524
+18  chromedriver                        0x000000010463f000 cxxbridge1$str$ptr + 2848228
+19  libsystem_pthread.dylib             0x0000000182ca8c08 _pthread_start + 136
+20  libsystem_pthread.dylib             0x0000000182ca3ba8 thread_start + 8
+
+INFO:modules.genuine_osint_engine:🔍 Searching Yandex Images...
+ERROR:modules.genuine_osint_engine:❌ Yandex search failed: Message: 
+Stacktrace:
+0   chromedriver                        0x0000000104647418 cxxbridge1$str$ptr + 2882044
+1   chromedriver                        0x000000010463f3b4 cxxbridge1$str$ptr + 2849176
+2   chromedriver                        0x0000000104169050 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 73436
+3   chromedriver                        0x00000001041b0410 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 365212
+4   chromedriver                        0x00000001041f1604 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 631952
+5   chromedriver                        0x00000001041a40d0 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 315228
+6   chromedriver                        0x000000010460bb08 cxxbridge1$str$ptr + 2638060
+7   chromedriver                        0x000000010460ed20 cxxbridge1$str$ptr + 2650884
+8   chromedriver                        0x00000001045ece58 cxxbridge1$str$ptr + 2511932
+9   chromedriver                        0x000000010460f5cc cxxbridge1$str$ptr + 2653104
+10  chromedriver                        0x00000001045de59c cxxbridge1$str$ptr + 2452352
+11  chromedriver                        0x000000010462e9f0 cxxbridge1$str$ptr + 2781140
+12  chromedriver                        0x000000010462eb70 cxxbridge1$str$ptr + 2781524
+13  chromedriver                        0x000000010463f000 cxxbridge1$str$ptr + 2848228
+14  libsystem_pthread.dylib             0x0000000182ca8c08 _pthread_start + 136
+15  libsystem_pthread.dylib             0x0000000182ca3ba8 thread_start + 8
+
+INFO:modules.genuine_osint_engine:🔍 Searching TinEye...
+INFO:modules.genuine_osint_engine:🔗 Total unique URLs found: 0
+INFO:modules.genuine_osint_engine:🎯 Search complete - 0 verified URLs out of 0 found
+INFO:modules.complete_4d_osint_pipeline:✅ Reverse image search complete for image 1
+INFO:modules.complete_4d_osint_pipeline:📸 Processing image 3/11
+INFO:modules.complete_4d_osint_pipeline:HOG model found no faces, trying CNN...
+INFO:modules.complete_4d_osint_pipeline:CNN model detected 1 faces
+INFO:modules.complete_4d_osint_pipeline:Face detection complete for image 2: 1 faces found using cnn model
+INFO:modules.genuine_osint_engine:🔍 Starting GENUINE comprehensive OSINT search
+INFO:modules.genuine_osint_engine:📷 Saved search image: /var/folders/jh/m1g0hwlx02ddpx4nsr880w_c0000gn/T/tmpp8a0a1su/search_image_1758212372.jpg
+INFO:modules.genuine_osint_engine:✅ Browser setup complete for genuine OSINT
+INFO:modules.genuine_osint_engine:🔍 Searching Google Images...
+ERROR:modules.genuine_osint_engine:❌ Google search failed: Message: element click intercepted: Element <div jscontroller="lpsUAf" jsname="R5mgy" class="nDcEnd" data-base-lens-url="https://lens.google.com" data-is-images-mode="true" data-propagated-experiment-ids="" aria-label="Search by image" role="button" tabindex="0" jsaction="rcuQ6b:npT2md;h5M12e;AMruCe:Zpug7c" data-ved="0ahUKEwiM3_2_2-KPAxV1XUEAHb-4NQAQhqEICAY">...</div> is not clickable at point (1223, 402). Other element would receive the click: <div class="eLZYyf">...</div>
+  (Session info: chrome=140.0.7339.133); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementclickinterceptedexception
+Stacktrace:
+0   chromedriver                        0x00000001053df418 cxxbridge1$str$ptr + 2882044
+1   chromedriver                        0x00000001053d73b4 cxxbridge1$str$ptr + 2849176
+2   chromedriver                        0x0000000104f01050 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 73436
+3   chromedriver                        0x0000000104f4df6c _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 388600
+4   chromedriver                        0x0000000104f4c4d8 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 381796
+5   chromedriver                        0x0000000104f4a2ec _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 373112
+6   chromedriver                        0x0000000104f496e8 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 370036
+7   chromedriver                        0x0000000104f3e220 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 323756
+8   chromedriver                        0x0000000104f3dcac _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 322360
+9   chromedriver                        0x0000000104f89604 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 631952
+10  chromedriver                        0x0000000104f3c0d0 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 315228
+11  chromedriver                        0x00000001053a3b08 cxxbridge1$str$ptr + 2638060
+12  chromedriver                        0x00000001053a6d20 cxxbridge1$str$ptr + 2650884
+13  chromedriver                        0x0000000105384e58 cxxbridge1$str$ptr + 2511932
+14  chromedriver                        0x00000001053a75cc cxxbridge1$str$ptr + 2653104
+15  chromedriver                        0x000000010537659c cxxbridge1$str$ptr + 2452352
+16  chromedriver                        0x00000001053c69f0 cxxbridge1$str$ptr + 2781140
+17  chromedriver                        0x00000001053c6b70 cxxbridge1$str$ptr + 2781524
+18  chromedriver                        0x00000001053d7000 cxxbridge1$str$ptr + 2848228
+19  libsystem_pthread.dylib             0x0000000182ca8c08 _pthread_start + 136
+20  libsystem_pthread.dylib             0x0000000182ca3ba8 thread_start + 8
+
+INFO:modules.genuine_osint_engine:🔍 Searching Yandex Images...
+ERROR:modules.genuine_osint_engine:❌ Yandex search failed: Message: 
+Stacktrace:
+0   chromedriver                        0x00000001053df418 cxxbridge1$str$ptr + 2882044
+1   chromedriver                        0x00000001053d73b4 cxxbridge1$str$ptr + 2849176
+2   chromedriver                        0x0000000104f01050 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 73436
+3   chromedriver                        0x0000000104f48410 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 365212
+4   chromedriver                        0x0000000104f89604 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 631952
+5   chromedriver                        0x0000000104f3c0d0 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 315228
+6   chromedriver                        0x00000001053a3b08 cxxbridge1$str$ptr + 2638060
+7   chromedriver                        0x00000001053a6d20 cxxbridge1$str$ptr + 2650884
+8   chromedriver                        0x0000000105384e58 cxxbridge1$str$ptr + 2511932
+9   chromedriver                        0x00000001053a75cc cxxbridge1$str$ptr + 2653104
+10  chromedriver                        0x000000010537659c cxxbridge1$str$ptr + 2452352
+11  chromedriver                        0x00000001053c69f0 cxxbridge1$str$ptr + 2781140
+12  chromedriver                        0x00000001053c6b70 cxxbridge1$str$ptr + 2781524
+13  chromedriver                        0x00000001053d7000 cxxbridge1$str$ptr + 2848228
+14  libsystem_pthread.dylib             0x0000000182ca8c08 _pthread_start + 136
+15  libsystem_pthread.dylib             0x0000000182ca3ba8 thread_start + 8
+
+INFO:modules.genuine_osint_engine:🔍 Searching TinEye...
+INFO:modules.genuine_osint_engine:🔗 Total unique URLs found: 0
+INFO:modules.genuine_osint_engine:🎯 Search complete - 0 verified URLs out of 0 found
+INFO:modules.complete_4d_osint_pipeline:✅ Reverse image search complete for image 2
+INFO:modules.complete_4d_osint_pipeline:📸 Processing image 4/11
+INFO:modules.complete_4d_osint_pipeline:HOG model detected 1 faces
+INFO:modules.complete_4d_osint_pipeline:Face detection complete for image 3: 1 faces found using hog model
+INFO:modules.genuine_osint_engine:🔍 Starting GENUINE comprehensive OSINT search
+INFO:modules.genuine_osint_engine:📷 Saved search image: /var/folders/jh/m1g0hwlx02ddpx4nsr880w_c0000gn/T/tmpp8a0a1su/search_image_1758212426.jpg
+INFO:modules.genuine_osint_engine:✅ Browser setup complete for genuine OSINT
+INFO:modules.genuine_osint_engine:🔍 Searching Google Images...
+ERROR:modules.genuine_osint_engine:❌ Google search failed: Message: element click intercepted: Element <div jscontroller="lpsUAf" jsname="R5mgy" class="nDcEnd" data-base-lens-url="https://lens.google.com" data-is-images-mode="true" data-propagated-experiment-ids="" aria-label="Search by image" role="button" tabindex="0" jsaction="rcuQ6b:npT2md;h5M12e;AMruCe:Zpug7c" data-ved="0ahUKEwjOhZzZ2-KPAxXiX0EAHVlBPVkQhqEICAY">...</div> is not clickable at point (1223, 402). Other element would receive the click: <div class="eLZYyf">...</div>
+  (Session info: chrome=140.0.7339.133); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementclickinterceptedexception
+Stacktrace:
+0   chromedriver                        0x0000000103267418 cxxbridge1$str$ptr + 2882044
+1   chromedriver                        0x000000010325f3b4 cxxbridge1$str$ptr + 2849176
+2   chromedriver                        0x0000000102d89050 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 73436
+3   chromedriver                        0x0000000102dd5f6c _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 388600
+4   chromedriver                        0x0000000102dd44d8 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 381796
+5   chromedriver                        0x0000000102dd22ec _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 373112
+6   chromedriver                        0x0000000102dd16e8 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 370036
+7   chromedriver                        0x0000000102dc6220 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 323756
+8   chromedriver                        0x0000000102dc5cac _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 322360
+9   chromedriver                        0x0000000102e11604 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 631952
+10  chromedriver                        0x0000000102dc40d0 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 315228
+11  chromedriver                        0x000000010322bb08 cxxbridge1$str$ptr + 2638060
+12  chromedriver                        0x000000010322ed20 cxxbridge1$str$ptr + 2650884
+13  chromedriver                        0x000000010320ce58 cxxbridge1$str$ptr + 2511932
+14  chromedriver                        0x000000010322f5cc cxxbridge1$str$ptr + 2653104
+15  chromedriver                        0x00000001031fe59c cxxbridge1$str$ptr + 2452352
+16  chromedriver                        0x000000010324e9f0 cxxbridge1$str$ptr + 2781140
+17  chromedriver                        0x000000010324eb70 cxxbridge1$str$ptr + 2781524
+18  chromedriver                        0x000000010325f000 cxxbridge1$str$ptr + 2848228
+19  libsystem_pthread.dylib             0x0000000182ca8c08 _pthread_start + 136
+20  libsystem_pthread.dylib             0x0000000182ca3ba8 thread_start + 8
+
+INFO:modules.genuine_osint_engine:🔍 Searching Yandex Images...
+ERROR:modules.genuine_osint_engine:❌ Yandex search failed: Message: 
+Stacktrace:
+0   chromedriver                        0x0000000103267418 cxxbridge1$str$ptr + 2882044
+1   chromedriver                        0x000000010325f3b4 cxxbridge1$str$ptr + 2849176
+2   chromedriver                        0x0000000102d89050 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 73436
+3   chromedriver                        0x0000000102dd0410 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 365212
+4   chromedriver                        0x0000000102e11604 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 631952
+5   chromedriver                        0x0000000102dc40d0 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 315228
+6   chromedriver                        0x000000010322bb08 cxxbridge1$str$ptr + 2638060
+7   chromedriver                        0x000000010322ed20 cxxbridge1$str$ptr + 2650884
+8   chromedriver                        0x000000010320ce58 cxxbridge1$str$ptr + 2511932
+9   chromedriver                        0x000000010322f5cc cxxbridge1$str$ptr + 2653104
+10  chromedriver                        0x00000001031fe59c cxxbridge1$str$ptr + 2452352
+11  chromedriver                        0x000000010324e9f0 cxxbridge1$str$ptr + 2781140
+12  chromedriver                        0x000000010324eb70 cxxbridge1$str$ptr + 2781524
+13  chromedriver                        0x000000010325f000 cxxbridge1$str$ptr + 2848228
+14  libsystem_pthread.dylib             0x0000000182ca8c08 _pthread_start + 136
+15  libsystem_pthread.dylib             0x0000000182ca3ba8 thread_start + 8
+
+INFO:modules.genuine_osint_engine:🔍 Searching TinEye...
+INFO:modules.genuine_osint_engine:🔗 Total unique URLs found: 0
+INFO:modules.genuine_osint_engine:🎯 Search complete - 0 verified URLs out of 0 found
+INFO:modules.complete_4d_osint_pipeline:✅ Reverse image search complete for image 3
+INFO:modules.complete_4d_osint_pipeline:📸 Processing image 5/11
+INFO:modules.complete_4d_osint_pipeline:HOG model detected 1 faces
+INFO:modules.complete_4d_osint_pipeline:Face detection complete for image 4: 1 faces found using hog model
+INFO:modules.genuine_osint_engine:🔍 Starting GENUINE comprehensive OSINT search
+INFO:modules.genuine_osint_engine:📷 Saved search image: /var/folders/jh/m1g0hwlx02ddpx4nsr880w_c0000gn/T/tmpp8a0a1su/search_image_1758212479.jpg
+INFO:modules.genuine_osint_engine:✅ Browser setup complete for genuine OSINT
+INFO:modules.genuine_osint_engine:🔍 Searching Google Images...
+ERROR:modules.genuine_osint_engine:❌ Google search failed: Message: element click intercepted: Element <div jscontroller="lpsUAf" jsname="R5mgy" class="nDcEnd" data-base-lens-url="https://lens.google.com" data-is-images-mode="true" data-propagated-experiment-ids="" aria-label="Search by image" role="button" tabindex="0" jsaction="rcuQ6b:npT2md;h5M12e;AMruCe:Zpug7c" data-ved="0ahUKEwiylajy2-KPAxUVX0EAHa22FJQQhqEICAY">...</div> is not clickable at point (1223, 402). Other element would receive the click: <div class="eLZYyf">...</div>
+  (Session info: chrome=140.0.7339.133); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementclickinterceptedexception
+Stacktrace:
+0   chromedriver                        0x0000000100613418 cxxbridge1$str$ptr + 2882044
+1   chromedriver                        0x000000010060b3b4 cxxbridge1$str$ptr + 2849176
+2   chromedriver                        0x0000000100135050 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 73436
+3   chromedriver                        0x0000000100181f6c _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 388600
+4   chromedriver                        0x00000001001804d8 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 381796
+5   chromedriver                        0x000000010017e2ec _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 373112
+6   chromedriver                        0x000000010017d6e8 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 370036
+7   chromedriver                        0x0000000100172220 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 323756
+8   chromedriver                        0x0000000100171cac _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 322360
+9   chromedriver                        0x00000001001bd604 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 631952
+10  chromedriver                        0x00000001001700d0 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 315228
+11  chromedriver                        0x00000001005d7b08 cxxbridge1$str$ptr + 2638060
+12  chromedriver                        0x00000001005dad20 cxxbridge1$str$ptr + 2650884
+13  chromedriver                        0x00000001005b8e58 cxxbridge1$str$ptr + 2511932
+14  chromedriver                        0x00000001005db5cc cxxbridge1$str$ptr + 2653104
+15  chromedriver                        0x00000001005aa59c cxxbridge1$str$ptr + 2452352
+16  chromedriver                        0x00000001005fa9f0 cxxbridge1$str$ptr + 2781140
+17  chromedriver                        0x00000001005fab70 cxxbridge1$str$ptr + 2781524
+18  chromedriver                        0x000000010060b000 cxxbridge1$str$ptr + 2848228
+19  libsystem_pthread.dylib             0x0000000182ca8c08 _pthread_start + 136
+20  libsystem_pthread.dylib             0x0000000182ca3ba8 thread_start + 8
+
+INFO:modules.genuine_osint_engine:🔍 Searching Yandex Images...
+ERROR:modules.genuine_osint_engine:❌ Yandex search failed: Message: 
+Stacktrace:
+0   chromedriver                        0x0000000100613418 cxxbridge1$str$ptr + 2882044
+1   chromedriver                        0x000000010060b3b4 cxxbridge1$str$ptr + 2849176
+2   chromedriver                        0x0000000100135050 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 73436
+3   chromedriver                        0x000000010017c410 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 365212
+4   chromedriver                        0x00000001001bd604 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 631952
+5   chromedriver                        0x00000001001700d0 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 315228
+6   chromedriver                        0x00000001005d7b08 cxxbridge1$str$ptr + 2638060
+7   chromedriver                        0x00000001005dad20 cxxbridge1$str$ptr + 2650884
+8   chromedriver                        0x00000001005b8e58 cxxbridge1$str$ptr + 2511932
+9   chromedriver                        0x00000001005db5cc cxxbridge1$str$ptr + 2653104
+10  chromedriver                        0x00000001005aa59c cxxbridge1$str$ptr + 2452352
+11  chromedriver                        0x00000001005fa9f0 cxxbridge1$str$ptr + 2781140
+12  chromedriver                        0x00000001005fab70 cxxbridge1$str$ptr + 2781524
+13  chromedriver                        0x000000010060b000 cxxbridge1$str$ptr + 2848228
+14  libsystem_pthread.dylib             0x0000000182ca8c08 _pthread_start + 136
+15  libsystem_pthread.dylib             0x0000000182ca3ba8 thread_start + 8
+
+INFO:modules.genuine_osint_engine:🔍 Searching TinEye...
+INFO:modules.genuine_osint_engine:🔗 Total unique URLs found: 0
+INFO:modules.genuine_osint_engine:🎯 Search complete - 0 verified URLs out of 0 found
+INFO:modules.complete_4d_osint_pipeline:✅ Reverse image search complete for image 4
+INFO:modules.complete_4d_osint_pipeline:📸 Processing image 6/11
+INFO:modules.complete_4d_osint_pipeline:HOG model detected 1 faces
+INFO:modules.complete_4d_osint_pipeline:Face detection complete for image 5: 1 faces found using hog model
+INFO:modules.genuine_osint_engine:🔍 Starting GENUINE comprehensive OSINT search
+INFO:modules.genuine_osint_engine:📷 Saved search image: /var/folders/jh/m1g0hwlx02ddpx4nsr880w_c0000gn/T/tmpp8a0a1su/search_image_1758212531.jpg
+INFO:modules.genuine_osint_engine:✅ Browser setup complete for genuine OSINT
+INFO:modules.genuine_osint_engine:🔍 Searching Google Images...
+ERROR:modules.genuine_osint_engine:❌ Google search failed: Message: element click intercepted: Element <div jscontroller="lpsUAf" jsname="R5mgy" class="nDcEnd" data-base-lens-url="https://lens.google.com" data-is-images-mode="true" data-propagated-experiment-ids="" aria-label="Search by image" role="button" tabindex="0" jsaction="rcuQ6b:npT2md;h5M12e;AMruCe:Zpug7c" data-ved="0ahUKEwj7iqyL3OKPAxVNX0EAHd6HOsYQhqEICAY">...</div> is not clickable at point (1223, 402). Other element would receive the click: <div class="eLZYyf">...</div>
+  (Session info: chrome=140.0.7339.133); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementclickinterceptedexception
+Stacktrace:
+0   chromedriver                        0x0000000102f5b418 cxxbridge1$str$ptr + 2882044
+1   chromedriver                        0x0000000102f533b4 cxxbridge1$str$ptr + 2849176
+2   chromedriver                        0x0000000102a7d050 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 73436
+3   chromedriver                        0x0000000102ac9f6c _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 388600
+4   chromedriver                        0x0000000102ac84d8 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 381796
+5   chromedriver                        0x0000000102ac62ec _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 373112
+6   chromedriver                        0x0000000102ac56e8 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 370036
+7   chromedriver                        0x0000000102aba220 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 323756
+8   chromedriver                        0x0000000102ab9cac _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 322360
+9   chromedriver                        0x0000000102b05604 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 631952
+10  chromedriver                        0x0000000102ab80d0 _RNvCslE4myv9Sbr3_7___rustc35___rust_no_alloc_shim_is_unstable_v2 + 315228
+11  chromedriver                        0x0000000102f1fb08 cxxbridge1$str$ptr + 2638060
+12  chromedriver                        0x0000000102f22d20 cxxbridge1$str$ptr + 2650884
+13  chromedriver                        0x0000000102f00e58 cxxbridge1$str$ptr + 2511932
+14  chromedriver                        0x0000000102f235cc cxxbridge1$str$ptr + 2653104
+15  chromedriver                        0x0000000102ef259c cxxbridge1$str$ptr + 2452352
+16  chromedriver                        0x0000000102f429f0 cxxbridge1$str$ptr + 2781140
+17  chromedriver                        0x0000000102f42b70 cxxbridge1$str$ptr + 2781524
+18  chromedriver                        0x0000000102f53000 cxxbridge1$str$ptr + 2848228
+19  libsystem_pthread.dylib             0x0000000182ca8c08 _pthread_start + 136
+20  libsystem_pthread.dylib             0x0000000182ca3ba8 thread_start + 8
+
+INFO:modules.genuine_osint_engine:🔍 Searching Yandex Images...
