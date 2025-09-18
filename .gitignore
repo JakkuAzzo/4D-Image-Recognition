@@ -98,3 +98,19 @@ output_*
 result_*
 temp_*
 shape_predictor_68_face_landmarks.dat
+
+# Ignore Xcode/Swift and build artifacts
+DerivedData/
+*.xcworkspace/
+*.xcodeproj/
+*.xcuserstate
+*.xcuserdatad/
+*.xcsettings
+*.xcconfig
+.swiftpm/
+.build/
+**/.build/
+**/ModuleCache/
+*.pcm
+*.swiftmodule
+*.swiftsourceinfo
