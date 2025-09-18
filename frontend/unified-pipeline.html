@@ -1692,11 +1692,26 @@
                 <button class="collapse-btn" onclick="toggleStepContent('step1-content')">▼</button>
             </div>
             <div class="step-content active" id="step1-content">
+                <div class="input-modes" style="display:flex; gap:10px; align-items:center; margin:10px 0 20px;">
+                    <button class="mode active" id="mode-upload" title="Upload image files" style="padding:8px 12px; border:1px solid #ccc; border-radius:999px; background:#fff; cursor:pointer;">Upload</button>
+                    <button class="mode" id="mode-snapshot" title="Capture a single snapshot from camera" style="padding:8px 12px; border:1px solid #ccc; border-radius:999px; background:#fff; cursor:pointer;">Snapshot</button>
+                    <button class="mode" id="mode-live" title="Analyze live camera frames" style="padding:8px 12px; border:1px solid #ccc; border-radius:999px; background:#fff; cursor:pointer;">Live</button>
+                </div>
                 <div class="upload-area" id="upload-area">
                     <div class="upload-icon">📁</div>
                     <div class="upload-text">Drag and drop multiple images here or click to select</div>
                     <button class="upload-button" onclick="document.getElementById('file-input').click()">Select Images</button>
                     <input type="file" id="file-input" multiple accept="image/*" style="display: none;">
+                </div>
+                <div id="camera-area" style="display:none; margin-top:16px; background:#111; padding:12px; border-radius:10px; color:#eee;">
+                    <video id="live-video" autoplay playsinline muted style="max-width:100%; border-radius:8px; background:#000"></video>
+                    <div style="margin-top:10px; display:flex; gap:10px; align-items:center;">
+                        <button class="btn btn-primary" id="btn-capture">Capture Snapshot</button>
+                        <button class="btn btn-secondary" id="btn-live-start">Start Live Analyze</button>
+                        <button class="btn btn-danger" id="btn-live-stop" disabled>Stop</button>
+                        <span id="live-status" style="font-size:12px;color:#9ad"></span>
+                    </div>
+                    <canvas id="snap-canvas" style="display:none"></canvas>
                 </div>
                 <div class="image-grid" id="ingested-images"></div>
             </div>
@@ -1993,6 +2008,7 @@
             document.addEventListener('DOMContentLoaded', function() {
                 console.log('🚀 Advanced 4D Image Recognition System initialized');
                 initializeUploadArea();
+                            initializeInputModes();
                 initializeThreeJS();
 
                 // Initialize Mode badge from backend capabilities
@@ -2059,6 +2075,99 @@
                     }
                 });
         }
+        
+        // New: Input modes (upload/snapshot/live) — global scope
+        function initializeInputModes(){
+            const uploadBtn = document.getElementById('mode-upload');
+            const snapBtn = document.getElementById('mode-snapshot');
+            const liveBtn = document.getElementById('mode-live');
+            const uploadArea = document.getElementById('upload-area');
+            const camArea = document.getElementById('camera-area');
+            const video = document.getElementById('live-video');
+            const liveStart = document.getElementById('btn-live-start');
+            const liveStop = document.getElementById('btn-live-stop');
+            const captureBtn = document.getElementById('btn-capture');
+            const liveStatus = document.getElementById('live-status');
+            let liveTimer = null;
+            let stream = null;
+
+            function setMode(mode){
+                [uploadBtn,snapBtn,liveBtn].forEach(b=>b.classList.remove('active'));
+                if (mode==='upload') uploadBtn.classList.add('active');
+                if (mode==='snapshot') snapBtn.classList.add('active');
+                if (mode==='live') liveBtn.classList.add('active');
+                uploadArea.style.display = (mode==='upload') ? 'block' : 'none';
+                camArea.style.display = (mode==='snapshot' || mode==='live') ? 'block' : 'none';
+                if (camArea.style.display==='block' && !stream) {
+                    startCamera().catch(err=>{ liveStatus.textContent = 'Camera error: '+err; });
+                }
+                if (mode!=='live') stopLive();
+            }
+
+            async function startCamera(){
+                if (stream) return;
+                stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:false });
+                video.srcObject = stream;
+                await video.play().catch(()=>{});
+            }
+            function stopCamera(){
+                if (!stream) return;
+                stream.getTracks().forEach(t=>t.stop());
+                stream = null;
+                video.srcObject = null;
+            }
+            function captureFrame(){
+                const canvas = document.getElementById('snap-canvas');
+                const w = video.videoWidth || 1280; const h = video.videoHeight || 720;
+                canvas.width = w; canvas.height = h;
+                canvas.getContext('2d').drawImage(video, 0, 0, w, h);
+                return canvas.toDataURL('image/jpeg', 0.9);
+            }
+            async function sendSnapshot(){
+                const dataUrl = captureFrame();
+                const fd = new FormData(); fd.append('image', dataUrl);
+                const r = await fetch('/api/pipeline/snapshot-ingestion', { method:'POST', body: fd });
+                if (!r.ok) throw new Error('snapshot failed');
+                const res = await r.json();
+                console.log('snapshot result', res);
+                showToast('Snapshot ingested');
+            }
+            async function startLive(){
+                if (liveTimer) return;
+                liveStatus.textContent = 'Live analyzing…';
+                liveStart.disabled = true; liveStop.disabled = false;
+                liveTimer = setInterval(async ()=>{
+                    try{
+                        const dataUrl = captureFrame();
+                        const fd = new FormData(); fd.append('image', dataUrl);
+                        const r = await fetch('/api/pipeline/live-analyze', { method:'POST', body: fd });
+                        if (!r.ok) throw new Error('live analyze failed');
+                        const res = await r.json();
+                        liveStatus.textContent = `Faces: ${res?.summary?.faces_detected||0} | Landmarks: ${res?.summary?.landmarks_total||0}`;
+                    }catch(e){ liveStatus.textContent = 'Live analyze error'; }
+                }, 1000);
+            }
+            function stopLive(){
+                if (liveTimer) { clearInterval(liveTimer); liveTimer = null; }
+                liveStart.disabled = false; liveStop.disabled = true;
+                liveStatus.textContent = '';
+            }
+
+            uploadBtn.addEventListener('click', ()=> setMode('upload'));
+            snapBtn.addEventListener('click', ()=> setMode('snapshot'));
+            liveBtn.addEventListener('click', ()=> setMode('live'));
+            captureBtn.addEventListener('click', ()=> sendSnapshot().catch(err=>{ liveStatus.textContent = String(err); }));
+            liveStart.addEventListener('click', ()=> startLive());
+            liveStop.addEventListener('click', ()=> stopLive());
+
+            // Default mode
+            setMode('upload');
+
+            // Clean up on unload
+            window.addEventListener('beforeunload', ()=>{ stopLive(); stopCamera(); });
+        }
+
+        function showToast(msg){ try{ console.info('[UI]', msg); }catch{} }
 
         // Show a small hint indicating OSINT availability based on Fast/Full mode
         function updateOsintModeHint() {

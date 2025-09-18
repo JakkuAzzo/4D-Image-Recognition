@@ -8,23 +8,15 @@
   }
 
   async function ensureTFandLandmarks(){
-    // Only inject into the page context (not extension), allowed by MV3
-    // Prefer local vendor assets first (bundled with extension), then fallback to CDN if missing
-    const localTF = chrome.runtime.getURL('vendor/tf.min.js');
-    const localLMarks = chrome.runtime.getURL('vendor/face-landmarks-detection.min.js');
+    // Inject from CDN on page load to avoid bundling large vendor assets in the extension
+    // Note: Keep versions pinned for reproducibility
+    const TF_URL = 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.18.0/dist/tf.min.js';
+    const LMD_URL = 'https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@1.0.3/dist/face-landmarks-detection.min.js';
     if (!window.tf) {
-      try {
-        await addScript(localTF);
-      } catch(_) {
-        await addScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.18.0/dist/tf.min.js').catch(()=>{});
-      }
+      await addScript(TF_URL).catch(()=>{});
     }
     if (!window.faceLandmarksDetection) {
-      try {
-        await addScript(localLMarks);
-      } catch(_) {
-        await addScript('https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@1.0.3/dist/face-landmarks-detection.min.js').catch(()=>{});
-      }
+      await addScript(LMD_URL).catch(()=>{});
     }
   }
 

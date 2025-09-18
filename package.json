@@ -1,1 +1,13 @@
-{"name":"4d-image-recognition","private":true,"type":"module","version":"0.0.0","devDependencies":{"playwright":"^1.47.0"}}
+{
+	"name": "4d-image-recognition",
+	"private": true,
+	"type": "module",
+	"version": "0.0.0",
+	"devDependencies": {
+		"playwright": "^1.47.0"
+	},
+	"scripts": {
+		"test:ui:camera": "BASE_URL=https://localhost:8000 HEADLESS=1 node tests/playwright_camera_modes.mjs",
+		"test:ui:smoke": "BASE_URL=https://localhost:8000 HEADLESS=1 node tests/playwright_ui_smoke.mjs"
+	}
+}

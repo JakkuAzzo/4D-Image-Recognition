@@ -26,6 +26,7 @@ from pydantic import BaseModel
 import subprocess
 import shutil
 import tempfile
+import re
 
 from . import models, utils, database
 # Genuine OSINT Engine - NO fake data
@@ -340,6 +341,24 @@ async def healthz():
                 "time": datetime.now(timezone.utc).isoformat(),
                 "routes": route_count,
         })
+
+# Utility: decode a base64 image string (optionally data URL) to bytes
+def _decode_image_b64(img: str) -> bytes:
+    try:
+        if not isinstance(img, str):
+            raise ValueError("image must be a base64 string")
+        # Accept data URL like data:image/png;base64,....
+        m = re.match(r"^data:image/[^;]+;base64,(.*)$", img)
+        if m:
+            img_b64 = m.group(1)
+        else:
+            img_b64 = img
+        raw = base64.b64decode(img_b64, validate=False)
+        if not raw:
+            raise ValueError("decoded image is empty")
+        return raw
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid image base64: {e}")
 
 # Mount the frontend static files
 frontend_dir = Path(__file__).parent.parent / "frontend"
@@ -1812,6 +1831,54 @@ async def get_pipeline_steps_info():
         ]
     }
 
+# --- New input modes: Snapshot and Live Frame analysis ---
+
+@app.post("/api/pipeline/snapshot-ingestion")
+async def snapshot_ingestion(image: str = Form(...)):
+    """Ingest a single camera snapshot (data URL or base64) and return Step 1 output.
+    Frontend sends a captured frame via toDataURL or raw base64.
+    """
+    try:
+        raw = _decode_image_b64(image)
+        # Step 1 ingestion expects list[bytes]
+        result = facial_pipeline.step1_scan_ingestion([raw])
+        return {
+            "success": True,
+            "step": 1,
+            "step_name": "scan_ingestion",
+            "data": result,
+            "files_uploaded": 1,
+            "message": "Snapshot ingested successfully"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Snapshot ingestion error: {e}")
+        raise HTTPException(status_code=500, detail=f"Snapshot ingestion failed: {e}")
+
+
+@app.post("/api/pipeline/live-analyze")
+async def live_analyze(image: str = Form(...)):
+    """Analyze a single live frame quickly: runs Step 1 (ingest) then Step 2 (facial tracking)
+    and returns lightweight detection stats suitable for UI updates.
+    """
+    try:
+        raw = _decode_image_b64(image)
+        step1 = facial_pipeline.step1_scan_ingestion([raw])
+        step2 = facial_pipeline.step2_facial_tracking_overlay(step1)
+        # Extract a compact summary
+        summary = {
+            "faces_detected": step2.get("face_detection_summary", {}).get("faces_detected", 0),
+            "landmarks_total": step2.get("face_detection_summary", {}).get("landmarks_total", 0),
+            "timestamp": time.time(),
+        }
+        return {"success": True, "summary": summary}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Live analyze error: {e}")
+        raise HTTPException(status_code=500, detail=f"Live analyze failed: {e}")
+
 @app.get("/osint-results/{user_id}")
 async def get_osint_results(user_id: str):
     """Get OSINT investigation results for a user"""
@@ -1873,6 +1940,8 @@ async def integrated_scan_visualization(files: List[UploadFile] = File(...), use
                 "quality_scores": []
             }
         }
+
+        
         
         # Process each uploaded file
         for idx, file in enumerate(files):
