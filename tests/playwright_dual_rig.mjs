@@ -46,6 +46,30 @@ async function ensureVideoReady(page) {
     const v = document.querySelector('#video-truth, video');
     return v && (v.readyState || 0) >= 2 && v.videoWidth > 0;
   }, { timeout: 15000 }).catch(() => {});
+  // Also assert that currentTime advances and our debug status reports live
+  try {
+    const t0 = await page.evaluate(() => {
+      const v = document.querySelector('#video-truth');
+      return v ? v.currentTime : 0;
+    });
+    await page.waitForTimeout(500);
+    const { t1, statusText, debug } = await page.evaluate(() => {
+      const v = document.querySelector('#video-truth');
+      const s = document.querySelector('#gum-status')?.textContent || '';
+      return { t1: v ? v.currentTime : 0, statusText: s, debug: window.__dualrig };
+    });
+    if (!Number.isFinite(t0) || !Number.isFinite(t1) || t1 <= t0) {
+      throw new Error(`Video currentTime not advancing: ${t0} -> ${t1}`);
+    }
+    if (!/Live/i.test(statusText)) {
+      console.warn(`[dual] WARN: gum-status not Live: ${statusText}`);
+    }
+    if (!(debug && (debug.trackState === 'live' || debug.streamActive))) {
+      console.warn(`[dual] WARN: __dualrig indicates non-live track: ${JSON.stringify(debug)}`);
+    }
+  } catch (e) {
+    console.warn('[dual] Video liveness checks raised:', e.message);
+  }
 }
 
 async function main() {
@@ -73,6 +97,17 @@ async function main() {
   logLine('[dual] Starting camera');
   await page.click('#start');
   await ensureVideoReady(page);
+  // Log device info and whether it appears fake
+  try {
+    const info = await page.evaluate(() => ({
+      label: (window.__dualrig && window.__dualrig.deviceLabel) || '',
+      trackState: (window.__dualrig && window.__dualrig.trackState) || '',
+      streamActive: (window.__dualrig && window.__dualrig.streamActive) || false,
+      status: (document.querySelector('#gum-status')?.textContent)||''
+    }));
+    const isFake = /Fake|test|synthetic|sample|virtual|dummy/i.test(info.label||'') || /FAKE DEVICE/i.test(info.status||'');
+    logLine(`[dual] Device: ${info.label||'(unknown)'} state=${info.trackState} active=${info.streamActive} ${isFake?'[FAKE]':''}`);
+  } catch {}
 
   // Select preset: appearance (Hue + Headshape) and set background to random
   logLine('[dual] Selecting appearance preset and random background');

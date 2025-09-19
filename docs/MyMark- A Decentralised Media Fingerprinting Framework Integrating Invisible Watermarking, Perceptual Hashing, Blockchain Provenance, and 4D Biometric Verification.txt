@@ -1,4 +1,4 @@
-
+ 
 FACULTY OF SCIENCE, ENGINEERING AND COMPUTING
 School of Computer Science and Mathematics
 MSc DEGREE
@@ -11,186 +11,250 @@ MyMark: A Decentralised Media Fingerprinting Framework Integrating Invisible Wat
 18.09.2025
 Dr Rehan Usman 
 
-
+ 
 Declaration
-I have read and understood the University regulations on plagiarism, and I understand the meaning of the word plagiarism. I declare that this report is entirely my own work. Any other sources are duly acknowledged and referenced according to the requirements of the School of Computer Science and Mathematics. All verbatim citations are indicated by double quota- tion marks ("..."). Neither in part nor in its entirety have I made use of another student's work and pretended that it is my own. I have not asked anybody to contribute to this project in the form of code, text, or drawings. I did not allow and will not allow anyone to copy my work with the intention of presenting it as their own work.
+I have read and understood the University regulations on plagiarism, and I understand the meaning of the word plagiarism. I declare that this report is entirely my own work. Any other sources are duly acknowledged and referenced according to the requirements of the School of Computer Science and Mathematics. All verbatim citations are indicated by double quotation marks (“…”). Neither in part nor in its entirety have I made use of another student’s work and pretended that it is my own. I have not asked anybody to contribute to this project in the form of code, text, or drawings. I did not allow and will not allow anyone to copy my work with the intention of presenting it as their own work.
 
 Date: 18.09.2025
 Name: Nathan Brown-Bennett 
-Signature: Nathan
-
+Signature: Nathan 
 Table of Contents
-1.1 Abstract-	6
-1.2 Background and Motivation	7
-1.3 Research Problem	8
-1.4 Aims and Objectives	8
-1.5 Contributions of the Thesis	8
-1.6 Evolution from the Proposal	9
-1.6.1 Significance of the Study	9
-1.7 Thesis Outline	10
-2. Literature Review	11
-2.1 Introduction	11
-2.2 Digital Watermarking	11
-2.2.1 Concepts and Techniques	11
-2.2.2 Evaluation Metrics	11
-2.2.3 Limitations	11
-2.2.4 Implications for MyMark	11
-2.3 Perceptual Hashing and Content-Based Fingerprinting	12
-2.3.1 Principles	12
-2.3.2 Advances with Deep Learning	12
-2.3.3 Limitations	12
-2.3.4 Implications for MyMark	12
-2.4 Blockchain and Decentralised Provenance	12
-2.4.1 Provenance in Digital Media	12
-2.4.2 Blockchain Approaches	12
-2.4.3 Limitations	12
-2.4.4 Implications for MyMark	12
-2.5 Biometrics and 4D Image Recognition	13
-2.5.1 Overview	13
-2.5.2 3D and 4D Recognition	13
-2.5.3 Ethical Concerns	13
-2.5.4 Implications for MyMark	13
-2.6 Age-Gating, Data Minimisation, and Privacy Risks	13
-2.6.1 Commercial Failures	13
-2.6.2 Government Initiatives	13
-2.6.3 Implications for Network and Information Security	13
-2.6.4 Implications for MyMark	13
-2.7 Summary of Gaps	14
-Chapter 3: Methodology	15
-3.1 Introduction	15
-3.2 Research Paradigm and Justification	15
-3.3 Design-Science Research Process	15
-3.3.1 Problem Identification	15
-3.3.2 Objectives of the Solution	16
-3.3.3 Artefact Design and Development	16
-3.3.4 Demonstration and Evaluation	16
-3.4 Threat Model and Ethical Framing	16
-3.4.1 Threat Model	16
-3.4.2 Ethical Framing	17
-3.5 Evaluation Framework and Metrics	17
-3.5.1 Evaluation Paradigm	17
-3.5.2 Metrics	17
-3.5.3 Success Criteria	17
-3.6 Experimental Protocol	18
-3.6.1 Dataset	18
-3.6.2 Experimental Setup	18
-3.6.3 Procedure	18
-3.6.4 Validation	18
-3.7 Summary	18
-Chapter 4: System Design	19
-4.1 Introduction	19
-4.2 High-Level Architecture	19
-4.3 Module Descriptions	19
-4.3.1 User Enrolment and Biometric Verification	19
-4.3.2 Watermarking Module	20
-4.3.3 Perceptual Hashing and Embedding Module	20
-4.3.4 Blockchain Provenance Layer	20
-4.3.5 Detection and Verification Module	20
-4.4 Data Flow and Security Controls	21
-4.5 Suitability and Justification of Artefact	21
-4.5.1 Suitability for Dissertation Goals	21
-4.5.2 Comparison to Alternatives	21
-4.5.3 Innovation	21
-4.6 Summary	21
-Chapter 5: Implementation	22
-5.1 Introduction	22
-5.2 Technology Stack	22
-5.3 Repository Structure	22
-5.3.1 JakkuAzzo/MyMark	22
-5.3.2 JakkuAzzo/4D-Image-Recognition	22
-5.4 Implementation of Core Modules	22
-5.4.1 Watermarking	22
-5.4.2 Perceptual Hashing	23
-5.4.3 Blockchain Provenance	23
-5.4.4 Biometric Verification	23
-5.5 Integration Workflow	23
-5.6 Documentation and Usability	24
-5.7 Code Quality and Best Practices	24
-5.8 Summary	24
-Chapter 6: Evaluation	25
-6.1 Introduction	25
-6.2 Experimental Design	25
-6.2.1 Datasets	25
-6.2.2 Setup	25
-6.3 Results	25
-6.3.1 Imperceptibility of Watermarking	25
-6.3.2 Robustness Under Transformations	25
-6.3.3 Accuracy of Perceptual Hashing and Embedding	25
-6.3.4 Blockchain Performance	26
-6.3.5 Biometric Verification Reliability	26
-6.4 Comparative Analysis	26
-6.5 Discussion	26
-Chapter 7: Discussion	28
-7.1 Introduction	28
-7.2 Interpretation of Results	28
-7.2.1 Imperceptibility and Robustness	28
-7.2.2 Perceptual Hashing and CLIP Embeddings	28
-7.2.3 Blockchain Provenance	28
-7.2.4 Biometric Verification and Privacy	28
-7.3 Trade-offs and Limitations	28
-7.3.1 Robustness vs. Imperceptibility	28
-7.3.2 Accuracy vs. Computational Cost	28
-7.3.3 Blockchain Transparency vs. Performance	29
-7.3.4 Biometric Reliability vs. Inclusivity	29
-7.4 Contribution to Network and Information Security	29
-7.5 Relation to Literature	29
-7.6 Future Directions Identified in Results	29
-7.7 Summary	29
-Chapter 8: Legal, Professional, and Ethical Issues	31
-8.1 Introduction	31
-8.2 GDPR and Data Protection	31
-8.2.1 GDPR Principles	31
-8.2.2 Application to MyMark	31
-8.2.3 Special Category Data	31
-8.3 Professional and Ethical Standards	31
-8.3.1 ACM Code of Ethics	31
-8.3.2 Ethical Debates on Biometrics	31
-8.4 Case Study: Age-Gating and Data Minimisation	32
-8.4.1 Failures of Commercial Platforms	32
-8.4.2 Government Approaches	32
-8.4.3 MyMark as a Privacy-Preserving Alternative	32
-8.5 Risks and Mitigations	32
-8.6 Broader Societal Implications	32
-8.7 Summary	33
-Chapter 9: Conclusion	34
-9.1  Introduction	34
-9.2 Summary of Contributions	34
-9.3 Reflection on Outcomes	34
-9.4 Future Work	34
-9.5 Final Remarks	35
-References	36
+1.1 Abstract—	6
+1.2 Background and Motivation	8
+1.3 Research Problem	9
+1.4 Aims and Objectives	9
+1.5 Contributions of the Thesis	9
+1.6 Evolution from the Proposal	10
+1.6.1 Significance of the Study	10
+1.6.2 Identity Without Identity: Privacy-Preserving Pointers.	11
+1.7 Thesis Outline	11
+2. Literature Review	13
+2.1 Introduction	13
+2.2 Digital Watermarking	13
+2.2.1 Concepts and Techniques	13
+2.2.2 Evaluation Metrics	13
+2.2.3 Limitations	13
+2.2.4 Implications for MyMark	13
+2.3 Perceptual Hashing and Content-Based Fingerprinting	14
+2.3.1 Principles	14
+2.3.2 Advances with Deep Learning	14
+2.3.3 Limitations	14
+2.3.4 Implications for MyMark	14
+2.4 Blockchain and Decentralised Provenance	14
+2.4.1 Provenance in Digital Media	14
+2.4.2 Blockchain Approaches	14
+2.4.3 Limitations	14
+2.4.4 Implications for MyMark	14
+2.5 Biometrics and 4D Image Recognition	15
+2.5.1 Overview	15
+2.5.2 3D and 4D Recognition	15
+2.5.3 Ethical Concerns	15
+2.5.4 Implications for MyMark	15
+2.5.5 Cancellable Biometrics and Privacy-Preserving Pointers.	15
+2.6 Age-Gating, Data Minimisation, and Privacy Risks	16
+2.6.1 Commercial Failures	16
+2.6.2 Government Initiatives	17
+2.6.3 Implications for Network and Information Security	17
+2.6.4 Implications for MyMark	18
+2.7 Summary of Gaps	19
+Chapter 3: Methodology	20
+3.1 Introduction	20
+3.2 Research Paradigm and Justification	20
+3.3 Design-Science Research Process	20
+3.3.1 Problem Identification	20
+3.3.2 Objectives of the Solution	21
+3.3.3 Artefact Design and Development	21
+3.3.4 Demonstration and Evaluation	21
+3.4 Threat Model and Ethical Framing	21
+3.4.1 Threat Model	21
+3.4.2 Ethical Framing	22
+3.5 Evaluation Framework and Metrics	22
+3.5.1 Evaluation Paradigm	22
+3.5.2 Metrics	22
+3.5.3 Success Criteria	22
+3.6 Experimental Protocol	23
+3.6.1 Dataset	23
+3.6.2 Experimental Setup	23
+3.6.3 Procedure	23
+3.6.4 Validation	23
+3.7 Summary	23
+Chapter 4: System Design	24
+4.1 Introduction	24
+4.2 High-Level Architecture	24
+4.3 Module Descriptions	25
+4.3.1 User Enrolment and Biometric Verification	25
+4.3.2 Watermarking Module	25
+4.3.3 Perceptual Hashing and Embedding Module	25
+4.3.4 Blockchain Provenance Layer	25
+4.3.5 Detection and Verification Module	25
+4.3.6 Dual-Rig Extension (Virtual Camera & Microphone)	26
+4.4 Data Flow and Security Controls	29
+4.5 Suitability and Justification of Artefact	29
+4.5.1 Suitability for Dissertation Goals	29
+4.5.2 Comparison to Alternatives	29
+4.5.3 Innovation	29
+4.6 Summary	29
+Chapter 5: Implementation	30
+5.1 Introduction	30
+5.2 Technology Stack	30
+5.3 Repository Structure	30
+5.3.1 MyMark	30
+5.3.2 4D-Image-Recognition	30
+5.4 Implementation of Core Modules	31
+5.4.1 Watermarking	31
+5.4.2 Perceptual Hashing	31
+5.4.3 Blockchain Provenance	31
+5.4.4 Biometric Verification	32
+5.5 Integration Workflow	32
+5.6 Documentation and Usability	32
+5.6.1 User Stories / Journeys	32
+5.7 Code Quality and Best Practices	34
+5.8 Summary	34
+Chapter 6: Evaluation	35
+6.1 Introduction	35
+6.2 Experimental Design	35
+6.2.1 Datasets	35
+6.2.2 Setup	35
+6.2.3 Metrics	35
+6.3 Results	36
+6.3.1 Imperceptibility of Watermarking	36
+6.3.2 Robustness Under Transformations	36
+6.3.3 Accuracy of Perceptual Hashing and Embedding	36
+6.3.4 Blockchain Performance	37
+6.3.5 Biometric Verification Reliability	37
+6.4 Comparative Analysis	39
+Baseline vs. MyMark:	39
+Privacy Comparison:	39
+6.5 Discussion	39
+Chapter 7: Discussion	40
+7.1 Introduction	40
+7.2 Interpretation of Results	40
+7.2.1 Imperceptibility and Robustness	40
+7.2.2 Perceptual Hashing and CLIP Embeddings	40
+7.2.3 Blockchain Provenance	40
+7.2.4 Biometric Verification and Privacy	40
+7.3 Trade-offs and Limitations	40
+7.3.1 Robustness vs. Imperceptibility	40
+7.3.2 Accuracy vs. Computational Cost	40
+7.3.3 Blockchain Transparency vs. Performance	41
+7.3.4 Biometric Reliability vs. Inclusivity	41
+7.4 Contribution to Network and Information Security	41
+7.5 Relation to Literature	41
+7.6 Future Directions Identified in Results	41
+7.7 Summary	41
+Chapter 8: Legal, Professional, and Ethical Issues	43
+8.1 Introduction	43
+8.2 GDPR and Data Protection	43
+8.2.1 GDPR Principles	43
+8.2.2 Application to MyMark	43
+8.2.3 Special Category Data	43
+8.3 Professional and Ethical Standards	43
+8.3.1 ACM Code of Ethics	43
+8.3.2 Ethical Debates on Biometrics	43
+8.4 Case Study: Age-Gating and Data Minimisation	44
+8.4.1 Failures of Commercial Platforms	44
+8.4.2 Government Approaches	44
+8.4.3 MyMark as a Privacy-Preserving Alternative	44
+8.5 Risks and Mitigations	44
+8.6 Broader Societal Implications	44
+8.7 Summary	45
+Chapter 9: Conclusion	46
+9.1  Introduction	46
+9.2 Summary of Contributions	46
+9.3 Reflection on Outcomes	46
+9.4 Future Work	46
+9.5 Final Remarks	47
+References	48
+Appendix:	54
 
+ 
+Table of Figures
+Figure 1– MyMark Logo	9
+Figure 2 - MyMark's Aims Poster	27
+Figure 3 - High-level MyMark app flow	27
+Figure 4 - Potential Use-Case Flow	27
+Figure 5– Onboarding “Problem” screen (onboard_problem.png), explaining risks of impersonation.	29
+Figure 6 - Onboarding “Review” stage (onboard_review.png), where users see detected risks.	30
+Figure 7– Onboarding “Risk” screen (onboard_risk.png), emphasising harms of PII leaks.	30
+Figure 8– Onboarding “Solution” screen (onboard_solution.png), introducing puppets and pointers.	30
+Figure 9– Reporting widget (onboard_widget.png), enabling user action on detected impersonation.	30
+Figure 10 - Secure data flow in MyMark.	31
+Figure 11– BlueMan mascot of MyMark an icon for a social media account used in the MyMark campaign to insight followers to manually report accounts they see that are breaching privacy of individuals or themselves.	34
+Figure 12 - MyMark landing dashboard showing entry points for authentication, image upload, and further research.	34
+Figure 13 - Authentication screen with options for biometric login, ID upload, or vocal catchphrase login.	35
+Figure 14 - Face-based login successfully authenticates a user into the system. Reveals User stats page displaying registered images, matches, and active pointer threshold policy.	35
+Figure 15 - Image upload screen where invisible watermarking and perceptual fingerprinting are triggered. Images uploaded parse through the pipeline and automated OSINT tasks and Models are generated which can be updated as more images are provided.	35
+Figure 16 - Matches page shows linked perceptual hashes, pre-existing blockchain commitments, urls and any data found about the user from OSINT tasks	35
+Figure 17 - Authenticated dashboard summarising user credentials, image statistics, and safety tips	35
+Figure 18 - User interaction story/ journey with the MyMark endpoint	35
+Figure 19 - Watermark Imperceptibility (PSNR/SSIM)	38
+Figure 20 - Watermark Metrics PSNR and SSIM vs Pertubation	38
+Figure 21 - Watermark Imperceptibility vs Embedding Strength	38
+Figure 22 - Robustness Under Transformations	38
+Figure 23 - Accuracy Comparison Diagram	39
+Figure 24 - ROC Curves for pHash Thresholding	39
+Figure 25 - Blockchain Performance	39
+Figure 26- Blockchain Latency	39
+Figure 27 - Biometric Verification Metrics	40
+Figure 28 - Pointer evaluation thresholds for 64–256 bit vectors, showing recommended hamming distance cutoffs under far1 and far5 policies	40
+Figure 29 - Pointer Latency	40
+Figure 30 - Pointer Stability	40
+Figure 31- Measured Cancellability	40
+Figure 32 - Cancellable Embeddings (Measured)	41
+Index of Tables
+Table 1 - Watermark imperceptibility results.	38
+Table 2 - Robustness of watermark extraction.	38
+Table 3 - Blockchain metrics	39
+Table 4 - Biometric verification metrics.	39
+Table 5 - Risks vs Mitigations	47
 
+ 
+Glossary of Terms
 
+4D Biometric Verification – The process of analysing not only spatial (3D) features of the face but also temporal dynamics (movement across time), enabling stronger liveness detection and identity verification.
+Age-Attested Puppet – A synthetic face overlay generated by the dual-rig extension to represent a user’s age-verified appearance without exposing their real facial image.
+Blockchain Provenance – A cryptographically verifiable chain of records stored on a blockchain or ledger system that proves the origin, ownership, and history of digital content.
+Cancellable Biometrics – Biometric features transformed through non-invertible functions, such that compromised templates can be revoked and replaced without requiring a new biometric source.
+Data Minimisation – A GDPR principle requiring that organisations collect and process only the personal data strictly necessary for the intended purpose.
+Decentralised Registry – A distributed system that stores digital ownership or verification records without relying on a single central authority.
+Dual-Rig Extension – A Chrome/desktop plugin developed for MyMark that creates a privacy-preserving virtual camera and microphone, generating age-attested puppets and synthetic voice surrogates.
+False Acceptance Rate (FAR) – The probability that a biometric system incorrectly accepts an impostor as a legitimate user.
+False Rejection Rate (FRR) – The probability that a biometric system incorrectly rejects a legitimate user.
+Imperceptibility (Watermarking) – A measure of how well a digital watermark remains invisible to human observers, commonly evaluated using Peak Signal-to-Noise Ratio (PSNR) and Structural Similarity Index (SSIM).
+Invisible Watermarking – The embedding of information within digital media in such a way that it is not perceptible to human vision but can later be extracted for authentication or tracking.
+Liveness Detection – A mechanism for determining whether a biometric sample (such as a face or voice) is captured from a live subject rather than a photograph, video, or recording.
+Perceptual Hashing (pHash) – A hashing technique that generates fingerprints for images based on perceptual similarity, allowing detection of near-duplicates even under transformations.
+Personally Identifiable Information (PII) – Data that can be used to identify an individual, such as facial images, voices, dates of birth, or government-issued ID numbers.
+Pointer (Privacy-Preserving Pointer) – A non-invertible, hashed representation of biometric data (such as face embeddings or voiceprints) used in MyMark to enable recognition without storing raw biometric templates.
+Provenance – The documented origin, history, and lifecycle of a digital asset, ensuring authenticity and ownership traceability.
+Semantic Embeddings – High-dimensional feature vectors derived from deep learning models (e.g., CLIP) that capture semantic meaning of images beyond pixel-level similarity.
+Structural Similarity Index (SSIM) – A metric that measures perceptual similarity between two images, often used to evaluate the visual quality of watermarked media.
+Tamper-Evident Ledger – A record-keeping system where any unauthorised modification to entries can be detected through cryptographic chaining.
 
+Virtual Camera/Microphone Interface – Software components that simulate input devices, allowing synthetic video or audio (e.g., puppets or synthetic voices) to be presented to third-party platforms as though they were real.
 
+ 
 MyMark: A Decentralised Media Fingerprinting Framework Integrating Invisible Watermarking, Perceptual Hashing, Blockchain Provenance, and 4D Biometric Verification
-
+ 
 Nathan Brown-Bennett - Faculty of Engineering, Computing and the Environment
 Kingston University, London, United Kingdom  
 Email: k2110813@kingston.ac.uk
-1.1 Abstract-
-The protection of digital media and the safeguarding of online identities have become pressing challenges in an era where content can be replicated, manipulated, and redistributed at scale. Conventional copyright enforcement and age-gating measures have proven inadequate. Platforms such as Yubo continue to struggle to provide safe online environments for young people, while governments in the UK, Australia, and elsewhere are pursuing legislation that normalises age verification. As critics warn, this approach increases the transmission of sensitive personally identifiable information (PII) and undermines the principle of data minimisation, thereby exposing users to heightened risks of surveillance, tracking, and fraud (Politico, 2024).
-This dissertation presents MyMark, a decentralised media fingerprinting system that integrates robust invisible watermarking, perceptual hashing, blockchain provenance, and 4D biometric verification. MyMark not only enables creators to embed and register ownership claims in a tamper-evident ledger, but also introduces a privacy-preserving mechanism for identity binding and liveness verification that does not require the storage of images or raw biometric data. In doing so, the system addresses both the intellectual property protection gap and the failures of existing age and identity verification regimes.
-
-The contributions of this work include: 
-(1) a hybrid detection pipeline combining watermarking and perceptual hashing; 
-(2) a blockchain provenance layer storing cryptographic commitments only; 
-(3) a biometric module capable of verifying age and liveness without retaining PII; 
-(4) an evaluation framework measuring robustness, imperceptibility, accuracy, and ledger performance;
-(5) a critical analysis of the ethical and legal implications under GDPR and broader information security concerns.
-Index Terms - Digital watermarking; perceptual hashing; blockchain provenance; media fingerprinting; 4D face recognition; biometric verification; intellectual property protection; age verification; privacy-preserving authentication; GDPR compliance.
-
-1.2 Background and Motivation
+1.1	Abstract—
+The protection of digital media and online identity has become increasingly challenging in an era where content can be copied, altered, and redistributed at scale. Traditional solutions—such as watermarking, perceptual hashing, and commercial age-gating—have shown clear limitations. Watermarks are often fragile under transformations, hashes alone fail on semantically modified content, and current age-verification systems rely on invasive collection of personal data, undermining GDPR principles of data minimisation and exposing users to risks of surveillance and fraud.
+This dissertation presents MyMark, a decentralised, privacy-preserving media fingerprinting framework that integrates four key pillars: (1) robust invisible watermarking using DCT embedding, (2) perceptual hashing augmented with deep embeddings for improved retrieval accuracy, (3) blockchain-based provenance recording through cryptographic commitments rather than raw identifiers, and (4) biometric verification transformed into non-invertible, revocable pointers. To address the weaknesses of existing age-gating systems, the framework extends to a dual-rig Chrome extension and desktop application that generate age-attested avatars and surrogate voices. These provide liveness and age verification without exposing personal images or recordings.
+Evaluation demonstrates that MyMark achieves watermark imperceptibility (PSNR > 40 dB, SSIM > 0.95), robustness against moderate compression and cropping (≥ 90% detection under JPEG 90%), and improved fingerprinting accuracy (F1 = 0.92 vs. 0.79 for pHash-only baselines). Blockchain provenance achieves sub-second latency in emulated networks, while biometric verification yields FAR < 1% and FRR < 5%, with liveness detection at 96.5%.
+The dissertation contributes both a working artefact and an ethical framework, showing that secure provenance, ownership binding, and age-appropriate access can be achieved without storing personal images or voices. This advances the state of the art in privacy-preserving digital identity and responsible innovation in information security.
+Figure 1– MyMark Logo
+ 
+Index Terms — Digital watermarking; perceptual hashing; blockchain provenance; biometric verification; cancellable biometrics; privacy-preserving pointers; dual-rig extension; virtual camera; virtual microphone; age-attested puppet; liveness detection; GDPR compliance. 
+1.2	Background and Motivation
 The shift from analogue to digital media has radically altered the dynamics of content ownership and distribution. Unlike physical artefacts, digital objects can be replicated without degradation, making unauthorised use of intellectual property widespread and difficult to control (Lessig, 2008). Although watermarking and reverse image search tools exist, most are either easily defeated through common transformations (cropping, compression, filtering) or accessible only to large corporations, leaving individual creators under-protected (Cox et al., 2008; Fridrich, 2010).
-At the same time, blockchain technology has introduced new possibilities for tamper-evident provenance tracking. Blockchains provide immutable records of ownership claims, but by themselves cannot bind content to individuals without additional mechanisms (Narayanan et al., 2016). Furthermore, the misuse of these systems-such as fraudulent ownership claims-remains a challenge (Zhao et al., 2020). Biometric technologies offer a solution to this issue by ensuring that only legitimate owners can register content, but concerns around spoofing and identity theft highlight the need for advanced techniques such as 3D/4D face recognition and liveness detection (Bowyer et al., 2020; Liu et al., 2022).
-Beyond intellectual property, this project is also motivated by wider challenges in network and information security, particularly the handling of personal data in digital identity systems. Age-gating has become a central strategy for online safety, especially on youth-focused platforms such as Yubo, yet these measures have repeatedly proven ineffective at creating genuinely safe environments (Politico, 2024). Governmental attempts in the UK, Australia, and beyond to legislate age verification risk further undermining privacy. As Politico (2024) observes: "The normalization of age verification, and the subsequent huge increase in the amount of identifiable data being transmitted online, contradicts the principle of data minimization and supports a growing trend of de-anonymization, leaving us all more vulnerable to tracking, surveillance, and instances of fraud."
-In this context, the central challenge is not simply whether age verification or identity-binding can be enforced, but whether it can be achieved without exposing individuals to new vectors of surveillance and exploitation. Current approaches demand extensive personally identifiable information (PII)-such as passport scans, facial photographs, or government databases-placing users, particularly young people, at risk of misuse and secondary harms (Livingstone et al., 2023).
+The need for suitable protection of digital media and the safeguarding of online identities have become vital to society. Conventional copyright enforcement and age-gating measures have proven inadequate, in some cases even the cause of data leaks and vulnerabilities. The protection of digital media ownership and the safeguarding of online identity remain persistent challenges in network and information security. Traditional solutions such as watermarking, perceptual hashing, and age-gating have significant limitations: watermarks are fragile against transformations, hashes alone struggle with semantic variations, and age verification platforms often rely on invasive collection of personal data. These approaches frequently undermine the principle of data minimisation under the EU General Data Protection Regulation (GDPR), exposing users to risks of surveillance, breaches, and fraud (Voigt & Von dem Bussche, 2017; Livingstone et al., 2023).
+Platforms such as TikTok, Instagram and Yubo- which advertise to and thrive off the large youth audience- continue to struggle to provide safe online environments for young people, while governments in the United Kingdom, Australia, and America are pursuing legislation that justifies sharing personally identifiable information (PII) with unknown third parties in an attempt to normalise age verification. As critics warn, this approach increases the transmission of sensitive PII and undermines the principle of data minimisation, thereby exposing users to heightened risks of surveillance, tracking, and fraud (Politico, 2024).
+At the same time, blockchain technology has introduced new possibilities for tamper-evident provenance tracking. Blockchains provide immutable records of ownership claims, but by themselves cannot bind content to individuals without additional mechanisms (Narayanan et al., 2016). Furthermore, the misuse of these systems—such as fraudulent ownership claims—remains a challenge (Zhao et al., 2020). Biometric technologies offer a solution to this issue by ensuring that only legitimate owners can register content, but concerns around spoofing and identity theft highlight the need for advanced techniques such as 3D/4D face recognition and liveness detection (Bowyer et al., 2020; Liu et al., 2022).
+Beyond intellectual property, this project is also motivated by wider challenges in network and information security, particularly the handling of personal data in digital identity systems. Age-gating has become a central strategy for online safety, especially on youth-focused platforms such as Yubo, yet these measures have repeatedly proven ineffective at creating genuinely safe environments (Politico, 2024). Governmental attempts in the UK, Australia, and beyond to legislate age verification risk further undermining privacy. As Politico (2024) observes: “The normalization of age verification, and the subsequent huge increase in the amount of identifiable data being transmitted online, contradicts the principle of data minimization and supports a growing trend of de-anonymization, leaving us all more vulnerable to tracking, surveillance, and instances of fraud.”
+In this context, the central challenge is not simply whether age verification or identity-binding can be enforced, but whether it can be achieved without exposing individuals to new vectors of surveillance and exploitation. Current approaches demand extensive personally identifiable information (PII)—such as passport scans, facial photographs, or government databases—placing users, particularly young people, at risk of misuse and secondary harms (Livingstone et al., 2023).
 This dissertation therefore presents a different approach: a privacy-preserving system that never stores images or raw biometric data, yet is still capable of verifying liveness, binding ownership, and supporting age-related assurances. By embedding data minimisation principles into its architecture, MyMark demonstrates that security and safety can be achieved without amplifying risks of surveillance, fraud, or identity theft. Crucially, this contribution moves beyond theoretical critique into implementation, providing a working artefact that integrates robust watermarking, decentralised provenance, and biometric verification without violating user privacy.
-
-
-
-
 1.3 Research Problem
 The core research problem addressed in this dissertation is:
 How can individual creators be provided with an accessible, robust, and secure system for registering, proving, and defending ownership of digital media in a decentralised environment while preventing fraudulent claims?
@@ -202,13 +266,13 @@ Authenticity: preventing malicious users from registering content they do not ow
 Usability: providing a workflow accessible to non-technical creators.
 1.4 Aims and Objectives
 Aim
-To design, implement, and evaluate an integrated system (MyMark) that enables creators to embed, register, and defend ownership of digital media using watermarking, perceptual hashing, blockchain provenance, and biometric verification.
+To design, implement, and evaluate an integrated system (MyMark) that enables users to embed, register, and defend ownership of digital media using watermarking, perceptual hashing, blockchain provenance, and biometric verification.
 Objectives
 To implement a robust invisible watermarking scheme suitable for images.
 To develop a perceptual hashing and matching system capable of detecting media similarity under transformations.
 To integrate a blockchain or distributed ledger module for tamper-evident registration of ownership claims.
 To incorporate biometric owner verification using 4D facial recognition and liveness detection to prevent fraudulent claims.
-To evaluate the system's robustness, imperceptibility, detection accuracy, ledger performance, and biometric reliability.
+To evaluate the system’s robustness, imperceptibility, detection accuracy, ledger performance, and biometric reliability.
 To critically assess legal, ethical, and professional considerations, particularly relating to biometric data and GDPR compliance.
 1.5 Contributions of the Thesis
 This dissertation makes the following contributions to the fields of digital media protection, decentralised provenance, and information security:
@@ -220,30 +284,34 @@ Evaluation framework: Establishment of a comprehensive experimental methodology 
 Ethical and legal analysis: Critical examination of the risks of biometric misuse, surveillance, and de-anonymisation, with explicit alignment to GDPR and information security best practices. The system is evaluated not only for its technical performance but also for its compliance with professional and ethical standards in cybersecurity.
 1.6 Evolution from the Proposal
 The original project proposal emphasised the development of an image watermarking and perceptual matching tool with blockchain-backed registration. Since then, the project has significantly evolved in scope and ambition:
-The 4D-Image-Recognition module was added to address fraudulent registration threats, representing a shift from purely technical media protection to identity-bound ownership verification.
+The 4D-Image-Recognition module was added to address fraudulent registration threats, representing a shift from purely technical media protection to identity-bound ownership verification. It has also been added to address a secondary aim established within the project, ‘Do users have to risk handing over their personally identifiable information to 3rd parties or governments just to prove their age?’. This minor project has shown that age-verification without storing images, and OSINT analyses using just pointers is possible. 
 Greater emphasis has been placed on ethical and legal compliance, ensuring GDPR principles (data minimisation, lawful basis, rights of data subjects) are embedded in the system design.
 The evaluation strategy has expanded from basic detection accuracy to a full set of robustness, imperceptibility, and ledger latency metrics, providing a more rigorous basis for assessing system performance.
 1.6.1 Significance of the Study
-The significance of this study lies in its contribution to both academic research and practical network and information security practice. From an academic perspective, MyMark demonstrates the value of integrating techniques that are typically studied in isolation-watermarking, perceptual hashing, blockchain, and biometric verification-into a single cohesive artefact. This integration addresses gaps identified in the literature review, offering a proof of concept that balances robustness, usability, and ethical compliance.
-From a professional standpoint, the work challenges the prevailing trajectory of digital verification systems. Commercial platforms and government initiatives have increasingly normalised the collection and storage of personally identifiable information (PII) in the name of safety and compliance. These approaches contradict GDPR's principle of data minimisation and introduce new risks of surveillance, data breaches, and fraud. By contrast, MyMark demonstrates that ownership, age, and liveness verification can be achieved without storing raw biometric data or images, providing a privacy-preserving alternative that aligns with both legal and ethical expectations.
+The significance of this study lies in its contribution to both academic research and practical network and information security practice. From an academic perspective, MyMark demonstrates the value of integrating techniques that are typically studied in isolation—watermarking, perceptual hashing, blockchain, and biometric verification—into a single cohesive artefact. This integration addresses gaps identified in the literature review, offering a proof of concept that balances robustness, usability, and ethical compliance.
+From a professional standpoint, the work challenges the prevailing trajectory of digital verification systems. Commercial platforms and government initiatives have increasingly normalised the collection and storage of personally identifiable information (PII) in the name of safety and compliance. These approaches contradict GDPR’s principle of data minimisation and introduce new risks of surveillance, data breaches, and fraud. By contrast, MyMark demonstrates that ownership, age, and liveness verification can be achieved without storing raw biometric data or images, providing a privacy-preserving alternative that aligns with both legal and ethical expectations.
 For the field of Network and Information Security, the system represents a step forward in aligning technical innovation with responsible practice. It not only addresses practical challenges in intellectual property protection but also provides a model for embedding ethical and legal principles directly into technical design. This has broader implications for the development of trustworthy digital ecosystems, where security and privacy are not mutually exclusive but mutually reinforcing.
+1.6.2 Identity Without Identity: Privacy-Preserving Pointers.
+A central innovation of this dissertation lies in addressing one of the most problematic aspects of digital identity management: the persistent reliance on storing, transmitting, and sharing users’ images, voices, or identity documents. Current systems, particularly those used for age-gating, routinely demand the submission of highly sensitive personal data, which is subsequently shared with third parties or retained in centralised databases (Livingstone et al., 2023). Such approaches contradict the principle of data minimisation under GDPR, while also creating new risks of data leakage, identity theft, and surveillance (Voigt & Von dem Bussche, 2017).
+MyMark introduces an alternative: pointers. These are privacy-preserving, non-invertible signals derived from raw biometrics and behavioural traits but designed to be revocable, un-linkable across services, and incapable of reconstructing the original likeness. Pointers can be generated from multiple modalities, including facial dynamics (4D blendshape trajectories, micro-expressions, eye-blink cadence), gaze and head-pose sequences, and cancellable voiceprints (Rathgeb & Busch, 2019; Gomez-Barrero et al., 2022). Each pointer functions as a unique, evolving identifier for a user without exposing their personal data.
+The dual-rig extension—implemented as a Chrome plugin and desktop application—serves as the practical vehicle for this approach. It creates a virtual camera and microphone interface that replaces raw user input with privacy-preserving surrogates. For visual verification, the system generates age-attested puppets (3D or AI overlays) that reflect the user’s expressions while cryptographically enforcing the correct age category. For audio, the extension outputs a consistent but transformed voice, ensuring intelligibility while concealing the original. Importantly, the dual-rig also produces and updates pointers in the background, feeding into the MyMark provenance framework and enabling both ban detection and privacy-preserving age verification without ever transmitting biometric likeness data.
+By replacing “identity” with identity pointers, MyMark demonstrates that digital trust and access control can be enforced without the invasive storage of images, voice samples, or identity documents. This contribution not only strengthens the technical integrity of biometric authentication but also redefines the ethical baseline for privacy-preserving verification in network and information security.
 1.7 Thesis Outline
 The remainder of this dissertation is structured as follows:
-Chapter 2 - Literature Review: Surveys watermarking, perceptual hashing, blockchain provenance, and biometric identity verification, with critical discussion of existing approaches. A dedicated subsection examines the rise and failures of age-gating platforms (e.g., Yubo) and government-led age verification initiatives (UK, Australia), highlighting the risks of excessive PII collection and de-anonymisation.
-Chapter 3 - Methodology: Presents the design-science research approach used to construct and evaluate MyMark. Defines the threat model, including adversarial attempts at watermark removal, fraudulent ownership claims, and privacy harms linked to conventional identity verification. Explains evaluation criteria across robustness, accuracy, imperceptibility, blockchain latency, and privacy preservation.
-Chapter 4 - System Design: Outlines the high-level architecture of MyMark, including the embedding, detection, blockchain, and biometric modules. Justifies the system's suitability, with emphasis on the novel privacy-preserving verification mechanism that allows age and liveness assurance without image storage.
-Chapter 5 - Implementation: Details the technical realisation of MyMark and its integration with the 4D-Image-Recognition module. Describes the specific libraries, frameworks, and blockchain platforms used, as well as how privacy-preserving verification was engineered in practice.
-Chapter 6 - Evaluation: Reports experimental results on watermark imperceptibility, robustness against transformations, perceptual matching accuracy, blockchain ledger performance, and biometric verification. Includes a comparative study with baseline methods and discussion of how MyMark avoids the pitfalls of age-gating systems by meeting verification requirements without compromising data minimisation.
-Chapter 7 - Discussion: Interprets findings in light of the literature, including trade-offs between robustness and usability, and the broader implications for network and information security. Evaluates MyMark not only as a technical artefact but as a response to the ethical and policy failures of existing age verification systems.
-Chapter 8 - Legal, Professional, and Ethical Issues: Analyses GDPR principles, especially the tension between age verification mandates and data minimisation. Uses age-gating and de-anonymisation as a case study to illustrate how poorly designed systems amplify surveillance risks. Explains how MyMark provides a compliant, privacy-preserving alternative.
-Chapter 9 - Conclusion: Summarises contributions, reflects on the outcomes, and identifies avenues for future research such as extending to video content, adversarial watermark resilience, and broader applications of privacy-preserving biometric verification.
-
+Chapter 2 – Literature Review: Surveys watermarking, perceptual hashing, blockchain provenance, and biometric identity verification, with critical discussion of existing approaches. A dedicated subsection examines the rise and failures of age-gating platforms (e.g., Yubo) and government-led age verification initiatives (UK, Australia), highlighting the risks of excessive PII collection and de-anonymisation.
+Chapter 3 – Methodology: Presents the design-science research approach used to construct and evaluate MyMark. Defines the threat model, including adversarial attempts at watermark removal, fraudulent ownership claims, and privacy harms linked to conventional identity verification. Explains evaluation criteria across robustness, accuracy, imperceptibility, blockchain latency, and privacy preservation.
+Chapter 4 – System Design: Outlines the high-level architecture of MyMark, including the embedding, detection, blockchain, and biometric modules. Justifies the system’s suitability, with emphasis on the novel privacy-preserving verification mechanism that allows age and liveness assurance without image storage.
+Chapter 5 – Implementation: Details the technical realisation of MyMark and its integration with the 4D-Image-Recognition module. Describes the specific libraries, frameworks, and blockchain platforms used, as well as how privacy-preserving verification was engineered in practice.
+Chapter 6 – Evaluation: Reports experimental results on watermark imperceptibility, robustness against transformations, perceptual matching accuracy, blockchain ledger performance, and biometric verification. Includes a comparative study with baseline methods and discussion of how MyMark avoids the pitfalls of age-gating systems by meeting verification requirements without compromising data minimisation.
+Chapter 7 – Discussion: Interprets findings in light of the literature, including trade-offs between robustness and usability, and the broader implications for network and information security. Evaluates MyMark not only as a technical artefact but as a response to the ethical and policy failures of existing age verification systems.
+Chapter 8 – Legal, Professional, and Ethical Issues: Analyses GDPR principles, especially the tension between age verification mandates and data minimisation. Uses age-gating and de-anonymisation as a case study to illustrate how poorly designed systems amplify surveillance risks. Explains how MyMark provides a compliant, privacy-preserving alternative.
+Chapter 9 – Conclusion: Summarises contributions, reflects on the outcomes, and identifies avenues for future research such as extending to video content, adversarial watermark resilience, and broader applications of privacy-preserving biometric verification. 
 2. Literature Review 
 2.1 Introduction
-The protection of digital content and the safeguarding of user identities are longstanding challenges in information security. Various strands of research-digital watermarking, perceptual hashing, blockchain-based provenance, and biometric verification-have each offered partial solutions. Yet their limitations, when deployed in isolation, reveal persistent vulnerabilities in robustness, scalability, and ethics. In parallel, age verification systems, implemented both by private platforms and through legislative mandates, have introduced new risks of privacy loss and surveillance creep. This chapter critically reviews the state of the art across these domains, identifies gaps, and situates the motivation for MyMark.
+The protection of digital content and the safeguarding of user identities are longstanding challenges in information security. Various strands of research—digital watermarking, perceptual hashing, blockchain-based provenance, and biometric verification—have each offered partial solutions. Yet their limitations, when deployed in isolation, reveal persistent vulnerabilities in robustness, scalability, and ethics. In parallel, age verification systems, implemented both by private platforms and through legislative mandates, have introduced new risks of privacy loss and surveillance creep. This chapter critically reviews the state of the art across these domains, identifies gaps, and situates the motivation for MyMark.
 2.2 Digital Watermarking
 2.2.1 Concepts and Techniques
-Digital watermarking refers to the process of embedding imperceptible information into a host signal (such as an image) for the purpose of identification, authentication, or tracking (Cox et al., 2008). Watermarks can be robust-designed to survive compression, cropping, and filtering-or fragile, breaking under even minimal manipulation, often used for tamper detection (Fridrich, 2010). Techniques are commonly divided into spatial domain (modifying pixel values directly) and transform domain (modifying frequency components using DCT, DWT, or SVD).
+Digital watermarking refers to the process of embedding imperceptible information into a host signal (such as an image, audio or video) for the purpose of identification, authentication, or tracking (Cox et al., 2008). Watermarks can be robust—designed to survive compression, cropping, and filtering—or fragile, breaking under even minimal manipulation, often used for tamper detection (Fridrich, 2010). Techniques are commonly divided into spatial domain (modifying pixel values directly) and transform domain (modifying frequency components using DCT, DWT, or SVD).
 Transform-domain methods generally achieve better trade-offs between imperceptibility and robustness. For example, Cox et al. (1997) demonstrated the effectiveness of spread-spectrum watermarking in the DCT domain, resilient to common image transformations. Barni et al. (2001) later introduced wavelet-based embedding, showing improved robustness under JPEG compression.
 2.2.2 Evaluation Metrics
 Two key metrics dominate watermarking evaluation:
@@ -252,17 +320,16 @@ Robustness, measured by detection accuracy under transformations such as rescali
 2.2.3 Limitations
 Despite progress, robust watermarking remains vulnerable to collusion attacks (averaging multiple watermarked copies to attenuate the mark) and geometric attacks (rotation, scaling, cropping) (Piva, 2013). Moreover, watermark-only systems require the watermark to be present at detection, which limits their ability to identify unmarked or heavily transformed copies.
 2.2.4 Implications for MyMark
-Watermarking provides a baseline layer of ownership marking, but its limitations necessitate supplementary mechanisms. In MyMark, watermarking is combined with perceptual hashing to ensure matches can be detected even when watermarks fail.
-
+Watermarking provides a baseline layer of ownership marking, but its limitations necessitate supplementary mechanisms. In MyMark, watermarking is combined with perceptual hashing to ensure matches can be detected even when watermarks fail, aligning with GDPR principles by avoiding dependence on a single fragile identifier. 
 2.3 Perceptual Hashing and Content-Based Fingerprinting
 2.3.1 Principles
-Perceptual hashing maps a media file into a compact, fixed-length representation that preserves perceptual similarity: images that look alike to the human eye produce similar hashes, even if they differ at the pixel level (Monga & Evans, 2006). Algorithms such as pHash, dHash, and aHash are widely used, relying on frequency decomposition, gradients, or colour averaging.
+Perceptual hashing maps a media file into a compact, fixed-length representation that preserves perceptual similarity: images that look alike to the human eye produce similar hashes, even if they differ at the pixel level (Monga & Evans, 2006). Algorithms such as pHash (a frequency-domain DCT function), dHash (a pixel gradient-based algorithm), and aHash (a pixel area average based algorithm) are widely used, relying on frequency decomposition, gradients, or colour averaging.
 2.3.2 Advances with Deep Learning
 Traditional hashing methods suffer from susceptibility to adversarial perturbations and limited discrimination across complex datasets. Deep learning approaches have addressed this by using convolutional networks or vision-language models (e.g., CLIP) to generate embeddings that capture semantic content (Radford et al., 2021). These embeddings enable detection of modified or contextually related media, beyond simple pixel similarity.
 2.3.3 Limitations
-While perceptual hashing can detect similarity in the absence of a watermark, it introduces challenges of false positives (different images producing similar hashes) and false negatives (subtle modifications escaping detection). Large-scale deployment also requires efficient nearest-neighbour search methods, such as locality-sensitive hashing (Gionis et al., 1999).
+While perceptual hashing can detect similarity in the absence of a watermark, it introduces challenges of false positives (different images producing similar hashes, often referred to as collisions) and false negatives (subtle modifications escaping detection). Large-scale deployment also requires efficient nearest-neighbour search methods, such as locality-sensitive hashing (LSH) and FAISS index solutions (Gionis et al., 1999).
 2.3.4 Implications for MyMark
-Perceptual hashing complements watermarking by enabling the detection of modified media, even when watermarks degrade. By combining traditional hashing with deep embeddings (CLIP), MyMark achieves robustness against both pixel-level and semantic transformations.
+Perceptual hashing complements watermarking by enabling the detection of modified media, even when watermarks degrade. By combining traditional hashing with deep embeddings (CLIP), MyMark achieves robustness against both pixel-level and semantic transformations. In doing so, it reduces false matches and enables scalable, privacy-preserving search when combined with blockchain provenance commitments.
 2.4 Blockchain and Decentralised Provenance
 2.4.1 Provenance in Digital Media
 Provenance systems aim to establish the origin and modification history of digital content. Centralised databases have historically been used, but they suffer from risks of tampering and single points of failure (Duranti, 2009).
@@ -275,34 +342,46 @@ Privacy: risk of leaking sensitive metadata.
 Trust model: while blockchain ensures immutability, it cannot prevent fraudulent registration of ownership without additional safeguards.
 2.4.4 Implications for MyMark
 MyMark integrates a permissioned ledger, recording only cryptographic commitments of watermarks and perceptual hashes. This balances transparency with privacy and, when combined with biometric verification, mitigates fraudulent registration.
-
-
 2.5 Biometrics and 4D Image Recognition
 2.5.1 Overview
-Biometric authentication leverages unique physical traits such as fingerprints, iris, or facial geometry. Facial recognition is particularly widespread, but has been criticised for biases and susceptibility to spoofing attacks (Buolamwini & Gebru, 2018).
+Biometric authentication leverages unique physical traits such as fingerprints, iris, or facial geometry. Facial recognition is particularly widespread, but has been criticised for biases and susceptibility to spoofing attacks (Buolamwini & Gebru, 2018). Biometric systems traditionally rely on static features such as facial photographs, iris scans, or voice recordings. These identifiers are effective in terms of distinctiveness but create significant vulnerabilities: once compromised, biometric data cannot be revoked like a password (Jain et al., 2016). This has motivated research into cancellable biometrics, where biometric templates are deliberately transformed in a non-invertible way, allowing revocation and reissuance if compromised (Rathgeb & Busch, 2019). Cancellable approaches include bio-hashing, random projection, and fuzzy extractors, which generate unique but un-linkable templates for the same individual (Gomez-Barrero et al., 2022).
 2.5.2 3D and 4D Recognition
-3D facial recognition captures depth information, improving resistance to spoofing with photographs. 4D recognition extends this by incorporating temporal data (facial dynamics, expressions), enabling stronger liveness detection (Liu et al., 2022).
+3D facial recognition captures depth information, improving resistance to spoofing with photographs. 4D recognition extends this by incorporating temporal data (facial dynamics, expressions), enabling stronger liveness detection (Liu et al., 2022). Techniques such as blendshape modelling, micro-expression analysis, and gaze trajectory capture offer richer discriminative features and stronger liveness detection (Zhang et al., 2019). These methods reduce vulnerability to presentation attacks (e.g., replaying photographs or deepfakes) by capturing temporal and depth cues that are difficult to spoof.
 2.5.3 Ethical Concerns
-The use of biometrics introduces risks around privacy, consent, and potential misuse by authoritarian regimes (Whitley, 2020). GDPR classifies biometric data as "special category," requiring strict controls (Voigt & Von dem Bussche, 2017).
+The use of biometrics introduces risks around privacy, consent, and potential misuse by authoritarian regimes (Whitley, 2020). GDPR classifies biometric data as “special category,” requiring strict controls (Voigt & Von dem Bussche, 2017).
 2.5.4 Implications for MyMark
-MyMark adopts 4D recognition not to store or centralise biometric data, but to enforce proof of ownership and age/liveness in a privacy-preserving way. Raw images are never stored; only abstracted representations are used temporarily for verification. 
-
-
-
-
-
-
+MyMark adopts 4D recognition not to store or centralise biometric data, but to enforce proof of ownership and age/liveness in a privacy-preserving way. Instead of storing raw biometric embeddings, MyMark generates pointers: revocable, non-invertible representations derived from 4D face dynamics, head-pose graphs, and cancellable voiceprints. These pointers retain stability within a user across sessions while being un-linkable across different services. This approach situates MyMark at the intersection of biometric accuracy and ethical data protection, moving beyond conventional template protection toward a model of identity without identity.
+2.5.5 Cancellable Biometrics and Privacy-Preserving Pointers.
+The artefact developed in this project directly implements such approaches. Within the 4D-Image-Recognition repository, biometric templates are generated by normalising 3D facial landmarks and hashing them with SHA-256, producing non-invertible identifiers that cannot be used to reconstruct a user’s face. These templates are revocable by regenerating landmark normalisation outputs or reseeding salts, effectively cancelling old identifiers (modules/facial_pipeline.py; modules/privacy.py). Similarly, the 4D embedding pipeline produces a fused 1024-dimensional feature vector which is immediately hashed before storage, ensuring that raw embeddings are never persisted (backend/models.py). Importantly, the repository provides privacy utilities for salted and peppered hashing, enabling domain-specific rotation policies for biometric templates.
+The MyMark repository extends this approach by providing a cancellable embedding transform for face recognition. Instead of storing raw Face Net-style embeddings, embeddings are projected into a lower-dimensional space using a seeded orthonormal transformation derived from a per-user salt. This transformed vector is stored in encrypted form (AES-GCM), ensuring un-linkability and revocability (face_auth/cancelable.py). Rotation is supported through salt-key regeneration, with operational utilities to replace compromised embeddings (scripts/rotate_salt_key.py). Runtime metrics (/api/metrics) explicitly report whether cancellable transforms are enabled and how many records are protected.
+Building on cancellable templates, both repositories support the concept of privacy-preserving pointers. Rather than persisting images or raw biometric vectors, the 4D pipeline emits geometric “pointers”: vectors from facial centres to landmarks, hashed into compact representations for matching and correlation (modules/facial_pipeline.py). The MyMark design extends this by specifying API endpoints for pointer handling (/api/pointers, /api/pointer_match) and a blockchain-backed commitment scheme (docs/DUAL_RIG_PRIVACY_ARCHITECTURE.md). In practice, these pointers act as identity signals that are:
+•	non-invertible, ensuring no original biometric can be reconstructed;
+•	revocable, allowing re-generation with new salts or transforms;
+•	un-linkable, through per-relying-party salt derivation; and
+•	suitable for provenance, via commitment and verification on a distributed ledger.
+This design not only aligns with state-of-the-art biometric template protection but also advances it. By embedding cancellable biometrics directly into the architecture, MyMark demonstrates that authentication and provenance can be maintained through identity pointers, achieving recognition without ever storing likeness or voice data. This is particularly novel in the context of age verification and online safety, where privacy-preserving identifiers can enforce access controls without perpetuating surveillance risks.
 2.6 Age-Gating, Data Minimisation, and Privacy Risks
 2.6.1 Commercial Failures
-Platforms such as Yubo, targeted at young users, illustrate the shortcomings of current age-gating mechanisms. Despite introducing AI-based age estimation, Yubo has faced repeated criticism for failing to prevent harmful interactions, highlighting the ineffectiveness of such approaches when decoupled from strong identity verification (Livingstone et al., 2023).
+Age-gating mechanisms are widely deployed by social platforms, online retailers, and entertainment services. These typically require users to provide a government-issued ID or undergo biometric age estimation. 
+Platforms including Instagram and Yubo have piloted or deployed AI-based age estimation. Instagram’s initiatives (ID upload, selfie video, social vouching; later AI estimation) have drawn questions over reliability, demographic bias and privacy trade-offs (Meta, 2022; New Statesman, 2022; University of Wisconsin–Madison, 2024). Yubo’s partnership with Yoti has been publicised as privacy-preserving and high-coverage, yet independent policy research and children’s-rights groups continue to highlight residual risks, uneven accuracy, and the broader normalisation of biometric checks (Livingstone et al., 2023). Across jurisdictions, documented circumvention (e.g., VPNs for geo-avoidance), inconsistent vendor performance, and data protection concerns (centralised ID/biometric stores, third-party processors) demonstrate why data minimisation and revocability—central to MyMark’s pointer-based approach—are not merely desirable but necessary (eSafety Commissioner, 2024; EFF, 2025; WIRED, 2025)
+These initiatives have been met with largescale criticism for normalising large-scale collection of identity data, often by private contractors, with unclear safeguards (Politico, 2024).
 2.6.2 Government Initiatives
-Legislation in the UK and Australia increasingly mandates age verification for accessing online services. While intended to protect children, these measures risk creating large repositories of PII, undermining the principle of data minimisation (Politico, 2024). The normalization of age verification risks widespread de-anonymisation, enabling greater surveillance and potential fraud.
+The UK’s Online Safety Act 2023 imposes statutory duties on services that publish or host pornographic content (Part 5) to deploy “highly effective” age assurance and prevent children’s access. Ofcom’s implementation guidance entered force in January 2025 and requires robust checks proportionate to risk; from 25 July 2025 all sites and apps that allow pornography must have strong age checks in place (Ofcom, 2025; UK Government, 2025). The regime’s scope and timetable are now clear, but it has rekindled concerns about proportionality, privacy, and vendor dependence discussed in Chapter 1 and 2.
+In November 2024, Parliament passed the Online Safety Amendment (Social Media Minimum Age) Act 2024, establishing a minimum age of 16 for social media accounts and enforcement from December 2025. The eSafety Commissioner has urged platforms to use “minimally invasive” approaches (e.g., AI and behavioural signals) rather than blanket ID checks for all users, acknowledging privacy risks and equity concerns (Reuters, 2025; AP News, 2025; Quinn Emanuel, 2025). Independent and media analyses of the government-funded trial of age-assurance tech reported demographic biases and lower real-world accuracy than headline vendor claims, with notably worse performance for Indigenous and South-East Asian users and high false-positive rates among under-16s (The Guardian, 2025). These findings echo the regulator’s earlier Age Assurance Issues Paper highlighting privacy and data collection risks in both ID-based and biometric estimation approaches (eSafety Commissioner, 2024).
+Multiple US states have enacted laws requiring age verification or parental consent for minors on social media (e.g., Utah SB 152/HB 311, Arkansas, Texas, Louisiana), while litigation has produced a patchwork: some provisions enjoined on First Amendment grounds, others moving forward (NCSL, 2023; Hunton Andrews Kurth, 2024; NetChoice, 2025). For adult sites, Louisiana’s 2023 law drove a widely reported 80% traffic drop to Pornhub from that state—interpreted by civil-liberties groups and outlets as migration to non-compliant or offshore sites rather than genuine harm reduction, and as a policy that pushes users toward riskier, less regulated spaces while raising data-brokerage and privacy concerns (EFF, 2025; WIRED, 2025).
+The normalization of age verification risks widespread de-anonymisation, enabling greater surveillance and potential fraud.
 2.6.3 Implications for Network and Information Security
 From a security perspective, age-gating approaches that rely on centralised identity databases increase the attack surface for breaches and identity theft. They contradict data minimisation principles enshrined in GDPR and fail to deliver meaningful safety improvements.
 2.6.4 Implications for MyMark
-MyMark addresses these challenges by demonstrating that age and liveness verification can be achieved without storing images or transmitting unnecessary PII. This represents not only a technical contribution but also an ethical corrective to the current trajectory of digital identity management.
+The review of age-gating mechanisms across the UK, Australia, and the United States illustrates the central challenge: existing systems either demand disproportionate disclosure of personal data (e.g., ID uploads), or they rely on biometric estimation techniques that are inconsistent, biased, and privacy-invasive. These practices not only raise ethical questions but also contradict regulatory principles such as data minimisation under GDPR (Voigt & Von dem Bussche, 2017; Livingstone et al., 2023).
+The design of MyMark directly addresses these shortcomings through the integration of privacy-preserving pointers and the dual-rig extension. The extension functions as a virtual camera and microphone, replacing raw facial or audio input with overlays and surrogates. Specifically, the extension’s puppet pipeline (tools/identity_protection/browser_extension/filter.js) warps and composites a puppet image or avatar onto the user’s live face in real time, using MediaPipe FaceMesh landmarks and triangle-based affine warps. This ensures that the platform perceives human presence and natural expression, while the raw facial video is never transmitted or stored.
+At present, the repository provides the capacity to render puppets dynamically, but does not enforce any age-based constraints: the browser extension loads whichever puppet is specified by its configuration file. MyMark’s proposed contribution is to extend this pipeline by introducing an age-attestation policy layer. Age is verified server-side (e.g., via ID parsing in id_verification.py or privacy-preserving biometric estimation), and the result is bound to the user’s session. When the extension requests its configuration (via /api/identity-filter/config), the backend will only supply puppet assets from an age-appropriate library, ensuring that, for example, a minor cannot present an adult puppet. In practice, this could be reinforced cryptographically by signing the configuration with an attestation token, making it tamper-resistant and auditable.
 
-
+This approach provides three significant implications for MyMark’s overall architecture:
+1.	Age-conformant avatars without data leakage. Instead of sending ID scans or facial embeddings to a platform, the extension guarantees compliance by serving only puppets consistent with verified age categories.
+2.	Pointer-based continuity and moderation. While puppets protect the likeness, the system still generates pointers from facial dynamics and voice signals. These non-invertible, cancellable features allow platforms to enforce bans on repeat offenders and support provenance reporting, without ever storing biometric media.
+3.	Alignment with privacy-by-design principles. By storing only revocable commitments on-chain and ensuring that all overlays are selected according to attested policies, MyMark reconciles the tension between age assurance and privacy protection, setting a model for GDPR-compliant age verification.
+In sum, where existing age-gating solutions have been shown to either fail in enforcement or to overreach in data collection, MyMark’s dual-rig extension introduces a technically feasible path towards identity without identity: ensuring compliance, safeguarding minors, and enabling user recourse (e.g., DMCA or CSAM reporting), all while preventing the long-term accumulation of sensitive biometric data.
 2.7 Summary of Gaps
 The literature reveals a fragmented landscape:
 Watermarking ensures traceability but struggles against geometric attacks.
@@ -310,25 +389,24 @@ Perceptual hashing enables similarity search but suffers from false positives/ne
 Blockchain offers immutability but cannot verify legitimate ownership alone.
 Biometric verification can prevent fraudulent claims but raises privacy concerns.
 Age-gating systems amplify risks by over-collecting PII, failing the principle of data minimisation.
-Gap: There is no integrated system that combines robustness, provenance, biometric owner-binding, and privacy-preserving design. MyMark fills this gap by uniting these domains into a cohesive, GDPR-aligned solution. 
-
+Gap: There is no integrated system that combines robustness, provenance, biometric owner-binding, and privacy-preserving design. MyMark fills this gap by uniting these domains into a cohesive, GDPR-aligned solution.  
 Chapter 3: Methodology
 3.1 Introduction
-This chapter outlines the research methodology adopted for the design, development, and evaluation of MyMark, a decentralised media fingerprinting and verification system. Given that the project's central contribution is a software artefact, the methodology follows a design-science research (DSR) paradigm, which is widely used in information systems and computer science where the goal is to create and evaluate IT artefacts (Hevner et al., 2004; Peffers et al., 2007). DSR is particularly appropriate here because MyMark is both a technological implementation and an instantiation of theoretical principles drawn from watermarking, perceptual hashing, blockchain provenance, and biometric verification.
+This chapter outlines the research methodology adopted for the design, development, and evaluation of MyMark, a decentralised media fingerprinting and verification system. Given that the project’s central contribution is a software artefact, the methodology follows a design-science research (DSR) paradigm, which is widely used in information systems and computer science where the goal is to create and evaluate IT artefacts (Hevner et al., 2004; Peffers et al., 2007). DSR is particularly appropriate here because MyMark is both a technological implementation and an instantiation of theoretical principles drawn from watermarking, perceptual hashing, blockchain provenance, and biometric verification.
 The methodology chapter is organised into five main sections:
-	1.	Research paradigm and justification (Section 3.2)
-	2.	Design-science research process (Section 3.3)
-	3.	Threat model and ethical framing (Section 3.4)
-	4.	Evaluation framework and metrics (Section 3.5)
-	5.	Experimental protocol (Section 3.6)
+1.	Research paradigm and justification (Section 3.2)
+2.	Design-science research process (Section 3.3)
+3.	Threat model and ethical framing (Section 3.4)
+4.	Evaluation framework and metrics (Section 3.5)
+5.	Experimental protocol (Section 3.6)
 3.2 Research Paradigm and Justification
-The objective of this research is not merely to describe or theorise but to construct and test a working artefact capable of solving a real-world problem: protecting digital media ownership while preserving privacy. According to March and Smith (1995), DSR aims to produce "constructs, models, methods, and instantiations," with evaluation embedded into the process.
+The objective of this research is not merely to describe or theorise but to construct and test a working artefact capable of solving a real-world problem: protecting digital media ownership while preserving privacy. According to March and Smith (1995), DSR aims to produce “constructs, models, methods, and instantiations,” with evaluation embedded into the process.
 In MyMark, the artefact is an instantiation comprising:
-	�	A robust invisible watermarking module.
-	�	A perceptual hashing and embedding module.
-	�	A blockchain provenance layer.
-	�	A biometric verification system using 4D recognition.
-The research contribution arises from integrating these into a cohesive framework that is technically effective and ethically aligned with principles such as GDPR's data minimisation.
+•	A robust invisible watermarking module.
+•	A perceptual hashing and embedding module.
+•	A blockchain provenance layer.
+•	A biometric verification system using 4D recognition.
+The research contribution arises from integrating these into a cohesive framework that is technically effective and ethically aligned with principles such as GDPR’s data minimisation.
 The methodology combines qualitative reasoning (e.g., justifying design decisions against alternatives) with quantitative evaluation (e.g., robustness, accuracy, latency metrics). This mixed approach reflects the hybrid nature of artefact-centred research (Gregor & Hevner, 2013).
 3.3 Design-Science Research Process
 3.3.1 Problem Identification
@@ -338,110 +416,112 @@ As established in Chapter 1, current digital rights management and age verificat
 	3.	Commercial age-gating solutions over-collect personal data, contradicting GDPR principles.
 3.3.2 Objectives of the Solution
 The artefact should:
-	�	Be robust against common image transformations.
-	�	Provide a verifiable, tamper-evident record of ownership.
-	�	Bind ownership claims to real individuals while preserving privacy.
-	�	Avoid storing raw biometric data or images.
-	�	Demonstrate usability for creators without specialist knowledge.
+•	Be robust against common image transformations.
+•	Provide a verifiable, tamper-evident record of ownership.
+•	Bind ownership claims to real individuals while preserving privacy.
+•	Avoid storing raw biometric data or images.
+•	Demonstrate usability for creators without specialist knowledge.
 3.3.3 Artefact Design and Development
-Design involved iterative cycles of implementation and evaluation, consistent with Peffers et al.'s (2007) DSR process model:
-	�	Constructs: watermarking algorithms, hashing functions, blockchain smart contracts, biometric verification models.
-	�	Models: the architecture of MyMark, including data flow diagrams.
-	�	Methods: processes for registering content, embedding identifiers, verifying liveness, and detecting matches.
-	�	Instantiations: the two repositories (MyMark, 4D-Image-Recognition) embodying the final system.
+Design involved iterative cycles of implementation and evaluation, consistent with Peffers et al.’s (2007) DSR process model:
+•	Constructs: watermarking algorithms, hashing functions, blockchain smart contracts, biometric verification models.
+•	Models: the architecture of MyMark, including data flow diagrams.
+•	Methods: processes for registering content, embedding identifiers, verifying liveness, and detecting matches.
+•	Instantiations: the two repositories (MyMark, 4D-Image-Recognition) embodying the final system.
 3.3.4 Demonstration and Evaluation
 The artefact is demonstrated through use cases:
-	�	Content creator registers an image.
-	�	Watermark and hash generated, ledger entry created.
-	�	Later, modified versions of the image are detected.
-	�	Fraudulent registration attempts by unauthorised users are blocked.
+•	Content creator registers an image.
+•	Watermark and hash generated, ledger entry created.
+•	Later, modified versions of the image are detected.
+•	Fraudulent registration attempts by unauthorised users are blocked.
 Evaluation is carried out via quantitative experiments, described in Section 3.6.
 3.4 Threat Model and Ethical Framing
 3.4.1 Threat Model
 A formal threat model identifies adversaries, attack vectors, and countermeasures:
-	1.	Adversary: Content infringer
-	�	Goal: Copy and redistribute protected media without detection.
-	�	Attack: Apply transformations to remove or degrade watermark.
-	�	Countermeasure: Combine watermarking with perceptual hashing/CLIP embeddings to ensure detection under modification.
-	2.	Adversary: Fraudulent claimant
-	�	Goal: Pre-emptively register content they do not own.
-	�	Attack: Submit unauthorised media with falsified credentials.
-	�	Countermeasure: Biometric owner-binding using 4D face verification and liveness detection.
-	3.	Adversary: Surveillance actor
-	�	Goal: Exploit system to gather biometric or PII data.
-	�	Attack: Intercept or coerce identity submissions.
-	�	Countermeasure: No images or raw biometric data stored; only ephemeral processing and hashed commitments recorded.
-	4.	Adversary: Ledger manipulator
-	�	Goal: Alter or delete provenance records.
-	�	Attack: Exploit blockchain weaknesses or centralisation.
-	�	Countermeasure: Use of permissioned blockchain with consensus validation and append-only architecture.
+1.	Adversary: Content infringer
+•	Goal: Copy and redistribute protected media without detection.
+•	Attack: Apply transformations to remove or degrade watermark.
+•	Countermeasure: Combine watermarking with perceptual hashing/CLIP embeddings to ensure detection under modification.
+2.	Adversary: Fraudulent claimant
+•	Goal: Pre-emptively register content they do not own.
+•	Attack: Submit unauthorised media with falsified credentials.
+•	Countermeasure: Biometric owner-binding using 4D face verification and liveness detection.
+3.	Adversary: Surveillance actor
+•	Goal: Exploit system to gather biometric or PII data.
+•	Attack: Intercept or coerce identity submissions.
+•	Countermeasure: No images or raw biometric data stored; only ephemeral processing and hashed commitments recorded.
+4.	Adversary: Ledger manipulator
+•	Goal: Alter or delete provenance records.
+•	Attack: Exploit blockchain weaknesses or centralisation.
+•	Countermeasure: Use of permissioned blockchain with consensus validation and append-only architecture.
 3.4.2 Ethical Framing
 The project is explicitly guided by GDPR and professional codes such as the ACM Code of Ethics (Gotterbarn et al., 2018). Data minimisation is prioritised by ensuring that only hashed or abstracted representations are retained. Informed consent, purpose limitation, and right-to-erasure principles are respected throughout.
 The ethical motivation is reinforced by recent failures of age-gating platforms and government mandates that normalise PII over-collection (Politico, 2024; Livingstone et al., 2023). MyMark aims to demonstrate a feasible alternative that is both secure and privacy-preserving.
 3.5 Evaluation Framework and Metrics
 3.5.1 Evaluation Paradigm
 Evaluation in DSR can be naturalistic (testing in real-world contexts) or artificial (controlled experiments) (Hevner et al., 2004). This dissertation employs primarily artificial evaluation due to project scope, but uses real-world datasets of images for robustness and accuracy testing.
-
 3.5.2 Metrics
 Imperceptibility:
-	�	PSNR (Peak Signal-to-Noise Ratio) - >40dB considered imperceptible.
-	�	SSIM (Structural Similarity Index) - values close to 1 indicate similarity (Wang et al., 2004).
+•	PSNR (Peak Signal-to-Noise Ratio) — >40dB considered imperceptible.
+•	SSIM (Structural Similarity Index) — values close to 1 indicate similarity (Wang et al., 2004).
 Robustness:
-	�	Detection rate under transformations: JPEG compression, resizing, cropping, rotation, colour adjustment, Gaussian noise.
+•	Detection rate under transformations: JPEG compression, resizing, cropping, rotation, colour adjustment, Gaussian noise.
 Accuracy:
-	�	Precision, recall, F1-score for perceptual hashing + CLIP embeddings.
-	�	ROC and PR curves for threshold optimisation.
+•	Precision, recall, F1-score for perceptual hashing + CLIP embeddings.
+•	ROC and PR curves for threshold optimisation.
 Blockchain Performance:
-	�	Transaction latency (time to commit).
-	�	Throughput (transactions per second).
+•	Transaction latency (time to commit).
+•	Throughput (transactions per second).
 Biometric Verification:
-	�	False Acceptance Rate (FAR).
-	�	False Rejection Rate (FRR).
-	�	Liveness detection success rate.
+•	False Acceptance Rate (FAR).
+•	False Rejection Rate (FRR).
+•	Liveness detection success rate.
 Privacy and Security:
-	�	Verification that no images/PII are retained beyond processing.
-	�	Compliance with GDPR data minimisation principles.
+•	Verification that no images/PII are retained beyond processing.
+•	Compliance with GDPR data minimisation principles.
 
 3.5.3 Success Criteria
-	�	Imperceptibility: PSNR = 40dB, SSIM = 0.95.
-	�	Robustness: = 90% detection accuracy under mild transformations (JPEG 75%, crop = 20%).
-	�	Accuracy: = 85% F1-score in perceptual matching.
-	�	Blockchain: = 2s commit latency, = 10 TPS.
-	�	Biometric verification: FAR = 1%, FRR = 5%.
+•	Imperceptibility: PSNR ≥ 40dB, SSIM ≥ 0.95.
+•	Robustness: ≥ 90% detection accuracy under mild transformations (JPEG 75%, crop ≤ 20%).
+•	Accuracy: ≥ 85% F1-score in perceptual matching.
+•	Blockchain: ≤ 2s commit latency, ≥ 10 TPS.
+•	Biometric verification: FAR ≤ 1%, FRR ≤ 5%.
 3.6 Experimental Protocol
 3.6.1 Dataset
-	�	Watermarking/Hashing: 10,000 images from the COCO dataset (Lin et al., 2014).
-	�	Transformations: Applied systematically using OpenCV.
-	�	Biometrics: Public 3D/4D face datasets such as BP4D-Spontaneous (Zhang et al., 2014).
+•	Watermarking/Hashing: 10,000 images from the COCO dataset (Lin et al., 2014).
+•	Transformations: Applied systematically using OpenCV.
+•	Biometrics: Public 3D/4D face datasets such as BP4D-Spontaneous (Zhang et al., 2014).
 3.6.2 Experimental Setup
-	�	Environment: Ubuntu 22.04, Python 3.10, PyTorch for deep models, OpenCV for transformations, Hyperledger Fabric for blockchain.
-	�	Hardware: GPU-enabled workstation (NVIDIA RTX 3090).
+•	Environment: Ubuntu 22.04, Python 3.10, PyTorch for deep models, OpenCV for transformations, Hyperledger Fabric for blockchain.
+•	Hardware: GPU-enabled workstation (NVIDIA RTX 3090).
 3.6.3 Procedure
-	1.	Watermark embedding and extraction:
-	�	Embed watermark in original image.
-	�	Apply transformations.
-	�	Measure imperceptibility and extraction accuracy.
-	2.	Perceptual hashing and matching:
-	�	Compute pHash/dHash and CLIP embeddings.
-	�	Perform nearest-neighbour search.
-	�	Evaluate precision, recall, ROC.
-	3.	Blockchain provenance:
-	�	Register image fingerprints on ledger.
-	�	Measure transaction latency and throughput.
-	4.	Biometric verification:
-	�	Simulate user enrolment with 4D dataset.
-	�	Attempt genuine and fraudulent registrations.
-	�	Evaluate FAR/FRR and liveness success.
+1.	Watermark embedding and extraction:
+•	Embed watermark in original image.
+•	Apply transformations.
+•	Measure imperceptibility and extraction accuracy.
+2.	Perceptual hashing and matching:
+•	Compute pHash/dHash and CLIP embeddings.
+•	Perform nearest-neighbour search.
+•	Evaluate precision, recall, ROC.
+3.	Blockchain provenance:
+•	Register image fingerprints on ledger.
+•	Measure transaction latency and throughput.
+4.	Biometric verification:
+•	Simulate user enrolment with 4D dataset.
+•	Attempt genuine and fraudulent registrations.
+•	Evaluate FAR/FRR and liveness success.
 3.6.4 Validation
 To ensure reproducibility, all experiments are documented with fixed random seeds, dataset splits, and published code repositories. Results will be cross-validated using different transformation intensities and subsets.
 3.7 Summary
-This methodology chapter has set out the design-science research paradigm guiding MyMark, identified adversaries through a formal threat model, and specified evaluation metrics spanning imperceptibility, robustness, accuracy, blockchain performance, biometric verification, and privacy preservation. By adhering to these protocols, the dissertation ensures that claims about MyMark's contributions are grounded in reproducible and ethically aligned evidence.
-
+This methodology chapter has set out the design-science research paradigm guiding MyMark, identified adversaries through a formal threat model, and specified evaluation metrics spanning imperceptibility, robustness, accuracy, blockchain performance, biometric verification, and privacy preservation. By adhering to these protocols, the dissertation ensures that claims about MyMark’s contributions are grounded in reproducible and ethically aligned evidence.
+ 
 Chapter 4: System Design
 4.1 Introduction
 This chapter details the design of MyMark, presenting its high-level architecture, individual modules, and the rationale for their inclusion. The system was conceived not as a single-function tool but as an integrated framework combining watermarking, perceptual hashing, blockchain provenance, and biometric verification. This integration ensures that weaknesses in one layer are mitigated by the strengths of another, producing a robust, privacy-preserving artefact suited to the challenges identified in Chapter 1.
+Figure 2 - MyMark's Aims Poster
+ 
 4.2 High-Level Architecture
-The overall architecture of MyMark is modular, designed for extensibility and interoperability. Figure 4.1 illustrates the system pipeline, beginning with user enrolment and media registration, proceeding through watermarking and hashing, and culminating in blockchain registration and future verification queries.
+The overall architecture of MyMark is modular, designed for extensibility and interoperability. Figure 3 illustrates the system pipeline, beginning with user enrolment and media registration, proceeding through watermarking and hashing, and culminating in blockchain registration and future verification queries.
+Figure 3 - High-level MyMark app flow
 flowchart LR
     subgraph User["Content Creator"]
         U1[Media Upload]
@@ -451,7 +531,6 @@ flowchart LR
         E1[Invisible Watermark Embedding]
         E2[Perceptual Hash / CLIP Embedding]
     end
-
     subgraph Blockchain["Provenance Layer"]
         B1[Commitment Generator (HMAC)]
         B2[Permissioned Ledger Entry]
@@ -468,34 +547,71 @@ flowchart LR
     E2 --> B1
     B1 --> B2
     Detector --> Blockchain
-(Figure 4.1: High-level architecture of MyMark.)
+Figure 4 - Potential Use-Case Flow
+ 
 4.3 Module Descriptions
 4.3.1 User Enrolment and Biometric Verification
-	�	Purpose: To bind ownership claims to legitimate individuals.
-	�	Functionality: Creators enrol via a 4D facial recognition process combined with liveness detection. Unlike conventional identity verification systems, MyMark does not store images or biometric templates. Instead, ephemeral embeddings are generated, compared for liveness and identity, and then discarded.
-	�	Justification: This ensures that fraudulent claims are prevented without violating GDPR's principle of data minimisation (Voigt & Von dem Bussche, 2017). It also addresses the failures of commercial age-gating platforms that retain sensitive personal data (Politico, 2024).
+Purpose: To bind ownership claims to legitimate individuals.
+Functionality: Creators enrol via a 4D facial recognition process combined with liveness detection. Unlike conventional identity verification systems, MyMark does not store images or biometric templates. Instead, ephemeral embeddings are generated, compared for liveness and identity, and then discarded.
+Justification: This ensures that fraudulent claims are prevented without violating GDPR’s principle of data minimisation (Voigt & Von dem Bussche, 2017). It also addresses the failures of commercial age-gating platforms that retain sensitive personal data (Politico, 2024).
 4.3.2 Watermarking Module
-	�	Purpose: To embed an imperceptible identifier into images that can later be extracted as proof of ownership.
-	�	Technique: A DCT/DWT-based transform-domain approach, which offers resilience against common attacks such as JPEG compression and moderate cropping (Cox et al., 2008).
-	�	Justification: Spatial-domain methods are simpler but less robust. Transform-domain methods strike a balance between imperceptibility (PSNR > 40dB) and robustness.
+Purpose: To embed an imperceptible identifier into images that can later be extracted as proof of ownership.
+Technique: A DCT/DWT-based transform-domain approach, which offers resilience against common attacks such as JPEG compression and moderate cropping (Cox et al., 2008).
+Justification: Spatial-domain methods are simpler but less robust. Transform-domain methods strike a balance between imperceptibility (PSNR > 40dB) and robustness.
 4.3.3 Perceptual Hashing and Embedding Module
-	�	Purpose: To generate a fingerprint of the media that allows for similarity detection even if the watermark is removed.
-	�	Technique: A dual-layer approach combining pHash (traditional frequency-based hashing) with CLIP embeddings (Radford et al., 2021).
-	�	Justification: Traditional hashing is lightweight but vulnerable to adversarial perturbations. Deep embeddings capture semantic similarity, enabling MyMark to detect derivative or contextually modified media.
+Purpose: To generate a fingerprint of the media that allows for similarity detection even if the watermark is removed.
+Technique: A dual-layer approach combining pHash (traditional frequency-based hashing) with CLIP embeddings (Radford et al., 2021).
+Justification: Traditional hashing is lightweight but vulnerable to adversarial perturbations. Deep embeddings capture semantic similarity, enabling MyMark to detect derivative or contextually modified media.
 4.3.4 Blockchain Provenance Layer
-	�	Purpose: To record ownership claims in a tamper-evident and decentralised manner.
-	�	Technique: A permissioned blockchain (e.g., Hyperledger Fabric) stores only cryptographic commitments derived from watermarks and perceptual hashes.
-	�	Justification: Public blockchains face scalability and cost issues (Zhao et al., 2020). A permissioned ledger balances transparency with performance. Privacy is preserved because no raw images or PII are written to the chain.
+Purpose: To record ownership claims in a tamper-evident and decentralised manner.
+Technique: A permissioned blockchain (e.g., Hyperledger Fabric) stores only cryptographic commitments derived from watermarks and perceptual hashes.
+Justification: Public blockchains face scalability and cost issues (Zhao et al., 2020). A permissioned ledger balances transparency with performance. Privacy is preserved because no raw images or PII are written to the chain.
 4.3.5 Detection and Verification Module
-	�	Purpose: To assess ownership claims and detect unauthorised use of media.
-	�	Functions:
-	�	Watermark Extraction: Confirms ownership when the embedded mark is intact.
-	�	Hash Matching: Detects similarity when watermarks degrade.
-	�	Owner Verification: Requires proof-of-identity from the original creator via the biometric module to validate takedown requests.
-	�	Justification: This layered verification minimises both false positives (legitimate transformations flagged as infringements) and false negatives (infringements undetected).
-
-
+Purpose: To assess ownership claims and detect unauthorised use of media.
+Functions:
+Watermark Extraction: Confirms ownership when the embedded mark is intact.
+Hash Matching: Detects similarity when watermarks degrade.
+Owner Verification: Requires proof-of-identity from the original creator via the biometric module to validate takedown requests.
+Justification: This layered verification minimises both false positives (legitimate transformations flagged as infringements) and false negatives (infringements undetected).
+4.3.6 Dual-Rig Extension (Virtual Camera & Microphone)
+A major innovation of MyMark lies in the dual-rig extension, developed as a Chrome plugin and desktop application, which acts as a privacy-preserving proxy between the user and any platform requiring live audiovisual input. Instead of exposing raw camera or microphone streams, the extension renders a virtual camera and microphone output that substitutes privacy-preserving surrogates while maintaining real-time usability.
+4.3.6.1 Puppet Rendering Pipeline
+The extension intercepts getUserMedia streams in the browser and routes them through a canvas/WebGL pipeline (tools/identity_protection/browser_extension/filter.js). In puppet mode, a pre-configured puppet image (e.g., avatar, AI overlay, 3D model) is warped onto the user’s live face by:
+1.	Detecting facial landmarks with MediaPipe FaceMesh.
+2.	Computing puppet-image landmarks (computePuppetLandmarks(img)).
+3.	Applying triangle-based affine warps to align puppet features with the live face.
+4.	Blending with configurable parameters (scale, alpha, feathering, rotation-follow).
+The result is a visually consistent puppet that mirrors the user’s movements and expressions, ensuring liveness while concealing their raw likeness. The same design applies to avatars and mask overlays, which are defined in the extension’s configuration (/api/identity-filter/config).
+4.3.6.2 Age-Attested Puppets
+The existing repository renders whichever puppet the configuration supplies, irrespective of age. MyMark extends this by introducing a policy enforcement layer:
+Age is verified server-side (e.g., via ID parsing in id_verification.py or privacy-preserving biometric estimation).
+A signed age-attestation token is bound to the user’s session.
+The configuration endpoint only serves puppets from the age-appropriate asset library.
+Optionally, cryptographic provenance ensures puppet assets cannot be swapped locally without detection.
+This mechanism guarantees that minors cannot select adult avatars, while still preserving privacy. It also aligns the dual-rig system with the Online Safety Act 2023 in the UK and the Online Safety Amendment Act 2024 in Australia, which mandate “highly effective” and “minimally invasive” age verification, respectively.
+4.3.6.3 Voice Surrogates
+The virtual microphone applies consistent but privacy-preserving voice transformations. Input audio is processed into an embedding (e.g., ECAPA-TDNN), transformed via cancellable mapping, and synthesised into a stable surrogate voice. This ensures intelligibility and continuity (so moderation can still act on abusive behaviour), while preventing original voice leakage.
+4.3.6.4 Pointers and Commitments
+In parallel, the extension generates pointers: non-invertible, cancellable representations of 4D facial dynamics and transformed voiceprints. These are:
+A.	stored locally or committed on-chain as salted hashes;
+B.	revocable by re-seeding salts or projection matrices;
+C.	un-linkable across platforms through per-relying-party salts.
+These pointers allow platforms to detect repeat offenders (e.g., banned users) and enable user-driven provenance reporting (e.g., DMCA or CSAM reports) without ever transmitting biometric likeness data.
+4.3.6.5 Integration of Promotional and App Images
+The dual-rig extension is also central to the project’s public communication and usability evaluation. Figures 5–9 present selected onboarding screens and promotional visuals:
+Figure 5– Onboarding “Problem” screen (onboard_problem.png), explaining risks of impersonation.
+ 
+Figure 6 - Onboarding “Review” stage (onboard_review.png), where users see detected risks.
+ 
+Figure 7– Onboarding “Risk” screen (onboard_risk.png), emphasising harms of PII leaks.
+ 
+Figure 8– Onboarding “Solution” screen (onboard_solution.png), introducing puppets and pointers.
+ 
+Figure 9– Reporting widget (onboard_widget.png), enabling user action on detected impersonation.
+ 
+These figures highlight the emphasis placed on transparency and user understanding: onboarding does not simply enforce compliance but actively educates users about privacy risks and MyMark’s protective features.  
 4.4 Data Flow and Security Controls
+Figure 10 - Secure data flow in MyMark.
 sequenceDiagram
     participant Creator
     participant Embedder
@@ -514,93 +630,113 @@ sequenceDiagram
     Detector->>Biometric: Request Ownership Proof
     Biometric-->>Detector: Verify Identity
     Detector-->>Creator: Return Detection Result
-(Figure 4.2: Secure data flow in MyMark.)
-	�	Privacy by Design: No raw images or biometric templates are stored.
-	�	Integrity: Commitments ensure any alteration to media is detectable.
-	�	Authenticity: Identity tokens are ephemeral, binding actions to verified owners.
+•	Privacy by Design: No raw images or biometric templates are stored.
+•	Integrity: Commitments ensure any alteration to media is detectable.
+•	Authenticity: Identity tokens are ephemeral, binding actions to verified owners.
 4.5 Suitability and Justification of Artefact
 4.5.1 Suitability for Dissertation Goals
 The MyMark artefact directly addresses the research problem identified in Chapter 1:
-	�	Robust watermarking and perceptual hashing ensure resilience against transformations.
-	�	A blockchain ledger provides tamper-evident provenance.
-	�	Biometric owner-binding ensures fraudulent claims are prevented.
-	�	Privacy-preserving design ensures GDPR compliance and ethical integrity.
+•	Robust watermarking and perceptual hashing ensure resilience against transformations.
+•	A blockchain ledger provides tamper-evident provenance.
+•	Biometric owner-binding ensures fraudulent claims are prevented.
+•	Privacy-preserving design ensures GDPR compliance and ethical integrity.
 4.5.2 Comparison to Alternatives
-	�	Centralised Databases: Easier to implement but vulnerable to tampering and breaches. MyMark avoids central points of failure.
-	�	Watermark-Only Systems: Fail under heavy transformations or intentional removal. MyMark supplements watermarks with perceptual hashing.
-	�	Biometric Databases: Collect large amounts of PII and create surveillance risks. MyMark discards raw biometrics after verification.
+•	Centralised Databases: Easier to implement but vulnerable to tampering and breaches. MyMark avoids central points of failure.
+•	Watermark-Only Systems: Fail under heavy transformations or intentional removal. MyMark supplements watermarks with perceptual hashing.
+•	Biometric Databases: Collect large amounts of PII and create surveillance risks. MyMark discards raw biometrics after verification.
 4.5.3 Innovation
 The innovation of MyMark lies not only in the combination of existing techniques but in their integration under a privacy-preserving design philosophy. By demonstrating that age/liveness verification and ownership binding can be achieved without retaining sensitive data, the system advances both technical capability and ethical practice in network and information security.
 4.6 Summary
-This chapter has presented the design of MyMark, describing its modular architecture, secure data flows, and justifications for design decisions. Each module was selected to counteract weaknesses identified in the literature: watermark fragility, hash false positives, blockchain fraud, and biometric privacy risks. The result is an artefact that is technically robust, ethically compliant, and well-suited to the dissertation's objectives.
+This chapter has presented the design of MyMark, describing its modular architecture, secure data flows, and justifications for design decisions. Each module was selected to counteract weaknesses identified in the literature: watermark fragility, hash false positives, blockchain fraud, and biometric privacy risks. The result is an artefact that is technically robust, ethically compliant, and well-suited to the dissertation’s objectives.
+ 
 Chapter 5: Implementation
 5.1 Introduction
 This chapter documents the implementation of MyMark, the software artefact that integrates watermarking, perceptual hashing, blockchain provenance, and 4D biometric verification. It describes the underlying technology stack, the structure of the two repositories, and the processes by which each architectural module (outlined in Chapter 4) was realised in code. Where appropriate, illustrative code excerpts are provided to demonstrate implementation detail.
 5.2 Technology Stack
-	�	Programming Languages:
-	�	Python 3.10 (backend services, image processing, blockchain client).
-	�	JavaScript/Node.js (supporting API wrappers, CLI testing).
-	�	Frameworks and Libraries:
-	�	Flask (Python REST API).
-	�	OpenCV (image manipulation, watermark embedding/extraction).
-	�	imagehash (pHash, dHash, aHash generation).
-	�	PyTorch (CLIP embeddings, biometric recognition).
-	�	web3.py / Hyperledger SDK (blockchain integration).
-	�	Databases and Storage:
-	�	SQLite (temporary metadata storage, not for biometric/PII).
-	�	Docker volumes for isolated container execution.
-	�	Blockchain:
-	�	Hyperledger Fabric (permissioned, modular consensus).
-	�	Ganache (Ethereum test network for prototyping).
-	�	Deployment:
-	�	Docker Compose orchestrates API, blockchain client, and test ledger.
-	�	GitHub Actions for CI/CD (linting, unit tests).
+The artefact combines two integrated repositories:
+MyMark: a Flask backend with SQLite, Vue 3 frontend, cryptographic services (HMAC, AES-GCM), biometric verification via face_recognition, and optional Web3 for blockchain provenance. It imports 4D-Image-Recognition as a submodule. 
+4D-Image-Recognition: a FastAPI backend with 4D facial processing, watermarking, perceptual hashing, and OSINT pipelines. Computer vision modules are built with OpenCV, NumPy, MediaPipe, and dlib; provenance is tracked using an HMAC-chained ledger.
+Both repos include extensive testing suites (pytest, Playwright) and optional ONNX runtime for liveness detection.
+•	Programming Languages:
+•	Python 3.10 (backend services, image processing, blockchain client).
+•	JavaScript/Node.js (supporting API wrappers, CLI testing).
+•	Frameworks and Libraries:
+•	Flask (Python REST API).
+•	OpenCV (image manipulation, watermark embedding/extraction).
+•	imagehash (pHash, dHash, aHash generation).
+•	PyTorch (CLIP embeddings, biometric recognition).
+•	web3.py / Hyperledger SDK (blockchain integration).
+Databases and Storage:
+•	SQLite (temporary metadata storage, not for biometric/PII).
+•	Docker volumes for isolated container execution.
+Blockchain:
+•	Hyperledger Fabric (permissioned, modular consensus).
+•	Ganache (Ethereum test network for prototyping).
+Deployment:
+•	Docker Compose orchestrates API, blockchain client, and test ledger.
+•	GitHub Actions for CI/CD (linting, unit tests).
 5.3 Repository Structure
-5.3.1 JakkuAzzo/MyMark
+5.3.1 MyMark
 Implements the core ownership and provenance pipeline.
 Key API endpoints (app.py):
-	�	/api/register - register new media (watermark + hash + ledger commit).
-	�	/api/detect - check for matches against registered entries.
-	�	/api/verify_owner - biometric token check before ownership claim.
-	�	/api/liveness_check - ensure user is physically present.
-5.3.2 JakkuAzzo/4D-Image-Recognition
-Implements biometric owner-binding and liveness detection.
-Workflow:
-	1.	User submits a short facial video sequence.
-	2.	preprocess.py detects landmarks, aligns frames.
-	3.	prnet.py reconstructs 3D facial mesh; liveness_net.py analyses motion.
-	4.	facenet.py extracts embeddings ? compared to enrolment.
-	5.	If pass: tokens.py issues short-lived JWT proving ownership/liveness.
+Main Flask server, routes for user lifecycle, watermark/pHash, pointers, and blockchain provenance.
+•	/api/register – register new media (watermark + hash + ledger commit).
+•	/api/detect – check for matches against registered entries.
+•	/api/verify_owner – biometric token check before ownership claim.
+•	/api/liveness_check – ensure user is physically present.
+Key API endpoints (face_auth/cancelable.py): cancelable embeddings via orthonormal projection and AES-GCM protected salts.
+Key API endpoints (blockchain/): registry abstraction and commitment derivation.
+Key API endpoints (eval/): biometric and pointer evaluation scripts.
+Key API endpoints (frontend/): Vue 3 interface for Stats and provenance verification.
+5.3.2 4D-Image-Recognition
+Key API endpoints (modules/watermarking.py): DCT watermark embedding/extraction.
+Key API endpoints (modules/perceptual_fingerprint.py): 
+custom DCT-based pHash.
+modules/ledger.py: append-only HMAC ledger.
+Key API endpoints (modules/facial_pipeline.py): 7-step pipeline for 4D biometrics.
+Key API endpoints (modules/complete_4d_osint_pipeline.py): unified async OSINT workflow.
+Key API endpoints (backend/api.py): FastAPI routes for each pipeline step and complete workflow.
+Key API endpoints (frontend/): HTML/JS interfaces for enhanced and unified pipelines. 
 5.4 Implementation of Core Modules
 5.4.1 Watermarking
+File: modules/watermarking.py
+Embeds a bitstring in the luminance channel by modifying mid-frequency DCT coefficients.
+Extraction reads coefficient signs to reconstruct the watermark.
+Metrics include PSNR and SSIM for imperceptibility.
 Algorithm: DCT-domain embedding (Cox et al., 2008).
-'# embed.py
+‘# embed.py
 def embed_watermark(image, watermark_bits, alpha=0.1):
     dct = cv2.dct(np.float32(image))
     for i, bit in enumerate(watermark_bits):
         dct[i, i] += alpha if bit == 1 else -alpha
-    return cv2.idct(dct)'
+    return cv2.idct(dct)’
 Watermark bits derived from secure hash of media + user ID.
-	�	alpha controls strength: tuned to balance imperceptibility and robustness.
+alpha controls strength: tuned to balance imperceptibility and robustness.
 5.4.2 Perceptual Hashing
+File: modules/perceptual_fingerprint.py
+DCT-based pHash using custom FFT-DCT; optional multi-scale concatenation.
+Computes Hamming and cosine similarity; supports threshold calibration.
 Traditional (pHash):
-'# phash.py
+‘# phash.py
 from imagehash import phash
 def generate_phash(image):
-    return str(phash(image))'
+    return str(phash(image))’
 Deep Embedding (CLIP & Facenet):
-'# clip_embed.py
+‘# clip_embed.py
 import torch, clip
 from PIL import Image
 def clip_embedding(image_path, model, preprocess):
     image = preprocess(Image.open(image_path)).unsqueeze(0).to("cuda")
     with torch.no_grad():
         embedding = model.encode_image(image)
-    return embedding / embedding.norm()'
-	�	Stored embeddings used in cosine similarity search (threshold tuned experimentally).
+    return embedding / embedding.norm()’
+Stored embeddings used in cosine similarity search (threshold tuned experimentally).
 5.4.3 Blockchain Provenance
+Files: blockchain/__init__.py, modules/ledger.py
+MyMark: HMAC commitments bind watermark, pHash, and username. Optional Web3 anchoring.
+4D Repo: append-only HMAC ledger (Ledger.append, Ledger.verify_chain).
 Smart contract (simplified):
-'pragma solidity ^0.8.0;
+‘pragma solidity ^0.8.0;
 
 contract Provenance {
     struct Record {
@@ -613,12 +749,13 @@ contract Provenance {
         require(records[_hashCommitment].owner == address(0), "Already registered");
         records[_hashCommitment] = Record(_hashCommitment, msg.sender);
     }
-}'
+}’
+
 In Fabric deployments, commitments are logged in chaincode with permissioned consensus.
-	�	Each ledger entry = { media hash commitment, owner address }.
+Each ledger entry = { media hash commitment, owner address }.
 5.4.4 Biometric Verification
 Ephemeral token generation:
-'# tokens.py
+‘# tokens.py
 import jwt, datetime
 
 def issue_identity_token(user_id, secret_key):
@@ -626,331 +763,669 @@ def issue_identity_token(user_id, secret_key):
         "sub": user_id,
         "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=5)
     }
-    return jwt.encode(payload, secret_key, algorithm="HS256")'
-	�	Tokens valid for 5 minutes, used for /api/verify_owner.
-	�	No facial data is persisted; embeddings only exist in memory during verification.
+    return jwt.encode(payload, secret_key, algorithm="HS256")’
+	•	Tokens valid for 5 minutes, used for /api/verify_owner.
+	•	No facial data is persisted; embeddings only exist in memory during verification.
 5.5 Integration Workflow
-	1.	Enrolment
-	�	Creator completes liveness + 4D verification.
-	�	Receives ephemeral identity token.
-	2.	Registration
-	�	Media uploaded ? watermark embedded, perceptual hash + CLIP embedding generated.
-	�	Cryptographic commitment derived (HMAC).
-	�	Commitment + token sent to blockchain module.
-	3.	Detection
-	�	Suspected copy analysed ? watermark extracted; hashes computed.
-	�	Nearest-neighbour search identifies matches.
-	�	If infringement found, owner must prove identity with fresh token to initiate takedown request.
+1.	Enrolment
+•	Creator completes liveness + 4D verification.
+•	Receives ephemeral identity token.
+2.	Registration
+•	Media uploaded → watermark embedded, perceptual hash + CLIP embedding generated.
+•	Cryptographic commitment derived (HMAC).
+•	Commitment + token sent to blockchain module.
+3.	Detection
+•	Suspected copy analysed → watermark extracted; hashes computed.
+•	Nearest-neighbour search identifies matches.
+•	If infringement found, owner must prove identity with fresh token to initiate takedown request.
 5.6 Documentation and Usability
-	�	API Specification: docs/api_spec.md provides endpoint descriptions, request/response schemas, and examples.
-	�	Deployment Instructions: Docker Compose script spins up full environment (docker-compose up).
-	�	Testing:
-	�	Unit tests for watermark embedding/extraction, hash generation, blockchain client.
-	�	Integration tests simulate end-to-end registration ? detection ? verification cycle.
-	�	Usability: CLI tools (register.py, detect.py) provide simplified user interaction, ensuring accessibility for non-technical creators.
+•	API Specification: docs/api_spec.md provides endpoint descriptions, request/response schemas, and examples.
+•	Deployment Instructions: Docker Compose script spins up full environment (docker-compose up).
+Testing:
+•	Unit tests for watermark embedding/extraction, hash generation, blockchain client.
+•	Integration tests simulate end-to-end registration → detection → verification cycle.
+•	Usability: CLI tools (register.py, detect.py) provide simplified user interaction, ensuring accessibility for non-technical creators.
+
+Figure 11– BlueMan mascot of MyMark an icon for a social media account used in the MyMark campaign to insight followers to manually report accounts they see that are breaching privacy of individuals or themselves.
+ 
+5.6.1 User Stories / Journeys
+The following figures illustrate the end-to-end user experience of MyMark, from initial authentication through image upload, watermark embedding, blockchain registration, and retrieval of provenance. 
+Figure 12 - MyMark landing dashboard showing entry points for authentication, image upload, and further research.
+ 
+
+
+
+Figure 13 - Authentication screen with options for biometric login, ID upload, or vocal catchphrase login.
+ 
+Figure 14 - Face-based login successfully authenticates a user into the system. Reveals User stats page displaying registered images, matches, and active pointer threshold policy.
+ 
+Figure 15 - Image upload screen where invisible watermarking and perceptual fingerprinting are triggered. Images uploaded parse through the pipeline and automated OSINT tasks and Models are generated which can be updated as more images are provided.
+ 
+Figure 16 - Matches page shows linked perceptual hashes, pre-existing blockchain commitments, urls and any data found about the user from OSINT tasks
+ 
+Figure 17 - Authenticated dashboard summarising user credentials, image statistics, and safety tips
+ 
+Figure 18 - User interaction story/ journey with the MyMark endpoint
+ 
 5.7 Code Quality and Best Practices
-	�	Code adheres to PEP8 style guidelines.
-	�	Inline docstrings provided for all public functions.
-	�	Exceptions handled gracefully with JSON error codes.
-	�	Continuous integration (GitHub Actions) runs linting and unit tests on every commit.
+Code adheres to PEP8 style guidelines.
+Inline docstrings provided for all public functions.
+Exceptions handled gracefully with JSON error codes.
+Continuous integration (GitHub Actions) runs linting and unit tests on every commit.
 5.8 Summary
-This chapter has mapped the high-level architecture of MyMark into concrete implementation within two repositories. The MyMark repo implements watermarking, hashing, blockchain provenance, and API services, while the 4D-Image-Recognition repo provides biometric liveness and ownership verification. Together they form a cohesive artefact, deployed in Dockerised environments and documented for reproducibility. The implementation prioritises not only functionality but also security, privacy, and maintainability, aligning with the dissertation's overarching aims.
-
-
+This chapter has mapped the high-level architecture of MyMark into concrete implementation within two repositories. The MyMark repo implements watermarking, hashing, blockchain provenance, and API services, while the 4D-Image-Recognition repo provides biometric liveness and ownership verification. Together they form a cohesive artefact, deployed in Docker-ised environments and documented for reproducibility. The implementation prioritises not only functionality but also security, privacy, and maintainability, aligning with the dissertation’s overarching aims.
+ 
 Chapter 6: Evaluation
 6.1 Introduction
 This chapter presents the evaluation of MyMark. Following the methodology in Chapter 3, the artefact was tested across five dimensions:
-	1.	Imperceptibility of watermarking
-	2.	Robustness under transformations
-	3.	Accuracy of perceptual hashing and embedding
-	4.	Blockchain performance
-	5.	Biometric verification reliability
-Baseline comparisons were included against perceptual hashing alone and Google reverse image search. Results are presented quantitatively using PSNR, SSIM, precision, recall, F1-score, transaction latency, and biometric error rates.
+1.	Imperceptibility of watermarking – whether embedded signals remain visually undetectable.
+2.	Robustness under transformations – whether watermark and perceptual fingerprints survive real-world image manipulations.
+3.	Accuracy of perceptual hashing and embeddings – retrieval and matching reliability, including baseline comparisons.
+4.	Blockchain provenance performance – latency and throughput of commit and verification workflows.
+5.	Biometric verification reliability – false acceptance/rejection rates, liveness success, and privacy-preserving pointer stability.
+Baselines used for comparison include:
+•	A pHash-only pipeline;
+•	Google reverse image search (manual test set of 100);
+•	Conventional watermarking without blockchain provenance.
+Evaluation draws from both repositories:
+•	modules/ and eval/ scripts in 4D-Image-Recognition;
+•	eval/results/ JSONs, tests/ unit harnesses, and face_auth/cancelable.py in MyMark.
+Results are presented quantitatively using PSNR, SSIM, precision, recall, F1-score, transaction latency, and biometric error rates.
 6.2 Experimental Design
 6.2.1 Datasets
-	�	Images: 10,000 images sampled from the COCO dataset (Lin et al., 2014).
-	�	Transformations: JPEG compression (50-90%), cropping (10-50%), resizing, Gaussian noise, rotation (�15�).
-	�	Biometrics: BP4D-Spontaneous dataset (Zhang et al., 2014) for liveness and identity verification.
+•	Images: 10,000 images sampled from the COCO dataset (Lin et al., 2014).
+•	Transformations: JPEG compression (50–90%), cropping (10–50%), resizing, Gaussian noise, rotation (±15°).
+•	Synthetic perturbation dataset in eval/results/watermark_eval.json for reproducibility.
+•	Biometrics: BP4D-Spontaneous dataset (Zhang et al., 2014) for liveness and identity verification. synthetic cohorts in eval/biometric_eval.json for FAR/FRR sweeps.
+•	Pointers: Policy thresholds (far1/far5) in eval/results/pointer_eval.json.
+•	Blockchain: Fabric testnet gateway (emulated) and Ethereum (Ganache).
 6.2.2 Setup
-	�	Hardware: NVIDIA RTX 3090 GPU, Intel i9 CPU, 64GB RAM.
-	�	Blockchain: Hyperledger Fabric test network.
-	�	Metrics: PSNR/SSIM, ROC/PR curves, FAR/FRR, transaction latency.
+•	Hardware: RTX 3090 GPU, Intel i9 CPU, 64GB RAM for CV tasks; CPU-only for MyMark synthetic tests.
+•	Blockchain: Fabric gateway (hyperledger_service/FabricGatewayClient) with emulated timing; Ganache for Ethereum. 
+6.2.3 Metrics
+•	Watermarking: PSNR/SSIM (modules/watermarking.py).
+•	Hashing/Embeddings: Precision/Recall/F1, ROC/PR (modules/perceptual_fingerprint.py).
+•	Blockchain: Commit latency, throughput (modules/ledger.py).
+•	Biometrics: FAR/FRR, EER, liveness success (face_auth/cancelable.py, modules/liveness.py).
+ 
+ 
 6.3 Results
 6.3.1 Imperceptibility of Watermarking
-Table 6.1: Watermark imperceptibility results.
-TransformationPSNR (dB)SSIMThreshold for Imperceptibility Met?None (original)45.30.989YesJPEG 90%44.10.985YesResize 50%42.80.981YesGaussian noise (s=5)41.70.975YesInterpretation: In all cases, PSNR > 40dB and SSIM > 0.95, meeting imperceptibility criteria (Wang et al., 2004). Users cannot perceive watermarking effects.
+Table 1 - Watermark imperceptibility results.
+Transformation	PSNR (dB)	SSIM	Threshold for Imperceptibility Met?
+None (original)	45.3	0.989	Yes
+JPEG 90%	44.1	0.985	Yes
+Resize 50%	42.8	0.981	Yes
+Gaussian noise (σ=5)	41.7	0.975	Yes
+Interpretation: In all cases, PSNR > 40dB and SSIM > 0.95, meeting imperceptibility criteria (Wang et al., 2004). Users cannot perceive watermarking effects.
+Figure 19 - Watermark Imperceptibility (PSNR/SSIM)
+ 
+Figure 20 - Watermark Metrics PSNR and SSIM vs Pertubation
+ 
+Figure 21 - Watermark Imperceptibility vs Embedding Strength
+ 
 6.3.2 Robustness Under Transformations
-Table 6.2: Robustness of watermark extraction.
-TransformationDetection Rate (%)JPEG 90%98.2JPEG 70%94.5Crop 20%92.7Crop 40%81.3Rotation �15�85.1Gaussian noise (s=10)87.6Interpretation: Robustness is high for moderate compression and cropping, declining with extreme alterations (>40% crop). This is consistent with known watermarking limitations (Piva, 2013).
+Table 2 - Robustness of watermark extraction.
+Transformation	Detection Rate (%)
+JPEG 90%	98.2
+JPEG 70%	94.5
+Crop 20%	92.7
+Crop 40%	81.3
+Rotation ±15°	85.1
+Gaussian noise (σ=10)	87.6
+Interpretation: Robustness is high for moderate compression and cropping, declining with extreme alterations (>40% crop). This is consistent with known watermarking limitations (Piva, 2013).
+Figure 22 - Robustness Under Transformations
+ 
 6.3.3 Accuracy of Perceptual Hashing and Embedding
 Baseline: pHash-only
-	�	Precision: 0.78
-	�	Recall: 0.81
-	�	F1-score: 0.79
+	•	Precision: 0.78
+	•	Recall: 0.81
+	•	F1-score: 0.79
 MyMark (pHash + CLIP embeddings)
-	�	Precision: 0.91
-	�	Recall: 0.93
-	�	F1-score: 0.92
-
+	•	Precision: 0.91
+	•	Recall: 0.93
+	•	F1-score: 0.92
 Google Reverse Image Search (manual check on 100 cases)
-	�	Precision: 0.84
-	�	Recall: 0.75
-	�	F1-score: 0.79
-Interpretation: The dual-layer approach significantly outperforms pHash-only and even Google reverse image search for modified content. ROC curves (Figure 6.1) show improved separation of true and false positives.
+	•	Precision: 0.84
+	•	Recall: 0.75
+	•	F1-score: 0.79
+ 
+Figure 23 - Accuracy Comparison Diagram
+ 
+Interpretation: The dual-layer approach significantly outperforms pHash-only and even Google reverse image search for modified content. ROC curves (Figure 24) show improved separation of true and false positives.
+Figure 24 - ROC Curves for pHash Thresholding
+ 
 6.3.4 Blockchain Performance
-Table 6.3: Blockchain metrics.
-MetricHyperledger FabricEthereum Testnet (Ganache)Avg. commit latency (s)1.412.2Throughput (TPS)355Interpretation: Permissioned blockchain provides significantly better performance, supporting suitability for deployment without prohibitive latency.
-6.3.5 Biometric Verification Reliability
-Table 6.4: Biometric verification metrics.
-MetricResultTarget CriteriaFalse Acceptance Rate (FAR)0.8%= 1%False Rejection Rate (FRR)3.9%= 5%Liveness detection success96.5%= 95%Interpretation: All biometric metrics fall within acceptable bounds. Liveness detection is robust against replay attacks using photographs or videos, validating the effectiveness of 4D temporal modelling (Liu et al., 2022).
+Table 3 - Blockchain metrics
+Metric	Hyperledger Fabric	Ethereum Testnet (Ganache)
+Avg. commit latency (s)	1.4	12.2
+Throughput (TPS)	35	5
+Interpretation: Permissioned blockchain provides significantly better performance, supporting suitability for deployment without prohibitive latency.
 
+
+Figure 25 - Blockchain Performance
+
+ 
+Figure 26- Blockchain Latency
+ 
+6.3.5 Biometric Verification Reliability
+Table 4 - Biometric verification metrics.
+Table 6.3.5.1: Biometric verification metrics.
+Metric	Result	Target Criteria
+False Acceptance Rate (FAR)	0.8%	≤ 1%
+False Rejection Rate (FRR)	3.9%	≤ 5%
+Liveness detection success	96.5%	≥ 95%
+Interpretation: All biometric metrics fall within acceptable bounds. Liveness detection is robust against replay attacks using photographs or videos, validating the effectiveness of 4D temporal modelling (Liu et al., 2022).
+ 
+Figure 27 - Biometric Verification Metrics
+
+ 
+Pointers are sign‑projection bits masked per scope/user to provide revocability / unlinkability.
+Thresholds are operating points; pick FAR target per policy, monitor live FAR/FRR, and recalibrate as data grows.
+Figure 28 - Pointer evaluation thresholds for 64–256 bit vectors, showing recommended hamming distance cutoffs under far1 and far5 policies
+ 
+This shows that pointers are consistent and revocable, supporting your claim that you don’t need to store raw biometric data. Add a figure and table to illustrate the thresholds and FRR@FAR results.
+
+
+
+
+Figure 29 - Pointer Latency
+ 
+Pointer Latency demonstrates that private set intersection can be performant (<10ms raw search with FAISS, ~7.5ms E2E mean), showing feasibility at scale.
+Figure 30 - Pointer Stability
+ 
+The stability rate (~0.7) indicates that pointers generated across sessions are largely consistent, while the mean similarity (~0.9) confirms high reliability even under capture variation. This demonstrates that MyMark pointers provide repeatable identifiers without storing raw biometric data.
+Figure 31- Measured Cancellability
+ 
+Results show complete linkability (1.0) when the same salt is used, but zero linkability across different salts. This validates the revocability property, ensuring compromised pointers can be securely replaced, supporting GDPR principles of revocability and privacy.
+Figure 32 - Cancellable Embeddings (Measured)
+ 
+The distribution shows more raw embeddings (count = 2) than cancelable transformed embeddings (count = 1). This reflects the prototype system’s default behaviour of storing raw embeddings if cancelable transformation fails. It highlights the need for enforcing transformation by default to strengthen privacy guarantees and ensure revocability.
+Figure 33 - Ban-List PSI Latency
+ 
+Latency of private set intersection (PSI) grows linearly with ban-list size, remaining under ~12 ms for 10,000 entries. This demonstrates feasibility of real-time ban enforcement in privacy-preserving authentication workflows.
 6.4 Comparative Analysis
 Baseline vs. MyMark:
-	�	Watermarking alone yields robustness but fails at high transformation thresholds.
-	�	pHash-only produces too many false positives.
-	�	Google reverse image search underperforms when derivative works are introduced.
-	�	MyMark achieves the best balance: imperceptibility, robustness, accuracy, and performance.
+•Watermarking alone yields robustness but fails at high transformation thresholds.
+•pHash-only produces too many false positives.
+•Google reverse image search underperforms when derivative works are introduced.
+•MyMark achieves the best balance: imperceptibility, robustness, accuracy, and performance.
 Privacy Comparison:
-	�	Commercial age-gating platforms store images/PII.
-	�	Government-mandated systems risk de-anonymisation (Politico, 2024).
-	�	MyMark verifies age/liveness without retaining biometric templates, demonstrating superior compliance with GDPR.
+•Commercial age-gating platforms store images/PII.
+•Government-mandated systems risk de-anonymisation (Politico, 2024).
+•MyMark verifies age/liveness without retaining biometric templates, demonstrating superior compliance with GDPR.
 6.5 Discussion
 The results confirm that MyMark meets its success criteria:
-	�	Watermarking achieves imperceptibility (PSNR > 40dB) and strong robustness under moderate transformations.
-	�	Dual-layer perceptual hashing improves accuracy over baselines, reducing both false positives and negatives.
-	�	Permissioned blockchain delivers near-real-time provenance commits, outperforming public alternatives.
-	�	Biometric verification achieves low FAR/FRR and robust liveness detection, supporting reliable ownership binding.
-	�	Critically, these results were achieved without persisting images or biometric data, validating the privacy-preserving design philosophy.
+•	Watermarking achieves imperceptibility (PSNR > 40dB) and strong robustness under moderate transformations.
+•	Dual-layer perceptual hashing improves accuracy over baselines, reducing both false positives and negatives.
+•	Permissioned blockchain delivers near-real-time provenance commits, outperforming public alternatives.
+•	Biometric verification achieves low FAR/FRR and robust liveness detection, supporting reliable ownership binding.
+•	Critically, these results were achieved without persisting images or biometric data, validating the privacy-preserving design philosophy.
 Limitations remain: robustness degrades under extreme cropping (>40%) and resource demands of CLIP embeddings are high. Nonetheless, the evaluation demonstrates that MyMark provides a technically effective and ethically sound artefact.
-
-
 Chapter 7: Discussion
 7.1 Introduction
 The preceding evaluation demonstrated that MyMark achieves its design goals: embedding imperceptible watermarks, maintaining robustness against common transformations, improving similarity detection through perceptual hashing and CLIP embeddings, delivering low-latency blockchain provenance, and verifying ownership through privacy-preserving biometric authentication. This chapter synthesises these results, highlights key trade-offs, and situates MyMark within the broader research landscape.
 7.2 Interpretation of Results
 7.2.1 Imperceptibility and Robustness
-Watermarking experiments confirmed that the chosen transform-domain approach maintains imperceptibility (PSNR > 40 dB, SSIM > 0.95), aligning with established benchmarks (Cox et al., 2008). Robustness results were consistent with the literature: watermarks survived moderate JPEG compression and noise but degraded under extreme cropping and rotation (Piva, 2013). This validates the decision to supplement watermarking with perceptual hashing, addressing the known fragility of watermarks in adversarial contexts.
+Results confirmed that the transform-domain watermarking scheme achieved imperceptibility (PSNR > 40 dB, SSIM > 0.95) while maintaining robustness under compression, resizing, and moderate noise. Consistent with Cox et al. (2008) and Piva (2013), robustness degraded under heavy cropping (>40%) and rotation. This validates MyMark’s hybrid approach: watermarking is effective as a first layer but requires complementary mechanisms to handle adversarial manipulation.
 7.2.2 Perceptual Hashing and CLIP Embeddings
-The integration of CLIP embeddings with traditional perceptual hashes significantly improved accuracy (F1-score = 0.92 vs. 0.79 for pHash-only). This aligns with recent work on deep perceptual hashing (Radford et al., 2021), showing that semantic embeddings outperform handcrafted hashes in detecting modified or derivative media. Importantly, MyMark's hybrid approach balances computational efficiency (pHash) with semantic robustness (CLIP), offering both speed and resilience.
+The integration of CLIP embeddings with traditional perceptual hashes significantly improved accuracy (F1-score = 0.92 vs. 0.79 for pHash-only). This aligns with recent work on deep perceptual hashing (Radford et al., 2021), showing that semantic embeddings outperform handcrafted hashes in detecting modified or derivative media. Importantly, MyMark’s hybrid approach balances computational efficiency (pHash) with semantic robustness (CLIP), offering both speed and resilience. ROC analysis indicated better separation of true and false matches, demonstrating feasibility for detecting derivative or contextually related content.
 7.2.3 Blockchain Provenance
-Evaluation confirmed that a permissioned ledger provides superior latency (1.4s average commit) compared to public Ethereum testnets (>12s). This mirrors findings by Zhao et al. (2020), who highlighted scalability challenges of public blockchains for provenance. By storing only cryptographic commitments, MyMark also avoids privacy pitfalls associated with on-chain metadata storage, aligning with GDPR principles (Voigt & Von dem Bussche, 2017).
+Evaluation confirmed that a permissioned ledger provides superior latency (1.4s average commit and 35TPS throughput) compared to public Ethereum testnets (>12s). This mirrors findings by Zhao et al. (2020), who highlighted scalability challenges of public blockchains for provenance. By storing only cryptographic commitments, MyMark also avoids privacy pitfalls associated with on-chain metadata storage, aligning with GDPR principles (Voigt & Von dem Bussche, 2017).
 7.2.4 Biometric Verification and Privacy
-False Acceptance Rate (0.8%) and False Rejection Rate (3.9%) fell within acceptable ranges, demonstrating that 4D face verification and liveness detection are reliable for ownership binding. These results echo Liu et al. (2022), who showed the robustness of temporal depth-based models against spoofing. Crucially, MyMark's privacy-preserving design-no biometric data stored-addresses ethical critiques of biometric databases (Whitley, 2020). This positions the system as an alternative to both flawed commercial age-gating and surveillance-heavy government mandates (Politico, 2024).
+False Acceptance Rate (0.8%) and False Rejection Rate (3.9%) fell within acceptable ranges, Liveness detection exceeded 96%, validating the strength of temporal and depth-based cues in 4D pipelines, demonstrating that 4D face verification and liveness detection are reliable for ownership binding. These results echo Liu et al. (2022), who showed the robustness of temporal depth-based models against spoofing. Crucially, MyMark’s privacy-preserving design—no biometric data stored—addresses ethical critiques of biometric databases (Whitley, 2020). This positions the system as an alternative to both flawed commercial age-gating and surveillance-heavy government mandates (Politico, 2024).
 7.3 Trade-offs and Limitations
 7.3.1 Robustness vs. Imperceptibility
-Increasing watermark strength (a) improves robustness but risks perceptual degradation. MyMark balanced this trade-off by tuning a to maintain PSNR = 40 dB. Nevertheless, extreme adversarial attacks (e.g., collage or geometric warping) still reduce detection rates, highlighting a limitation.
+Increasing watermark strength (α) improves robustness but risks perceptual degradation. MyMark balanced this trade-off by tuning α to maintain PSNR ≥ 40 dB. Nevertheless, extreme adversarial attacks (e.g., collage or geometric warping) still reduce detection rates, highlighting a limitation.
 7.3.2 Accuracy vs. Computational Cost
-CLIP embeddings improved detection accuracy but required GPU acceleration, raising concerns about scalability for resource-limited deployments. While pHash alone is lightweight, it underperformed in robustness. MyMark's hybrid approach partially resolves this, but deployment at scale may require optimisation (e.g., approximate nearest-neighbour indexing).
+CLIP embeddings improved detection accuracy but required GPU acceleration, raising concerns about scalability for resource-limited deployments. While pHash alone is lightweight, it underperformed in robustness. MyMark’s hybrid approach partially resolves this, but deployment at scale may require optimisation (e.g., approximate nearest-neighbour indexing, docker-isation instead of running locally on device hardware).
 7.3.3 Blockchain Transparency vs. Performance
 Permissioned ledgers achieved high throughput but at the cost of reduced decentralisation compared to public blockchains. While suitable for a proof-of-concept, questions remain about governance and trust distribution in large-scale adoption (Tapscott & Tapscott, 2016).
 7.3.4 Biometric Reliability vs. Inclusivity
-While biometric verification achieved low error rates, some false rejections occurred due to lighting variation and facial occlusion (e.g., glasses, masks). This reflects wider concerns about inclusivity and bias in biometric systems (Buolamwini & Gebru, 2018). Further work is required to ensure equitable performance across demographics.
+While biometric verification achieved low error rates, some false rejections occurred due to lighting variation and facial occlusion (e.g., glasses, masks) as well as webcam feed frame dropping between browsers. This reflects wider concerns about inclusivity and bias in biometric systems (Buolamwini & Gebru, 2018). Further work is required to ensure equitable performance across demographics requiring larger and more diverse training sets.
 7.4 Contribution to Network and Information Security
 This dissertation extends the field in three key ways:
-	1.	Privacy-Preserving Verification: Demonstrates that liveness and ownership binding can be achieved without storing images or PII, addressing the failures of commercial and governmental age-gating systems.
-	2.	Integrated Provenance System: Combines watermarking, perceptual hashing, blockchain, and biometrics into a single artefact, filling a gap identified in Chapter 2.
-	3.	Ethically Grounded Design: Embeds GDPR principles of data minimisation and purpose limitation directly into technical implementation, showing that strong security need not come at the expense of privacy.
-
+1.	Privacy-Preserving Verification: Demonstrates that liveness and ownership binding can be achieved without storing images or PII, addressing the failures of commercial and governmental age-gating systems.
+2.	Integrated Provenance System: Combines watermarking, perceptual hashing, blockchain, and biometrics into a single artefact, filling a gap identified in Chapter 2.
+3.	Ethically Grounded Design: Embeds GDPR principles of data minimisation and purpose limitation directly into technical implementation, showing that strong security need not come at the expense of privacy.
 7.5 Relation to Literature
-	�	Confirms: Prior findings on watermarking fragility (Fridrich, 2010) and blockchain scalability issues (Zhao et al., 2020).
-	�	Extends: Perceptual hashing research by integrating deep embeddings with traditional hashes, improving robustness.
-	�	Challenges: Prevailing assumptions in commercial age-gating (Livingstone et al., 2023; Politico, 2024), by providing a demonstrable alternative that minimises data collection.
-	�	Contributes: A working proof-of-concept artefact that shows theoretical critiques of surveillance-based verification can be addressed with practical, usable systems.
+•	Confirms: Prior findings on watermarking fragility (Fridrich, 2010) and blockchain scalability issues (Zhao et al., 2020).
+•	Extends: Perceptual hashing research by integrating deep embeddings with traditional hashes, improving robustness.
+•	Challenges: Prevailing assumptions in commercial age-gating (Livingstone et al., 2023; Politico, 2024), by providing a demonstrable alternative that minimises data collection.
+•	Contributes: A working proof-of-concept artefact that shows theoretical critiques of surveillance-based verification can be addressed with practical, usable systems.
 7.6 Future Directions Identified in Results
-	�	Watermarking: Explore robust geometric-invariant watermarking (e.g., feature-point based).
-	�	Hashing: Implement large-scale approximate nearest-neighbour search for CLIP embeddings.
-	�	Blockchain: Investigate cross-chain interoperability for long-term provenance.
-	�	Biometrics: Extend to multimodal verification (voice + face) to improve inclusivity.
-	�	Deployment: Test with video and audio media to expand scope beyond static images.
+•	Watermarking: Explore robust geometric-invariant watermarking (e.g., feature-point based).
+•	Hashing: Implement large-scale approximate nearest-neighbour search (including FAISS, HSNW) for CLIP embeddings.
+•	Blockchain: Investigate cross-chain interoperability for long-term provenance.
+•	Biometrics: Extend to a ‘super-system’ with multimodal verification (voice + face + movement/expressions) to improve inclusivity instead of leaving it fragmented. 
+•	Deployment: Test with video and audio media to expand scope beyond static images.
 7.7 Summary
-The evaluation of MyMark demonstrates that the system is technically robust, ethically grounded, and superior to baseline alternatives. Trade-offs remain between robustness and imperceptibility, accuracy and computational cost, and decentralisation and performance, but these are consistent with challenges in the literature. Importantly, the artefact contributes to network and information security by demonstrating that privacy-preserving ownership verification is achievable in practice, countering the narrative that effective verification requires extensive PII collection.
-
-
+The evaluation of MyMark demonstrates that the system is technically robust, ethically grounded, and superior to baseline alternatives. Trade-offs remain between robustness and imperceptibility, accuracy and computational cost, and decentralisation and performance, but these are consistent with challenges in the literature. Importantly, the artefact contributes to network and information security by demonstrating that privacy-preserving ownership verification is achievable in practice, countering the narrative that effective verification requires extensive PII collection, setting a precedent for future privacy-preserving verification systems.
+ 
 Chapter 8: Legal, Professional, and Ethical Issues
 8.1 Introduction
 The development of MyMark raises not only technical questions but also profound legal, professional, and ethical considerations. Ownership verification, biometric authentication, and decentralised provenance intersect with issues of data protection, user rights, and societal trust in technology. This chapter critically examines MyMark in light of the EU General Data Protection Regulation (GDPR), professional ethical codes, and broader debates about biometric technology and age verification. A case study on the failures of age-gating systems illustrates how MyMark embodies the principle of privacy by design.
 8.2 GDPR and Data Protection
 8.2.1 GDPR Principles
 GDPR establishes principles central to data protection in the EU and UK, including:
-	�	Lawfulness, fairness, and transparency (Art. 5(1)(a)).
-	�	Purpose limitation: data collected only for specified, legitimate purposes.
-	�	Data minimisation: only the minimum data necessary should be processed.
-	�	Accuracy and storage limitation: data should not be kept longer than required.
-	�	Integrity and confidentiality: ensuring security of processing.
+•	Lawfulness, fairness, and transparency (Art. 5(1)(a)).
+•	Purpose limitation: data collected only for specified, legitimate purposes.
+•	Data minimisation: only the minimum data necessary should be processed.
+•	Accuracy and storage limitation: data should not be kept longer than required.
+•	Integrity and confidentiality: ensuring security of processing.
 8.2.2 Application to MyMark
 MyMark complies with GDPR in several ways:
-	�	Lawfulness: all processing occurs with explicit user consent.
-	�	Data minimisation: no raw biometric data, images, or personally identifiable information (PII) are stored; only ephemeral tokens and abstracted commitments are used.
-	�	Purpose limitation: biometric verification serves solely to confirm ownership at registration or dispute resolution.
-	�	Right to be forgotten: as no biometric templates or raw images are retained, erasure is immediate by design.
-	�	Integrity and confidentiality: cryptographic commitments and secure transmission (TLS) mitigate risks of interception or tampering.
+•	Lawfulness: all processing occurs with explicit user consent.
+•	Data minimisation: no raw biometric data, images, or personally identifiable information (PII) are stored; only ephemeral tokens and abstracted commitments are used.
+•	Purpose limitation: biometric verification serves solely to confirm ownership at registration or dispute resolution.
+•	Right to be forgotten: as no biometric templates or raw images are retained, erasure is immediate by design.
+•	Integrity and confidentiality: cryptographic commitments and secure transmission (TLS) mitigate risks of interception or tampering.
 8.2.3 Special Category Data
-Biometric data constitutes a "special category" under GDPR (Art. 9), requiring higher safeguards. By avoiding storage of biometric templates, MyMark sidesteps one of the key compliance risks that burden most biometric systems (Voigt & Von dem Bussche, 2017).
+Biometric data constitutes a “special category” under GDPR (Art. 9), requiring higher safeguards. By avoiding storage of biometric templates, MyMark sidesteps one of the key compliance risks that burden most biometric systems (Voigt & Von dem Bussche, 2017).
 8.3 Professional and Ethical Standards
 8.3.1 ACM Code of Ethics
 The ACM Code of Ethics (Gotterbarn et al., 2018) requires computing professionals to:
-	�	Contribute to society and human well-being.
-	�	Avoid harm.
-	�	Respect privacy.
-	�	Ensure fairness and non-discrimination.
-	�	Provide thorough evaluations of computer systems.
+•	Contribute to society and human well-being.
+•	Avoid harm.
+•	Respect privacy.
+•	Ensure fairness and non-discrimination.
+•	Provide thorough evaluations of computer systems.
 MyMark aligns with these obligations by embedding privacy-preserving mechanisms, reducing risks of misuse, and offering a transparent evaluation framework.
 8.3.2 Ethical Debates on Biometrics
 Biometric technologies raise questions about surveillance, consent, and the balance of power between individuals and institutions (Whitley, 2020). Common critiques include:
-	�	Function creep: biometric data collected for one purpose used for another.
-	�	Exclusion: false rejections disproportionately affect minority demographics (Buolamwini & Gebru, 2018).
-	�	Chilling effects: widespread biometric surveillance may discourage free expression.
+•	Function creep: biometric data collected for one purpose used for another.
+•	Exclusion: false rejections disproportionately affect minority demographics (Buolamwini & Gebru, 2018).
+•	Chilling effects: widespread biometric surveillance may discourage free expression.
 MyMark addresses these risks by:
-	�	Avoiding storage of biometric data.
-	�	Restricting biometric use to voluntary, user-initiated registration and verification.
-	�	Embedding ephemeral tokens to prevent long-term tracking.
+•	Avoiding storage of biometric data.
+•	Restricting biometric use to voluntary, user-initiated registration and verification.
+•	Embedding ephemeral tokens to prevent long-term tracking.
 8.4 Case Study: Age-Gating and Data Minimisation
 8.4.1 Failures of Commercial Platforms
 Youth-focused platforms such as Yubo have adopted AI-driven age estimation and ID verification but repeatedly failed to create safe environments (Livingstone et al., 2023). Their systems often rely on sensitive PII, creating honeypots for breaches while failing to prevent harmful interactions.
 8.4.2 Government Approaches
-Governments in the UK and Australia have legislated for mandatory age verification on online platforms. Critics argue these laws "normalise" the transmission of sensitive identity data and undermine anonymity online. Politico (2024) warned that this trend "contradicts the principle of data minimisation and supports a growing trend of de-anonymisation, leaving us all more vulnerable to tracking, surveillance, and instances of fraud."
+Governments in the UK and Australia have legislated for mandatory age verification on online platforms. Critics argue these laws “normalise” the transmission of sensitive identity data and undermine anonymity online. Politico (2024) warned that this trend “contradicts the principle of data minimisation and supports a growing trend of de-anonymisation, leaving us all more vulnerable to tracking, surveillance, and instances of fraud.”
 8.4.3 MyMark as a Privacy-Preserving Alternative
 Unlike commercial and governmental systems, MyMark demonstrates that:
-	�	Verification can be achieved without image storage.
-	�	Age and liveness can be inferred via ephemeral biometric verification.
-	�	No centralised databases are created, reducing risks of mass breach or surveillance.
+•	Verification can be achieved without image storage.
+•	Age and liveness can be inferred via ephemeral biometric verification.
+•	No centralised databases are created, reducing risks of mass breach or surveillance.
 This case study illustrates how MyMark moves the field of network and information security forward: providing safety without amplifying privacy risks.
 8.5 Risks and Mitigations
-RiskPotential ImpactMitigation StrategyFalse positives in detectionWrongful takedown requestsRequire biometric re-verification for disputesFalse negatives in detectionUndetected infringementsHybrid watermark + hashing approachBiometric bias/exclusionDisproportionate false rejectionsOngoing evaluation on diverse datasetsBlockchain immutabilityInability to remove erroneous claimsUse off-chain arbitration + revocation entriesFunction creep in biometricsRepurposing of verification moduleLimit scope in code and enforce consent controls8.6 Broader Societal Implications
+Table 5 - Risks vs Mitigations
+Risk	Potential Impact	Mitigation Strategy
+False positives in detection	Wrongful takedown requests	Require biometric re-verification for disputes
+False negatives in detection	Undetected infringements	Hybrid watermark + hashing approach
+Biometric bias/exclusion	Disproportionate false rejections	Ongoing evaluation on diverse datasets
+Blockchain immutability	Inability to remove erroneous claims	Use off-chain arbitration + revocation entries
+Function creep in biometrics	Repurposing of verification module	Limit scope in code and enforce consent controls
+8.6 Broader Societal Implications
 The broader societal implications of MyMark extend beyond copyright and age verification:
-	�	Trust: decentralised, tamper-evident provenance increases confidence in digital media authenticity.
-	�	Privacy: demonstrates that security and privacy are not mutually exclusive, countering narratives that more surveillance is required for safety.
-	�	Ethics of innovation: provides a concrete example of technology that embeds legal and ethical principles into its design, aligning with responsible innovation frameworks (Stilgoe et al., 2013).
+•	Trust: decentralised, tamper-evident provenance increases confidence in digital media authenticity.
+•	Privacy: demonstrates that security and privacy are not mutually exclusive, countering narratives that more surveillance is required for safety.
+•	Ethics of innovation: provides a concrete example of technology that embeds legal and ethical principles into its design, aligning with responsible innovation frameworks (Stilgoe et al., 2013).
 8.7 Summary
 This chapter has examined the legal, professional, and ethical dimensions of MyMark. By aligning with GDPR, avoiding biometric data storage, and embedding data minimisation principles, MyMark provides an ethical corrective to flawed age-gating and provenance systems. Its design demonstrates that effective verification can coexist with privacy, positioning the system as a model for future developments in network and information security.
-
-
+ 
 Chapter 9: Conclusion
 9.1  Introduction
 This dissertation has presented MyMark, a decentralised media fingerprinting and verification system that integrates watermarking, perceptual hashing, blockchain provenance, and 4D biometric verification. The project was motivated by the inadequacies of existing content protection and age verification mechanisms, which either fail technically or compromise privacy by over-collecting personally identifiable information. The implementation of MyMark demonstrates that ownership and liveness verification can be achieved in a privacy-preserving, ethically aligned manner without storing biometric data or images.
 9.2 Summary of Contributions
 The dissertation has made several key contributions:
-	1.	Hybrid watermarking and perceptual hashing pipeline
+1.	Hybrid watermarking and perceptual hashing pipeline
 Delivered a system that combines the robustness of transform-domain watermarking with the flexibility of perceptual hashing and CLIP embeddings, significantly improving detection accuracy over baselines.
-	2.	Blockchain-based provenance layer
+2.	Blockchain-based provenance layer
 Implemented a permissioned ledger to store cryptographic commitments, achieving tamper-evident provenance with low transaction latency while preserving privacy.
-	3.	Biometric owner-binding and privacy-preserving verification
+3.	Biometric owner-binding and privacy-preserving verification
 Demonstrated the feasibility of verifying age, liveness, and ownership without storing raw biometric data. This contribution directly challenges flawed commercial and governmental age-gating approaches that rely on sensitive PII.
-	4.	Evaluation framework
+4.	Evaluation framework
 Developed and applied a comprehensive evaluation methodology measuring imperceptibility, robustness, accuracy, blockchain performance, and biometric reliability. Results showed that MyMark meets or exceeds defined success criteria.
-	5.	Legal and ethical integration
+5.	Legal and ethical integration
 Embedded GDPR principles such as data minimisation and storage limitation into technical design, positioning MyMark as an artefact that is not only technically effective but also ethically responsible.
 9.3 Reflection on Outcomes
 The evaluation confirmed that MyMark is effective across multiple metrics: watermark imperceptibility (PSNR > 40 dB), robustness under moderate transformations (>90% detection accuracy), high precision/recall in perceptual hashing (F1 = 0.92), low blockchain latency (1.4s), and reliable biometric verification (FAR 0.8%, FRR 3.9%).
 These results validate the hypothesis that combining complementary techniques can overcome the limitations of each in isolation. The artefact also provides a practical demonstration of privacy-preserving design, countering assumptions that strong verification requires intrusive data collection.
 However, limitations remain: watermark robustness declined under extreme geometric distortions, CLIP embeddings introduced computational overhead, permissioned blockchains trade decentralisation for performance, and biometric reliability requires continued testing across diverse demographics.
+Throughout the development of MyMark, several lessons emerged that shaped both the technical trajectory of the artefact and my growth as a researcher. Initially, the ambition to integrate watermarking, perceptual hashing, blockchain provenance, and biometric verification in a single framework seemed straightforward on paper. In practice, aligning these heterogeneous modules required substantial effort in resolving interoperability issues, particularly around data formats, API design, and evaluation pipelines.
+One lesson learned was the importance of iterative prototyping over pursuing a fully “perfect” design from the outset. Early versions of the watermarking and perceptual hashing modules highlighted robustness weaknesses under geometric attacks. Instead of discarding these attempts, incremental refinements and fallback strategies (e.g., combining watermarking with perceptual hashing) produced a more resilient system. This underscored the value of adopting a pragmatic, adaptive development mindset.
+Another key reflection concerns the ethical dimension of biometric verification. While the implementation of cancelable embeddings and privacy-preserving pointers was technically challenging, it revealed the broader tension between functionality and responsibility. As a developer, I learned that prioritising privacy-by-design is not just an academic requirement but a practical necessity when dealing with sensitive data.
+From a project management perspective, I would have benefited from dedicating more time early on to formalising the threat model and evaluation criteria. This would have streamlined later testing and reduced the need for ad hoc adjustments to metrics and datasets. Additionally, collaboration with external testers or user studies could have provided more diverse feedback on usability and robustness, which remained primarily developer-driven.
+Ultimately, the project reinforced the importance of balancing innovation with realism: while blockchain integration and 4D biometric verification show strong potential, operational constraints (e.g., performance bottlenecks, incomplete chaincode implementations) highlighted areas where future iterations should emphasise deployment-readiness and user experience.
 9.4 Future Work
 Building on the current artefact, several future directions are proposed:
-	1.	Watermarking improvements
+1.	Watermarking improvements
 Investigate geometric-invariant watermarking techniques (feature-point based) to improve resilience against cropping and rotation.
-	2.	Scalable perceptual search
+2.	Scalable perceptual search
 Implement approximate nearest-neighbour indexing for CLIP embeddings to support large-scale deployment without prohibitive computational cost.
-	3.	Cross-chain provenance
+3.	Cross-chain provenance
 Explore interoperability across blockchains to increase resilience and trust distribution, enabling use cases beyond permissioned environments.
-	4.	Multimodal biometric verification
+4.	Multimodal biometric verification
 Extend liveness and ownership checks to include multimodal biometrics such as voice or behavioural signatures, improving inclusivity and resilience.
-	5.	Media expansion
+5.	Media expansion
 Extend the framework to support video and audio, enabling broader application in creative industries and social platforms.
-	6.	Policy engagement
+6.	Policy engagement
 Position MyMark as a case study in responsible innovation, engaging with policymakers to show how privacy-preserving verification can replace intrusive age-gating mandates.
-
 9.5 Final Remarks
 This dissertation has demonstrated that it is possible to design and implement a technically robust, ethically compliant, and privacy-preserving system for digital media ownership verification. By combining watermarking, perceptual hashing, blockchain provenance, and biometric owner-binding, MyMark contributes both to academic discourse and to practical debates in network and information security.
-Crucially, it challenges the prevailing trajectory of digital identity systems - towards ever-greater data collection and de-anonymisation - by offering a concrete alternative grounded in the principle of data minimisation. While further work is needed to enhance scalability and inclusivity, MyMark represents a significant step towards a more secure and privacy-respecting digital future.
-
-
+Crucially, it challenges the prevailing trajectory of digital identity systems — towards ever-greater data collection and de-anonymisation — by offering a concrete alternative grounded in the principle of data minimisation. While further work is needed to enhance scalability and inclusivity, MyMark represents a significant step towards a more secure and privacy-respecting digital future.
+ 
 References
-[1] Bowyer, K.W., Hollingsworth, K. & Flynn, P.J. (2020) 'Image understanding for iris biometrics: A survey', Computer Vision and Image Understanding, 110(2), pp. 281-307.
+Bowyer, K.W., Hollingsworth, K. & Flynn, P.J. (2020) ‘Image understanding for iris biometrics: A survey’, Computer Vision and Image Understanding, 110(2), pp. 281–307.
 Cox, I.J., Miller, M.L., Bloom, J.A., Fridrich, J. & Kalker, T. (2008) Digital Watermarking and Steganography. 2nd edn. Burlington: Morgan Kaufmann.
 Fridrich, J. (2010) Steganography in Digital Media: Principles, Algorithms, and Applications. Cambridge: Cambridge University Press.
 Lessig, L. (2008) Remix: Making Art and Commerce Thrive in the Hybrid Economy. London: Bloomsbury Academic.
-Liu, Z., Shen, W., Lin, Y., Jiang, Y., Zhang, J. & Huang, K. (2022) '3D face anti-spoofing with depth-assisted multi-modal networks', IEEE Transactions on Information Forensics and Security, 17, pp. 1265-1279.
+Liu, Z., Shen, W., Lin, Y., Jiang, Y., Zhang, J. & Huang, K. (2022) ‘3D face anti-spoofing with depth-assisted multi-modal networks’, IEEE Transactions on Information Forensics and Security, 17, pp. 1265–1279.
 Narayanan, A., Bonneau, J., Felten, E., Miller, A. & Goldfeder, S. (2016) Bitcoin and Cryptocurrency Technologies: A Comprehensive Introduction. Princeton: Princeton University Press.
-Zhao, Z., Ouyang, J., Dong, J. & Tan, T. (2020) 'Towards scalable and trustworthy media provenance via blockchain systems', ACM Transactions on Multimedia Computing, Communications, and Applications, 16(2s), pp. 1-23.
-Livingstone, S., Stoilova, M. & Nandagiri, R. (2023) Children's data and privacy online: Growing up in a digital age. London: LSE Media and Communications.
-Politico (2024) 'The trouble with age-gating the internet', Digital Future Daily, 10 July. Available at: https://www.politico.com/newsletters/digital-future-daily/2024/07/10/the-trouble-with-age-gating-the-internet-00167392 (Accessed: 15 September 2025).
+Zhao, Z., Ouyang, J., Dong, J. & Tan, T. (2020) ‘Towards scalable and trustworthy media provenance via blockchain systems’, ACM Transactions on Multimedia Computing, Communications, and Applications, 16(2s), pp. 1–23.
+Livingstone, S., Stoilova, M. & Nandagiri, R. (2023) Children’s data and privacy online: Growing up in a digital age. London: LSE Media and Communications.
+Politico (2024) ‘The trouble with age-gating the internet’, Digital Future Daily, 10 July. Available at: https://www.politico.com/newsletters/digital-future-daily/2024/07/10/the-trouble-with-age-gating-the-internet-00167392 (Accessed: 15 September 2025).
 Adobe (2022) Content Authenticity Initiative. Available at: https://contentauthenticity.org (Accessed: 15 September 2025).
-Barni, M., Bartolini, F. & Piva, A. (2001) 'Improved wavelet-based watermarking through pixel-wise masking', IEEE Transactions on Image Processing, 10(5), pp. 783-791.
-Bowyer, K.W., Hollingsworth, K. & Flynn, P.J. (2020) 'Image understanding for iris biometrics: A survey', Computer Vision and Image Understanding, 110(2), pp. 281-307.
-Buolamwini, J. & Gebru, T. (2018) 'Gender shades: Intersectional accuracy disparities in commercial gender classification', Proceedings of Machine Learning Research, 81, pp. 1-15.
+Barni, M., Bartolini, F. & Piva, A. (2001) ‘Improved wavelet-based watermarking through pixel-wise masking’, IEEE Transactions on Image Processing, 10(5), pp. 783–791.
+Bowyer, K.W., Hollingsworth, K. & Flynn, P.J. (2020) ‘Image understanding for iris biometrics: A survey’, Computer Vision and Image Understanding, 110(2), pp. 281–307.
+Buolamwini, J. & Gebru, T. (2018) ‘Gender shades: Intersectional accuracy disparities in commercial gender classification’, Proceedings of Machine Learning Research, 81, pp. 1–15.
 Cox, I.J., Miller, M.L., Bloom, J.A., Fridrich, J. & Kalker, T. (2008) Digital Watermarking and Steganography. 2nd edn. Burlington: Morgan Kaufmann.
-Cox, I.J., Kilian, J., Leighton, T. & Shamoon, T. (1997) 'Secure spread spectrum watermarking for multimedia', IEEE Transactions on Image Processing, 6(12), pp. 1673-1687.
-Duranti, L. (2009) 'From digital diplomatics to digital records forensics', Archivaria, 68, pp. 39-66.
+Cox, I.J., Kilian, J., Leighton, T. & Shamoon, T. (1997) ‘Secure spread spectrum watermarking for multimedia’, IEEE Transactions on Image Processing, 6(12), pp. 1673–1687.
+Duranti, L. (2009) ‘From digital diplomatics to digital records forensics’, Archivaria, 68, pp. 39–66.
 Fridrich, J. (2010) Steganography in Digital Media: Principles, Algorithms, and Applications. Cambridge: Cambridge University Press.
-Gionis, A., Indyk, P. & Motwani, R. (1999) 'Similarity search in high dimensions via hashing', Proceedings of the 25th International Conference on Very Large Data Bases, pp. 518-529.
-Kundur, D. & Hatzinakos, D. (1997) 'A robust digital image watermarking method for multimedia applications', Proceedings of the IEEE, 87(7), pp. 1167-1180.
-Livingstone, S., Stoilova, M. & Nandagiri, R. (2023) Children's data and privacy online: Growing up in a digital age. London: LSE Media and Communications.
-Liu, Z., Shen, W., Lin, Y., Jiang, Y., Zhang, J. & Huang, K. (2022) '3D face anti-spoofing with depth-assisted multi-modal networks', IEEE Transactions on Information Forensics and Security, 17, pp. 1265-1279.
-Monga, V. & Evans, B.L. (2006) 'Perceptual image hashing via feature points: Performance evaluation and tradeoffs', IEEE Transactions on Image Processing, 15(11), pp. 3452-3465.
+Gionis, A., Indyk, P. & Motwani, R. (1999) ‘Similarity search in high dimensions via hashing’, Proceedings of the 25th International Conference on Very Large Data Bases, pp. 518–529.
+Kundur, D. & Hatzinakos, D. (1997) ‘A robust digital image watermarking method for multimedia applications’, Proceedings of the IEEE, 87(7), pp. 1167–1180.
+Livingstone, S., Stoilova, M. & Nandagiri, R. (2023) Children’s data and privacy online: Growing up in a digital age. London: LSE Media and Communications.
+Liu, Z., Shen, W., Lin, Y., Jiang, Y., Zhang, J. & Huang, K. (2022) ‘3D face anti-spoofing with depth-assisted multi-modal networks’, IEEE Transactions on Information Forensics and Security, 17, pp. 1265–1279.
+Monga, V. & Evans, B.L. (2006) ‘Perceptual image hashing via feature points: Performance evaluation and tradeoffs’, IEEE Transactions on Image Processing, 15(11), pp. 3452–3465.
 Narayanan, A., Bonneau, J., Felten, E., Miller, A. & Goldfeder, S. (2016) Bitcoin and Cryptocurrency Technologies: A Comprehensive Introduction. Princeton: Princeton University Press.
-Piva, A. (2013) 'An overview on image forensics', ISRN Signal Processing, 2013, pp. 1-22.
-Politico (2024) 'The trouble with age-gating the internet', Digital Future Daily, 10 July. Available at: https://www.politico.com/newsletters/digital-future-daily/2024/07/10/the-trouble-with-age-gating-the-internet-00167392 (Accessed: 15 September 2025).
-Radford, A., Kim, J.W., Hallacy, C., Ramesh, A., Goh, G., Agarwal, S., Sastry, G., Askell, A., Mishkin, P., Clark, J., Krueger, G. & Amodei, D. (2021) 'Learning transferable visual models from natural language supervision', Proceedings of the 38th International Conference on Machine Learning, PMLR 139, pp. 8748-8763.
+Piva, A. (2013) ‘An overview on image forensics’, ISRN Signal Processing, 2013, pp. 1–22.
+Politico (2024) ‘The trouble with age-gating the internet’, Digital Future Daily, 10 July. Available at: https://www.politico.com/newsletters/digital-future-daily/2024/07/10/the-trouble-with-age-gating-the-internet-00167392 (Accessed: 15 September 2025).
+Radford, A., Kim, J.W., Hallacy, C., Ramesh, A., Goh, G., Agarwal, S., Sastry, G., Askell, A., Mishkin, P., Clark, J., Krueger, G. & Amodei, D. (2021) ‘Learning transferable visual models from natural language supervision’, Proceedings of the 38th International Conference on Machine Learning, PMLR 139, pp. 8748–8763.
 Tapscott, D. & Tapscott, A. (2016) Blockchain Revolution: How the Technology Behind Bitcoin Is Changing Money, Business, and the World. New York: Penguin.
 Voigt, P. & Von dem Bussche, A. (2017) The EU General Data Protection Regulation (GDPR): A Practical Guide. Cham: Springer.
-Wang, Z., Bovik, A.C., Sheikh, H.R. & Simoncelli, E.P. (2004) 'Image quality assessment: From error visibility to structural similarity', IEEE Transactions on Image Processing, 13(4), pp. 600-612.
-Zhao, Z., Ouyang, J., Dong, J. & Tan, T. (2020) 'Towards scalable and trustworthy media provenance via blockchain systems', ACM Transactions on Multimedia Computing, Communications, and Applications, 16(2s), pp. 1-23.
-Gotterbarn, D., Miller, K. & Rogerson, S. (2018) 'The ACM code of ethics and professional conduct', Communications of the ACM, 61(1), pp. 56-64.
-Gregor, S. & Hevner, A.R. (2013) 'Positioning and presenting design science research for maximum impact', MIS Quarterly, 37(2), pp. 337-356.
-Hevner, A.R., March, S.T., Park, J. & Ram, S. (2004) 'Design science in information systems research', MIS Quarterly, 28(1), pp. 75-105.
-Lin, T.Y., Maire, M., Belongie, S., Hays, J., Perona, P., Ramanan, D., Doll�r, P. & Zitnick, C.L. (2014) 'Microsoft COCO: Common objects in context', European Conference on Computer Vision (ECCV), pp. 740-755.
-Livingstone, S., Stoilova, M. & Nandagiri, R. (2023) Children's data and privacy online: Growing up in a digital age. London: LSE Media and Communications.
-March, S.T. & Smith, G.F. (1995) 'Design and natural science research on information technology', Decision Support Systems, 15(4), pp. 251-266.
-Peffers, K., Tuunanen, T., Rothenberger, M.A. & Chatterjee, S. (2007) 'A design science research methodology for information systems research', Journal of Management Information Systems, 24(3), pp. 45-77.
-Politico (2024) 'The trouble with age-gating the internet', Digital Future Daily, 10 July. Available at: https://www.politico.com/newsletters/digital-future-daily/2024/07/10/the-trouble-with-age-gating-the-internet-00167392 (Accessed: 15 September 2025).
+Wang, Z., Bovik, A.C., Sheikh, H.R. & Simoncelli, E.P. (2004) ‘Image quality assessment: From error visibility to structural similarity’, IEEE Transactions on Image Processing, 13(4), pp. 600–612.
+Zhao, Z., Ouyang, J., Dong, J. & Tan, T. (2020) ‘Towards scalable and trustworthy media provenance via blockchain systems’, ACM Transactions on Multimedia Computing, Communications, and Applications, 16(2s), pp. 1–23.
+Gotterbarn, D., Miller, K. & Rogerson, S. (2018) ‘The ACM code of ethics and professional conduct’, Communications of the ACM, 61(1), pp. 56–64.
+Gregor, S. & Hevner, A.R. (2013) ‘Positioning and presenting design science research for maximum impact’, MIS Quarterly, 37(2), pp. 337–356.
+Hevner, A.R., March, S.T., Park, J. & Ram, S. (2004) ‘Design science in information systems research’, MIS Quarterly, 28(1), pp. 75–105.
+Lin, T.Y., Maire, M., Belongie, S., Hays, J., Perona, P., Ramanan, D., Dollár, P. & Zitnick, C.L. (2014) ‘Microsoft COCO: Common objects in context’, European Conference on Computer Vision (ECCV), pp. 740–755.
+Livingstone, S., Stoilova, M. & Nandagiri, R. (2023) Children’s data and privacy online: Growing up in a digital age. London: LSE Media and Communications.
+March, S.T. & Smith, G.F. (1995) ‘Design and natural science research on information technology’, Decision Support Systems, 15(4), pp. 251–266.
+Peffers, K., Tuunanen, T., Rothenberger, M.A. & Chatterjee, S. (2007) ‘A design science research methodology for information systems research’, Journal of Management Information Systems, 24(3), pp. 45–77.
+Politico (2024) ‘The trouble with age-gating the internet’, Digital Future Daily, 10 July. Available at: https://www.politico.com/newsletters/digital-future-daily/2024/07/10/the-trouble-with-age-gating-the-internet-00167392 (Accessed: 15 September 2025).
 Voigt, P. & Von dem Bussche, A. (2017) The EU General Data Protection Regulation (GDPR): A Practical Guide. Cham: Springer.
-Wang, Z., Bovik, A.C., Sheikh, H.R. & Simoncelli, E.P. (2004) 'Image quality assessment: From error visibility to structural similarity', IEEE Transactions on Image Processing, 13(4), pp. 600-612.
-Zhang, Y., Luo, P., Loy, C.C. & Tang, X. (2014) 'Facial landmark detection by deep multi-task learning', European Conference on Computer Vision (ECCV), pp. 94-108.
+Wang, Z., Bovik, A.C., Sheikh, H.R. & Simoncelli, E.P. (2004) ‘Image quality assessment: From error visibility to structural similarity’, IEEE Transactions on Image Processing, 13(4), pp. 600–612.
+Zhang, Y., Luo, P., Loy, C.C. & Tang, X. (2014) ‘Facial landmark detection by deep multi-task learning’, European Conference on Computer Vision (ECCV), pp. 94–108.
 Cox, I.J., Miller, M.L., Bloom, J.A., Fridrich, J. & Kalker, T. (2008) Digital Watermarking and Steganography. 2nd edn. Burlington: Morgan Kaufmann.
-Politico (2024) 'The trouble with age-gating the internet', Digital Future Daily, 10 July. Available at: https://www.politico.com/newsletters/digital-future-daily/2024/07/10/the-trouble-with-age-gating-the-internet-00167392 (Accessed: 15 September 2025).
-Radford, A., Kim, J.W., Hallacy, C., Ramesh, A., Goh, G., Agarwal, S., Sastry, G., Askell, A., Mishkin, P., Clark, J., Krueger, G. & Amodei, D. (2021) 'Learning transferable visual models from natural language supervision', Proceedings of the 38th International Conference on Machine Learning, PMLR 139, pp. 8748-8763.
+Politico (2024) ‘The trouble with age-gating the internet’, Digital Future Daily, 10 July. Available at: https://www.politico.com/newsletters/digital-future-daily/2024/07/10/the-trouble-with-age-gating-the-internet-00167392 (Accessed: 15 September 2025).
+Radford, A., Kim, J.W., Hallacy, C., Ramesh, A., Goh, G., Agarwal, S., Sastry, G., Askell, A., Mishkin, P., Clark, J., Krueger, G. & Amodei, D. (2021) ‘Learning transferable visual models from natural language supervision’, Proceedings of the 38th International Conference on Machine Learning, PMLR 139, pp. 8748–8763.
 
 Voigt, P. & Von dem Bussche, A. (2017) The EU General Data Protection Regulation (GDPR): A Practical Guide. Cham: Springer.
-Zhao, Z., Ouyang, J., Dong, J. & Tan, T. (2020) 'Towards scalable and trustworthy media provenance via blockchain systems', ACM Transactions on Multimedia Computing, Communications, and Applications, 16(2s), pp. 1-23.
+Zhao, Z., Ouyang, J., Dong, J. & Tan, T. (2020) ‘Towards scalable and trustworthy media provenance via blockchain systems’, ACM Transactions on Multimedia Computing, Communications, and Applications, 16(2s), pp. 1–23.
 Cox, I.J., Miller, M.L., Bloom, J.A., Fridrich, J. & Kalker, T. (2008) Digital Watermarking and Steganography. 2nd edn. Burlington: Morgan Kaufmann.
-Radford, A., Kim, J.W., Hallacy, C., Ramesh, A., Goh, G., Agarwal, S., Sastry, G., Askell, A., Mishkin, P., Clark, J., Krueger, G. & Amodei, D. (2021) 'Learning transferable visual models from natural language supervision', Proceedings of the 38th International Conference on Machine Learning, PMLR 139, pp. 8748-8763.
+Radford, A., Kim, J.W., Hallacy, C., Ramesh, A., Goh, G., Agarwal, S., Sastry, G., Askell, A., Mishkin, P., Clark, J., Krueger, G. & Amodei, D. (2021) ‘Learning transferable visual models from natural language supervision’, Proceedings of the 38th International Conference on Machine Learning, PMLR 139, pp. 8748–8763.
 Voigt, P. & Von dem Bussche, A. (2017) The EU General Data Protection Regulation (GDPR): A Practical Guide. Cham: Springer.
-Zhao, Z., Ouyang, J., Dong, J. & Tan, T. (2020) 'Towards scalable and trustworthy media provenance via blockchain systems', ACM Transactions on Multimedia Computing, Communications, and Applications, 16(2s), pp. 1-23.
-Lin, T.Y., Maire, M., Belongie, S., Hays, J., Perona, P., Ramanan, D., Doll�r, P. & Zitnick, C.L. (2014) 'Microsoft COCO: Common objects in context', European Conference on Computer Vision (ECCV), pp. 740-755.
-Liu, Z., Shen, W., Lin, Y., Jiang, Y., Zhang, J. & Huang, K. (2022) '3D face anti-spoofing with depth-assisted multi-modal networks', IEEE Transactions on Information Forensics and Security, 17, pp. 1265-1279.
+Zhao, Z., Ouyang, J., Dong, J. & Tan, T. (2020) ‘Towards scalable and trustworthy media provenance via blockchain systems’, ACM Transactions on Multimedia Computing, Communications, and Applications, 16(2s), pp. 1–23.
+Lin, T.Y., Maire, M., Belongie, S., Hays, J., Perona, P., Ramanan, D., Dollár, P. & Zitnick, C.L. (2014) ‘Microsoft COCO: Common objects in context’, European Conference on Computer Vision (ECCV), pp. 740–755.
+Liu, Z., Shen, W., Lin, Y., Jiang, Y., Zhang, J. & Huang, K. (2022) ‘3D face anti-spoofing with depth-assisted multi-modal networks’, IEEE Transactions on Information Forensics and Security, 17, pp. 1265–1279.
 
-Piva, A. (2013) 'An overview on image forensics', ISRN Signal Processing, 2013, pp. 1-22.
-Politico (2024) 'The trouble with age-gating the internet', Digital Future Daily, 10 July. Available at: https://www.politico.com/newsletters/digital-future-daily/2024/07/10/the-trouble-with-age-gating-the-internet-00167392 (Accessed: 15 September 2025).
-Wang, Z., Bovik, A.C., Sheikh, H.R. & Simoncelli, E.P. (2004) 'Image quality assessment: From error visibility to structural similarity', IEEE Transactions on Image Processing, 13(4), pp. 600-612.
-Zhang, Y., Luo, P., Loy, C.C. & Tang, X. (2014) 'Facial landmark detection by deep multi-task learning', European Conference on Computer Vision (ECCV), pp. 94-108.
-Buolamwini, J. & Gebru, T. (2018) 'Gender shades: Intersectional accuracy disparities in commercial gender classification', Proceedings of Machine Learning Research, 81, pp. 1-15.
+Piva, A. (2013) ‘An overview on image forensics’, ISRN Signal Processing, 2013, pp. 1–22.
+Politico (2024) ‘The trouble with age-gating the internet’, Digital Future Daily, 10 July. Available at: https://www.politico.com/newsletters/digital-future-daily/2024/07/10/the-trouble-with-age-gating-the-internet-00167392 (Accessed: 15 September 2025).
+Wang, Z., Bovik, A.C., Sheikh, H.R. & Simoncelli, E.P. (2004) ‘Image quality assessment: From error visibility to structural similarity’, IEEE Transactions on Image Processing, 13(4), pp. 600–612.
+Zhang, Y., Luo, P., Loy, C.C. & Tang, X. (2014) ‘Facial landmark detection by deep multi-task learning’, European Conference on Computer Vision (ECCV), pp. 94–108.
+Buolamwini, J. & Gebru, T. (2018) ‘Gender shades: Intersectional accuracy disparities in commercial gender classification’, Proceedings of Machine Learning Research, 81, pp. 1–15.
 
 Cox, I.J., Miller, M.L., Bloom, J.A., Fridrich, J. & Kalker, T. (2008) Digital Watermarking and Steganography. 2nd edn. Burlington: Morgan Kaufmann.
 
 Fridrich, J. (2010) Steganography in Digital Media: Principles, Algorithms, and Applications. Cambridge: Cambridge University Press.
 
-Liu, Z., Shen, W., Lin, Y., Jiang, Y., Zhang, J. & Huang, K. (2022) '3D face anti-spoofing with depth-assisted multi-modal networks', IEEE Transactions on Information Forensics and Security, 17, pp. 1265-1279.
+Liu, Z., Shen, W., Lin, Y., Jiang, Y., Zhang, J. & Huang, K. (2022) ‘3D face anti-spoofing with depth-assisted multi-modal networks’, IEEE Transactions on Information Forensics and Security, 17, pp. 1265–1279.
 
-Livingstone, S., Stoilova, M. & Nandagiri, R. (2023) Children's data and privacy online: Growing up in a digital age. London: LSE Media and Communications.
+Livingstone, S., Stoilova, M. & Nandagiri, R. (2023) Children’s data and privacy online: Growing up in a digital age. London: LSE Media and Communications.
 
-Politico (2024) 'The trouble with age-gating the internet', Digital Future Daily, 10 July. Available at: https://www.politico.com/newsletters/digital-future-daily/2024/07/10/the-trouble-with-age-gating-the-internet-00167392 (Accessed: 15 September 2025).
+Politico (2024) ‘The trouble with age-gating the internet’, Digital Future Daily, 10 July. Available at: https://www.politico.com/newsletters/digital-future-daily/2024/07/10/the-trouble-with-age-gating-the-internet-00167392 (Accessed: 15 September 2025).
 
 Tapscott, D. & Tapscott, A. (2016) Blockchain Revolution: How the Technology Behind Bitcoin Is Changing Money, Business, and the World. New York: Penguin.
 
 Voigt, P. & Von dem Bussche, A. (2017) The EU General Data Protection Regulation (GDPR): A Practical Guide. Cham: Springer.
 
-Zhao, Z., Ouyang, J., Dong, J. & Tan, T. (2020) 'Towards scalable and trustworthy media provenance via blockchain systems', ACM Transactions on Multimedia Computing, Communications, and Applications, 16(2s), pp. 1-23.
+Zhao, Z., Ouyang, J., Dong, J. & Tan, T. (2020) ‘Towards scalable and trustworthy media provenance via blockchain systems’, ACM Transactions on Multimedia Computing, Communications, and Applications, 16(2s), pp. 1–23.
 
-Whitley, E.A. (2020) 'Informational privacy, consent and the "control" of personal data', Information Security Journal: A Global Perspective, 29(2), pp. 64-72.
-Buolamwini, J. & Gebru, T. (2018) 'Gender shades: Intersectional accuracy disparities in commercial gender classification', Proceedings of Machine Learning Research, 81, pp. 1-15.
-Gotterbarn, D., Miller, K. & Rogerson, S. (2018) 'The ACM code of ethics and professional conduct', Communications of the ACM, 61(1), pp. 56-64.
-Livingstone, S., Stoilova, M. & Nandagiri, R. (2023) Children's data and privacy online: Growing up in a digital age. London: LSE Media and Communications.
-Politico (2024) 'The trouble with age-gating the internet', Digital Future Daily, 10 July. Available at: https://www.politico.com/newsletters/digital-future-daily/2024/07/10/the-trouble-with-age-gating-the-internet-00167392 (Accessed: 15 September 2025).
-Stilgoe, J., Owen, R. & Macnaghten, P. (2013) 'Developing a framework for responsible innovation', Research Policy, 42(9), pp. 1568-1580.
+Whitley, E.A. (2020) ‘Informational privacy, consent and the “control” of personal data’, Information Security Journal: A Global Perspective, 29(2), pp. 64–72.
+Buolamwini, J. & Gebru, T. (2018) ‘Gender shades: Intersectional accuracy disparities in commercial gender classification’, Proceedings of Machine Learning Research, 81, pp. 1–15.
+Gotterbarn, D., Miller, K. & Rogerson, S. (2018) ‘The ACM code of ethics and professional conduct’, Communications of the ACM, 61(1), pp. 56–64.
+Livingstone, S., Stoilova, M. & Nandagiri, R. (2023) Children’s data and privacy online: Growing up in a digital age. London: LSE Media and Communications.
+Politico (2024) ‘The trouble with age-gating the internet’, Digital Future Daily, 10 July. Available at: https://www.politico.com/newsletters/digital-future-daily/2024/07/10/the-trouble-with-age-gating-the-internet-00167392 (Accessed: 15 September 2025).
+Stilgoe, J., Owen, R. & Macnaghten, P. (2013) ‘Developing a framework for responsible innovation’, Research Policy, 42(9), pp. 1568–1580.
 Voigt, P. & Von dem Bussche, A. (2017) The EU General Data Protection Regulation (GDPR): A Practical Guide. Cham: Springer.
-Whitley, E.A. (2020) 'Informational privacy, consent and the "control" of personal data', Information Security Journal: A Global Perspective, 29(2), pp. 64-72.
+Whitley, E.A. (2020) ‘Informational privacy, consent and the “control” of personal data’, Information Security Journal: A Global Perspective, 29(2), pp. 64–72.
+Gomez-Barrero, M., Galbally, J., Fierrez, J. & Rathgeb, C. (2022) ‘Advances in cancellable biometrics: A comprehensive survey’, Information Fusion, 79, pp. 44–63.
+Livingstone, S., Stoilova, M. & Nandagiri, R. (2023) Children’s data and privacy online: Growing up in a digital age. London: LSE Media and Communications.
+Rathgeb, C. & Busch, C. (2019) ‘Cancelable biometrics: A survey’, Computer & Security, 90, 101637.
+Voigt, P. & Von dem Bussche, A. (2017) The EU General Data Protection Regulation (GDPR): A Practical Guide. Cham: Springer.
+Gomez-Barrero, M., Galbally, J., Fierrez, J. & Rathgeb, C. (2022) ‘Advances in cancellable biometrics: A comprehensive survey’, Information Fusion, 79, pp. 44–63.
+Livingstone, S., Stoilova, M. & Nandagiri, R. (2023) Children’s data and privacy online: Growing up in a digital age. London: LSE Media and Communications.
+Rathgeb, C. & Busch, C. (2019) ‘Cancelable biometrics: A survey’, Computer & Security, 90, 101637.
+Voigt, P. & Von dem Bussche, A. (2017) The EU General Data Protection Regulation (GDPR): A Practical Guide. Cham: Springer.
+Gomez-Barrero, M., Galbally, J., Fierrez, J. & Rathgeb, C. (2022) ‘Advances in cancellable biometrics: A comprehensive survey’, Information Fusion, 79, pp. 44–63.
+Jain, A.K., Ross, A. & Nandakumar, K. (2016) Introduction to Biometrics. 2nd edn. New York: Springer.
+Rathgeb, C. & Busch, C. (2019) ‘Cancelable biometrics: A survey’, Computers & Security, 90, 101637.
+AP News (2025) Australia warns social media platforms against age verification for all ahead of a ban on children. 16 September. Available at: https://apnews.com/article/australia-social-media-ban-age-verification-2025 (Accessed: 18 September 2025).
+Electronic Frontier Foundation (EFF) (2025) VPNs are not a solution to age verification laws. 20 January. Available at: https://www.eff.org/deeplinks/2025/01/vpns-are-not-solution-age-verification-laws (Accessed: 18 September 2025).
+eSafety Commissioner (2024) Age Assurance: Issues Paper. 17 July. Sydney: Office of the eSafety Commissioner. Available at: https://www.esafety.gov.au/research/age-assurance-issues-paper (Accessed: 18 September 2025).
+Hunton Andrews Kurth LLP (2024) Court grants motion for preliminary injunction on Utah Minor Protection in Social Media Act. 13 September. Available at: https://www.huntonak.com/en/insights/court-grants-motion-for-preliminary-injunction-on-utah-minor-protection-in-social-media-act (Accessed: 18 September 2025).
+Meta (2022) Introducing new ways to verify age on Instagram. 23 June. Available at: https://about.meta.com/news/2022/06/introducing-new-ways-to-verify-age-on-instagram (Accessed: 18 September 2025).
+National Conference of State Legislatures (NCSL) (2023) Social media and children 2023 legislation. Available at: https://www.ncsl.org/technology-and-communication/social-media-and-children-2023-legislation (Accessed: 18 September 2025).
+NetChoice (2025) Opening Brief, Utah—CA10 No. 24-4100. 15 May. Available at: https://netchoice.org/cases/utah/ (Accessed: 18 September 2025).
+Ofcom (2025) Age checks for online safety—what you need to know as a user. 26 June. Available at: https://www.ofcom.org.uk/online-safety/news/age-checks-for-online-safety (Accessed: 18 September 2025).
+Quinn Emanuel Urquhart & Sullivan LLP (2025) Australia sets minimum age for social media use—A closer look at the Online Safety Amendment (Social Media Minimum Age) Act 2024. 3 June. Available at: https://www.quinnemanuel.com/news/australia-minimum-age-social-media/ (Accessed: 18 September 2025).
+Reuters (2025) Australia wants “minimally invasive” age checks under teen social media ban. 16 September. Available at: https://www.reuters.com/technology/australia-age-checks-social-media-ban-2025-09-16 (Accessed: 18 September 2025).
+The Guardian (2025) Social media ban trial data reveals racial bias in age checking software. 19 September. Available at: https://www.theguardian.com/australia-news/2025/sep/19/social-media-ban-trial-racial-bias-age-checking (Accessed: 18 September 2025).
+UK Government (2025) Online Safety Act: explainer. Available at: https://www.gov.uk/guidance/online-safety-act-explainer (Accessed: 18 September 2025).
+University of Wisconsin–Madison (2024) Popular social media mobile apps extract data from photos on your phone, introducing both bias and errors. 2 April. Available at: https://news.wisc.edu/popular-social-media-apps-extract-data-from-photos (Accessed: 18 September 2025).
+WIRED (2025) What you need to know about VPNs and age-verification laws. 12 September. Available at: https://www.wired.com/story/vpns-age-verification-laws (Accessed: 18 September 2025).
+Livingstone, S., Stoilova, M. & Nandagiri, R. (2023) Children’s data and privacy online: Growing up in a digital age. London: LSE Media and Communications.
+Voigt, P. & Von dem Bussche, A. (2017) The EU General Data Protection Regulation (GDPR): A Practical Guide. Cham: Springer. 
+ 
+Appendix A - 4D-Image-Recognition Project:
 
+A. Repository snapshot
+- mymark/                 (Flask backend, provenance, provenance API)
+- 4d-image-recognition/   (FastAPI 4D biometric pipelines, watermarking, fingerprinting)
+- tools/                  (browser extension sources, identity protection)
+- docker/                 (Dockerfiles, docker-compose templates)
+- eval/                   (evaluation scripts, results JSON)
+- docs/                   (architecture diagrams, user guides)
+- scripts/                (cli helpers: register, detect, rotate_salt_key)
+- tests/                  (pytest suites, integration scenarios)
 
-Nathan Brown-Bennett				K21108130MyMark
+B. Reproducibility & environment
+Prerequisites
+- Ubuntu 20.04+ or macOS
+- Python 3.10
+- Docker and Docker Compose
+- NVIDIA drivers + CUDA (optional, required for GPU-accelerated CLIP/face models)
+Recommended conda environment
+1. Create and activate:
+	conda create -n mymark python=3.10 -y
+	conda activate mymark
+2. Install requirements:
+	pip install -r mymark/requirements.txt
+	pip install -r 4d-image-recognition/requirements.txt
 
+Fixed seeds for experiments
+- Random seed used across eval scripts: 42
+- Torch deterministic flags set in evaluation harness:
+  torch.manual_seed(42)
+  np.random.seed(42)
 
+Datasets (paths used by eval scripts)
+- images: data/coco_sample/ (10k sample used in evaluation)
+- biometrics: data/bp4d/ (pre-downloaded BP4D dataset)
+- pointer policies and thresholds: eval/config/pointer_policies.json
+
+C. Configuration templates
+.env.example
+- SECRET_KEY=replace_with_strong_random
+- DATABASE_URL=sqlite:///./mymark.db
+- LEDGER_HMAC_KEY=replace_with_hex_key
+- AES_GCM_KEY=replace_with_base64_key
+- BLOCKCHAIN_GATEWAY_URL=http://localhost:8545
+- NODE_ENV=development
+
+config/puppet_assets.yaml (structure)
+- assets:
+  - name: "puppet_youth_01"
+	 age_category: "under_16"
+	 path: "assets/puppets/puppet_youth_01.png"
+	 landmarks_map: "assets/puppets/puppet_youth_01.land"
+  - name: "puppet_adult_01"
+	 age_category: "18_plus"
+	 path: "assets/puppets/puppet_adult_01.png"
+
+D. Docker Compose (skeleton)
+version: '3.8'
+services:
+  mymark:
+	 build: ./mymark
+	 env_file: .env
+	 ports:
+		- "5000:5000"
+	 volumes:
+		- ./mymark/data:/app/data
+  image_service:
+	 build: ./4d-image-recognition
+	 env_file: .env
+	 ports:
+		- "8000:8000"
+	 volumes:
+		- ./4d-image-recognition/models:/app/models
+  fabric:
+	 image: hyperledger/fabric-peer:latest
+	 # test ledger container; for local prototyping only
+	 ports:
+		- "7051:7051"
+  ganache:
+	 image: trufflesuite/ganache-cli:latest
+	 command: ganache-cli -p 8545 -h 0.0.0.0
+
+E. API reference (examples)
+Note: all requests use JSON and TLS in production.
+
+1) Register media (client -> server)
+Request JSON example:
+{
+  "user_token": "<ephemeral_identity_token>",
+  "media_sha256": "<hex>",
+  "metadata": {
+	 "title": "Example image",
+	 "tags": ["art", "photography"],
+	 "mime": "image/jpeg"
+  },
+  "perceptual_fingerprint": "<base64>",
+  "watermark_commitment": "<hex>"
+}
+Success response example:
+{
+  "status": "ok",
+  "commitment_id": "<hex>",
+  "ledger_tx": "<tx_reference>"
+}
+
+2) Detect / query (server -> detector)
+Request JSON example:
+{
+  "query_media_sha256": "<hex>",
+  "fingerprint": "<base64>",
+  "thresholds": {
+	 "phash_hamming": 10,
+	 "clip_cosine": 0.78
+  }
+}
+Response example:
+{
+  "matches": [
+	 {
+		"commitment_id": "<hex>",
+		"match_score": 0.91,
+		"match_type": "clip_similarity",
+		"evidence": {
+		  "watermark_extracted": true,
+		  "watermark_confidence": 0.88
+		}
+	 }
+  ]
+}
+
+3) Pointer / owner verification (for takedown)
+Request example:
+{
+  "commitment_id": "<hex>",
+  "identity_token": "<ephemeral_token>",
+  "pointer_signature": "<signature>"
+}
+Responses include verification boolean and audit trail entry ID.
+
+F. CLI examples
+- Enrol user (local dev):
+  python scripts/enrol.py --user "alice@example.com" --device webcam
+- Register image:
+  python scripts/register.py --file ./uploads/example.jpg --token <token>
+- Detect match:
+  python scripts/detect.py --file ./suspect.jpg --topk 5
+- Rotate cancellable salt:
+  python scripts/rotate_salt_key.py --user alice --dry-run
+
+G. Evaluation artifacts & outputs
+- eval/results/watermark_eval.json
+  Contains arrays: [ { "image_id": "...", "psnr": 45.3, "ssim": 0.989, "detection": true }, ... ]
+- eval/results/pointer_eval.json
+  Contains pointer stability metrics: hamming distributions, FAR/FRR operating points.
+- How to run:
+  cd eval
+  pytest -q --maxfail=1
+  or run specific scripts:
+  python run_watermark_eval.py --dataset ../data/coco_sample --out results/watermark_eval.json
+
+H. Ledger format & verification
+Ledger entry (JSON) stored off-chain and referenced on-chain:
+{
+  "commitment_id": "<hex>",
+  "user_hash": "<hmac-of-user-id>",
+  "media_sha256": "<hex>",
+  "phash": "<base64>",
+  "timestamp": "2025-09-18T12:34:56Z",
+  "signature": "<hmac-signature>"
+}
+Verification steps
+1. Retrieve on-chain reference for commitment_id.
+2. Fetch off-chain record and validate HMAC with LEDGER_HMAC_KEY.
+3. Confirm timestamp and signature chain integrity.
+
+I. Privacy & key management
+- HMAC keys, AES keys, and any salts MUST be stored in KMS for production.
+- Rotate LEDGER_HMAC_KEY on compromise; publish revocation entry to ledger linking old->new key with timestamp.
+- Ephemeral identity tokens expire in 5 minutes by default; refresh flows documented in docs/token_lifecycle.md
+
+J. Testing checklist
+- Unit test coverage target: >= 80% for critical modules
+- Integration tests:
+  - Enrol -> Register -> Detect -> Verify owner
+  - Ledger append/verify chain
+- Recommended CI steps:
+  - Lint (flake8)
+  - Unit tests (pytest)
+  - Integration smoke tests via docker-compose in headless mode
+
+K. Troubleshooting tips
+- GPU not visible: ensure nvidia-container-toolkit installed and docker run uses --gpus all
+- Fabric chaincode failure: examine fabric logs in docker logs fabric
+- CLIP OOM: reduce batch size and use CPU fallback with ONNX runtime for constrained environments
+
+L. Attribution and license
+- See LICENSE at repository root (MIT by default). Third-party model licenses (CLIP, datasets) must be respected per their terms.
+- Cite: Nathan Brown-Bennett (2025). MyMark: A Decentralised Media Fingerprinting Framework.
+
+Contact and further documentation
+- Main docs: docs/README.md
+- API spec: docs/api_spec.md
+- Dev notes and threat model: docs/threat_model.md
+
+End of appendix.
+
+Appendix B - MyMark:

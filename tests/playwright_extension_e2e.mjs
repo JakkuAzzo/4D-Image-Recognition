@@ -83,6 +83,11 @@ async function main() {
   // Wait for status event and video ready
   const statusPromise = page.waitForEvent('websocket').catch(()=>{}); // optional, for traces
   await page.waitForFunction(() => document.getElementById('status')?.textContent?.includes('mymark-status'), { timeout: 15000 }).catch(()=>{});
+  // Wait until vocalActive=true is reflected (best-effort)
+  await page.waitForFunction(() => {
+    const t = document.getElementById('status')?.textContent || '';
+    return /vocalActive=true/.test(t);
+  }, { timeout: 15000 }).catch(()=>{});
   await page.waitForFunction(() => {
     const v = document.querySelector('#local');
     return v && v.readyState >= 2 && v.videoWidth > 0;

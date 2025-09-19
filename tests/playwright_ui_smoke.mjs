@@ -16,15 +16,32 @@ async function run() {
   const ctx = await browser.newContext({ ignoreHTTPSErrors: true });
   const page = await ctx.newPage();
 
+  // Ensure output dir exists (used by health and screenshots)
+  const outDir = path.join('exports', 'ui-smoke');
+  fs.mkdirSync(outDir, { recursive: true });
+
+  // Quick HTTPS health probe (GET then HEAD) with artifact
+  try {
+    const healthUrl = new URL('/healthz', base).toString();
+    console.log(`[ui-smoke] Probing health: ${healthUrl}`);
+    const getRes = await page.request.get(healthUrl);
+    const headRes = await page.request.fetch(healthUrl, { method: 'HEAD' }).catch(()=>null);
+    const payload = {
+      time: new Date().toISOString(),
+      get: { status: getRes.status(), ok: getRes.ok() },
+      head: headRes ? { status: headRes.status(), ok: headRes.ok() } : { status: 0, ok: false },
+    };
+    fs.writeFileSync(path.join(outDir, 'healthz.json'), JSON.stringify(payload, null, 2));
+    console.log(`[ui-smoke] Health GET=${payload.get.status} HEAD=${payload.head.status}`);
+  } catch (e) {
+    console.warn('[ui-smoke] Health probe failed:', e?.message || e);
+  }
+
   const urls = [
     base,
     `${base}/api`,
     `${base}/docs`,
   ];
-
-  // Ensure output dir exists
-  const outDir = path.join('exports', 'ui-smoke');
-  fs.mkdirSync(outDir, { recursive: true });
 
   for (const url of urls) {
     console.log(`[ui-smoke] Navigating to: ${url}`);

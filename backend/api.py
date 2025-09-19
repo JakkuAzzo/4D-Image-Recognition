@@ -37,6 +37,7 @@ from modules.advanced_face_tracker import advanced_face_tracker
 from modules import face_crop, reconstruct3d, align_compare, fuse_mesh
 from modules.facial_pipeline import FacialPipeline
 from modules.ledger import Ledger
+from hashlib import sha256
 
 # Initialize facial pipeline
 facial_pipeline = FacialPipeline()
@@ -86,8 +87,21 @@ def _get_ledger() -> Ledger | None:
         elif key_str:
             key_bytes = key_str.encode("utf-8")
         else:
-            key_bytes = os.urandom(32)
-            logger.warning("Ledger secret not set; using ephemeral key. Chain resets on restart.")
+            # Persist a local secret if none provided via env, to keep chain stable across restarts.
+            secret_file = Path("provenance_secret.hex")
+            if secret_file.exists():
+                try:
+                    key_bytes = bytes.fromhex(secret_file.read_text().strip())
+                except Exception:
+                    key_bytes = os.urandom(32)
+                    secret_file.write_text(key_bytes.hex())
+            else:
+                key_bytes = os.urandom(32)
+                try:
+                    secret_file.write_text(key_bytes.hex())
+                except Exception:
+                    logger.warning("Failed to persist ledger secret; proceeding with in-memory key.")
+            logger.info("Ledger secret derived from local provenance_secret.hex")
         persist = Path("provenance_ledger.jsonl")
         _LEDGER_INSTANCE = Ledger(secret_key=key_bytes, persist_path=str(persist))
         return _LEDGER_INSTANCE
@@ -148,6 +162,86 @@ async def provenance_download(request: Request):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to download ledger: {e}")
+
+
+# --- Merkle root anchoring (prototype) --------------------------------------
+_ANCHORS_FILE = Path("provenance_anchors.jsonl")
+
+def _merkle_root_of_hmacs(hashes: list[str]) -> str:
+    if not hashes:
+        return sha256(b"EMPTY").hexdigest()
+    level = [bytes.fromhex(h) if isinstance(h, str) else h for h in hashes]
+    while len(level) > 1:
+        nxt = []
+        for i in range(0, len(level), 2):
+            a = level[i]
+            b = level[i+1] if i+1 < len(level) else level[i]
+            nxt.append(sha256(a + b).digest())
+        level = nxt
+    return level[0].hex()
+
+
+@app.post("/api/provenance/anchor")
+async def provenance_anchor(request: Request, force: bool = False):
+    """Compute Merkle root over current ledger HMACs and persist an anchor record.
+
+    Admin-gated via x-api-key if API_ADMIN_KEY is configured.
+    """
+    admin_key = os.environ.get("API_ADMIN_KEY")
+    if admin_key and request.headers.get("x-api-key") != admin_key:
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    try:
+        ledger = _get_ledger()
+        if ledger is None:
+            return JSONResponse({"error": "ledger_unavailable"}, status_code=503)
+        # verify chain first unless forced
+        if not force:
+            ledger.verify_chain()
+        recs = ledger.records()
+        hmacs = [r.hmac for r in recs]
+        root = _merkle_root_of_hmacs(hmacs)
+        anchor = {
+            "time": datetime.now(timezone.utc).isoformat(),
+            "count": len(hmacs),
+            "merkle_root": root,
+        }
+        # append to anchors file
+        with open(_ANCHORS_FILE, 'a') as f:
+            f.write(json.dumps(anchor, sort_keys=True) + "\n")
+        return {"ok": True, **anchor}
+    except ValueError as ve:
+        if force:
+            # Even if verification fails, compute a best-effort root over current HMACs
+            try:
+                recs = ledger.records()
+                hmacs = [r.hmac for r in recs]
+                root = _merkle_root_of_hmacs(hmacs)
+                anchor = {"time": datetime.now(timezone.utc).isoformat(), "count": len(hmacs), "merkle_root": root, "note": "forced"}
+                with open(_ANCHORS_FILE, 'a') as f:
+                    f.write(json.dumps(anchor, sort_keys=True) + "\n")
+                return {"ok": True, **anchor}
+            except Exception as e:
+                return JSONResponse({"ok": False, "error": f"force_anchor_failed: {e}"}, status_code=500)
+        return JSONResponse({"ok": False, "error": str(ve)}, status_code=409)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to anchor: {e}")
+
+
+@app.get("/api/provenance/anchors")
+async def provenance_list_anchors(limit: int = 50):
+    try:
+        if not _ANCHORS_FILE.exists():
+            return {"anchors": [], "count": 0}
+        anchors = []
+        with open(_ANCHORS_FILE, 'r') as f:
+            for line in f:
+                if line.strip():
+                    anchors.append(json.loads(line))
+        if isinstance(limit, int) and limit > 0:
+            anchors = anchors[-limit:]
+        return {"anchors": anchors, "count": len(anchors)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to read anchors: {e}")
 
 
 @app.get("/api/status/runtime")

@@ -3,6 +3,7 @@
   let mode = 'logo-mask';
   let vocal = false;
   let vocalMode = 'none'; // 'none' | 'low-pitch' | 'high-pitch' | 'robotic'
+  let vocalActive = false; // becomes true once we successfully attach an obfuscation path
 
   // Keep a small handle to the current audio worklet for live param updates
   const voiceState = {
@@ -25,6 +26,19 @@
       }
     } catch(_){/* noop */}
   });
+
+  function dispatchStatus(extra) {
+    try {
+      window.dispatchEvent(new CustomEvent('mymark-status', { detail: {
+        dualRig: !!(extra && extra.dualRig),
+        components: (extra && extra.components) || { landmarks: false, webgl: false },
+        mode,
+        vocal,
+        vocalMode,
+        vocalActive,
+      }}));
+    } catch(_){}
+  }
 
   // Listen to future changes (when user toggles in popup)
   window.addEventListener('storage', (e) => {
@@ -193,13 +207,7 @@
       } catch(_){}
 
       // Notify host page about dual-rig availability
-      window.dispatchEvent(new CustomEvent('mymark-status', { detail: {
-        dualRig: !!(detector && glOut),
-        components: { landmarks: !!detector, webgl: !!glOut },
-        mode,
-        vocal,
-        vocalMode
-      }}));
+      dispatchStatus({ dualRig: !!(detector && glOut), components: { landmarks: !!detector, webgl: !!glOut } });
 
   if (detector && glOut) {
         // Landmark loop to adjust ellipse center and radii in UV space
@@ -232,9 +240,16 @@
         if (vocal && stream.getAudioTracks().length) {
           try {
             const vStream = await applyVoiceObfuscation(stream, vocalMode || 'robotic');
-            if (vStream) vStream.getAudioTracks().forEach(t => processedStream.addTrack(t));
-            else stream.getAudioTracks().forEach(t => processedStream.addTrack(t));
+            if (vStream) {
+              vStream.getAudioTracks().forEach(t => processedStream.addTrack(t));
+              vocalActive = true;
+            } else {
+              stream.getAudioTracks().forEach(t => processedStream.addTrack(t));
+              vocalActive = false;
+            }
           } catch(_) { stream.getAudioTracks().forEach(t => processedStream.addTrack(t)); }
+          // Emit status with vocalActive state
+          dispatchStatus({ dualRig: !!(detector && glOut), components: { landmarks: !!detector, webgl: !!glOut } });
         } else {
           stream.getAudioTracks().forEach(t => processedStream.addTrack(t));
         }
@@ -250,9 +265,16 @@
       if (vocal && stream.getAudioTracks().length) {
         try {
           const vStream = await applyVoiceObfuscation(stream, vocalMode || 'robotic');
-          if (vStream) vStream.getAudioTracks().forEach(t => processedStream.addTrack(t));
-          else stream.getAudioTracks().forEach(t => processedStream.addTrack(t));
+          if (vStream) {
+            vStream.getAudioTracks().forEach(t => processedStream.addTrack(t));
+            vocalActive = true;
+          } else {
+            stream.getAudioTracks().forEach(t => processedStream.addTrack(t));
+            vocalActive = false;
+          }
         } catch(_) { stream.getAudioTracks().forEach(t => processedStream.addTrack(t)); }
+        // Emit status with vocalActive state for 2D path
+        dispatchStatus({ dualRig: false, components: { landmarks: false, webgl: false } });
       } else {
         stream.getAudioTracks().forEach(t => processedStream.addTrack(t));
       }

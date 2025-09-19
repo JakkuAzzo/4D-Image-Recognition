@@ -54,10 +54,23 @@ async function main() {
     }
   });
 
-  // Navigate to homepage
+  // Navigate to homepage, then fall back to unified pipeline page if needed
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 45000 });
   try { await page.waitForLoadState('networkidle', { timeout: 10000 }); } catch {}
   await page.screenshot({ path: path.join(outDir, '01_home.png'), fullPage: true });
+  // If file input and start controls are missing, try the unified pipeline page
+  let hasHomeSelectors = false;
+  try {
+    await page.waitForSelector('#file-input, #start-pipeline, input[type="file"]', { timeout: 4000 });
+    hasHomeSelectors = true;
+  } catch {}
+  if (!hasHomeSelectors) {
+    const up = new URL('/static/unified-pipeline.html', BASE_URL).toString();
+    console.log(`[e2e] Falling back to unified pipeline page: ${up}`);
+    await page.goto(up, { waitUntil: 'domcontentloaded', timeout: 45000 });
+    try { await page.waitForLoadState('networkidle', { timeout: 10000 }); } catch {}
+    await page.screenshot({ path: path.join(outDir, '01b_unified_pipeline.png'), fullPage: true });
+  }
 
   // Detect and set Fast Mode toggle if present
   const fastToggle = await page.$('#fast-mode-toggle');

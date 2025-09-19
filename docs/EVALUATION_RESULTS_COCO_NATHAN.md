@@ -35,9 +35,9 @@ Results overview
 - AUC: 1.000 (n_positive=300, n_negative=200)
 - Figure (ROC): `docs/figures/figure_6_1_roc.png`
 
-4) Dual-layer ROC (Nathan images, CLIP + pHash)
-- CLIP embedding: available (512-dim)
-- AUC: 1.000, best threshold: 0.74 (limit=40)
+4) Dual-layer ROC (pHash+CLIP)
+- Nathan images (limit=40): AUC 1.000, best threshold 0.74
+- COCO batched (batch=40, max_images=120): AUC 1.000, best threshold 0.67
 - Figure (AUC comparison): `docs/figures/figure_6_4_accuracy.png` (includes dual-layer)
 
 5) Ledger Performance (local HMAC ledger)
@@ -60,6 +60,10 @@ Results overview
 - Strength 0.10: PSNR 49.34 dB; SSIM 0.985; jpeg_90 88.3%; noise_5 81.7%
 - Figures: `docs/figures/figure_6_10_watermark_strengths.png`, `docs/figures/figure_6_11_detection_jpeg_90.png`, `docs/figures/figure_6_11_detection_noise_5.png`
 
+PDF export
+- For a quick PDF, print `docs/EVALUATION_RESULTS_COCO_NATHAN.md` via your Markdown viewer, or export `docs/Chapter_6_Evaluation.md`.
+- If you prefer HTML -> PDF, I can generate an HTML report and you can print to PDF.
+
 Biometric liveness
 - Not evaluated (no liveness model/dataset available). If provided, run `python -m scripts.evaluate_biometrics` and re-generate figures.
 
@@ -74,4 +78,3 @@ Interpretation & notes
 Artifacts
 - Metrics JSON/CSV: `docs/metrics/*`
 - Figures PNG: `docs/figures/*`
-

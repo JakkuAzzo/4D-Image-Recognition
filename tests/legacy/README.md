@@ -1,3 +1,3 @@
-# Legacy tests migrated automatically
-These files are copies of top-level test scripts kept for history.
-Pytest does not collect this folder by default.
+# Legacy tests
+
+This folder is intentionally excluded from pytest collection via `pytest.ini` norecursedirs. Files are kept for historical reference only.

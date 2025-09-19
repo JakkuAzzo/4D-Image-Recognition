@@ -58,3 +58,9 @@ See `/tests/README.md` for detailed testing information.
 - OpenSSL (for HTTPS certificates)
 
 For detailed setup and technical documentation, see `/tests/docs/`.
+
+# Documentation moved
+
+This folder contained outdated duplicates. Please refer to:
+- Repository `README.md`
+- Other maintained docs within `docs/`

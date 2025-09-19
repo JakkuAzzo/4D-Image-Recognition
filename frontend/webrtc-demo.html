@@ -16,7 +16,7 @@
     window.addEventListener('mymark-status', (e) => {
       const d = e.detail || {};
       const el = document.getElementById('status');
-      el.textContent = `mymark-status: dualRig=${d.dualRig} components=${JSON.stringify(d.components)} mode=${d.mode} vocal=${d.vocal} vocalMode=${d.vocalMode}`;
+      el.textContent = `mymark-status: dualRig=${d.dualRig} components=${JSON.stringify(d.components)} mode=${d.mode} vocal=${d.vocal} vocalMode=${d.vocalMode} vocalActive=${d.vocalActive}`;
     });
 
     async function startCamera() {
