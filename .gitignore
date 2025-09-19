@@ -117,3 +117,26 @@ DerivedData/
 
 # Ignore OSINT engine artifacts
 exports/osint_engine_artifacts/
+
+# Ignore Playwright artifacts and extension profiles
+exports/
+.playwright-report/
+playwright-report/
+test-results/
+.pw-ext-profile/
+.server.pid
+.pytest_cache/
+coverage/
+*.trace.zip
+extension_usage.jsonl
+provenance_ledger.jsonl
+*.out
+
+# Browser profile caches (Chrome/Chromium)
+**/ShaderCache/
+**/GrShaderCache/
+**/GraphiteDawnCache/
+**/Service Worker/
+**/segmentation_platform/
+**/Local State
+**/Last Version

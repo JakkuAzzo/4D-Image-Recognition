@@ -11,10 +11,10 @@
     body { margin:0; background:#0b0b0b; color:var(--fg); font-family:-apple-system,system-ui; overflow:hidden; }
     .wrap { max-width: 1100px; margin: 8px auto; padding: 0 12px; }
     .grid { display:grid; gap:12px; grid-template-columns: repeat(4, 1fr); }
-    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px; min-height: 150px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px; min-height: 140px; }
     h1 { font-size: 22px; margin:8px 0 12px; }
-    h2 { font-size: 16px; margin:6px 0 10px; color:#d9f; }
-    p, li { font-size: 13px; line-height: 1.35; color: var(--fg); margin: 4px 0; }
+    h2 { font-size: 15px; margin:6px 0 8px; color:#d9f; }
+    p, li { font-size: 12.5px; line-height: 1.3; color: var(--fg); margin: 3px 0; }
     small { color: var(--muted); }
     ul { margin: 6px 0 0 16px; padding: 0; }
     a { color:#66ccff; text-decoration:none; }
@@ -24,22 +24,45 @@
     .bad { color:#ff7a7a; }
     .btn { display:inline-block; padding:6px 10px; background:var(--accent); border-radius:10px; color:#fff; font-weight:600; }
     .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-    .no-scroll { height: calc(100vh - 80px); display:flex; flex-direction:column; justify-content:space-between; }
-    @media (max-width: 1280px) { .grid { grid-template-columns: repeat(3, 1fr); } }
-    @media (max-width: 1000px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+    .no-scroll { height: calc(100vh - 120px); display:flex; flex-direction:column; justify-content:space-between; }
+    @media (max-width: 1400px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-height: 820px) {
+      .wrap { margin: 6px auto; }
+      h1 { font-size: 20px; margin:6px 0 10px; }
+      h2 { font-size: 14px; }
+      .card { min-height: 130px; padding:10px; }
+      .grid { gap:10px; }
+      p, li { font-size: 12px; }
+    }
   </style>
   <script>
+    // Passive extension detection: listens for 'mymark-settings' custom event
+    let extDetected = false;
+    window.addEventListener('mymark-settings', (e)=>{
+      extDetected = true;
+      const el = document.getElementById('ext-state');
+      if (el) { el.textContent = 'Detected'; el.className = 'stat ok'; }
+      localStorage.setItem('mymark_last_seen', String(Date.now()));
+    });
+
     async function loadDashboard(){
       const id = (x)=>document.getElementById(x);
       try {
-        const [stepsR, ledgerR, recsR] = await Promise.all([
+        const [stepsR, ledgerR, recsR, healthR, runtimeR, usageR] = await Promise.all([
           fetch('/api/pipeline/steps-info'),
           fetch('/api/provenance/verify'),
-          fetch('/api/provenance/records?limit=5')
+          fetch('/api/provenance/records?limit=5'),
+          fetch('/healthz'),
+          fetch('/api/status/runtime'),
+          fetch('/api/extension/usage/stats')
         ]);
         const steps = stepsR.ok ? await stepsR.json() : null;
         const ledger = ledgerR.ok ? await ledgerR.json() : null;
         const recs = recsR.ok ? await recsR.json() : null;
+        const health = healthR.ok ? await healthR.json() : null;
+        const runtime = runtimeR.ok ? await runtimeR.json() : null;
+        const usage = usageR.ok ? await usageR.json() : null;
 
         // Project status
         id('steps-total').textContent = steps?.total_steps ?? '—';
@@ -64,6 +87,63 @@
             list.appendChild(li);
           });
         }
+
+        // API health
+        if (health) {
+          id('api-health').textContent = (health.status || 'unknown').toUpperCase();
+          id('api-health').className = 'stat ' + (health.status === 'ok' ? 'ok' : 'warn');
+          id('route-count').textContent = health.routes ?? '—';
+        }
+
+        // Optional dependencies
+        const d = runtime?.dependencies || {};
+        const fmt = (b)=> b ? '<span class="ok">OK</span>' : '<span class="bad">Missing</span>';
+        id('dep-face').innerHTML = fmt(d.face_recognition);
+        id('dep-dlib').innerHTML = fmt(d.dlib);
+        id('dep-mediapipe').innerHTML = fmt(d.mediapipe);
+        id('dep-skimage').innerHTML = fmt(d.skimage);
+        id('dep-scipy').innerHTML = fmt(d.scipy);
+
+        // Last model saved
+        if (runtime?.last_model) {
+          id('last-model-name').textContent = runtime.last_model.file;
+          id('last-model-time').textContent = new Date(runtime.last_model.modified).toLocaleString();
+          id('last-model-size').textContent = (runtime.last_model.size/1024).toFixed(1) + ' KB';
+        } else {
+          id('last-model-name').textContent = '—';
+          id('last-model-time').textContent = '—';
+          id('last-model-size').textContent = '—';
+        }
+
+        // Extension usage stats
+        if (usage) {
+          const st = document.getElementById('ext-usage');
+          if (st) {
+            st.innerHTML = `Events: <b>${usage.total_events}</b> · Domains: <b>${usage.unique_domains}</b> · Last used: <b>${usage.last_used || '—'}</b>`;
+          }
+          const td = document.getElementById('ext-top-domains');
+          if (td) {
+            td.innerHTML = '';
+            (usage.top_domains || []).forEach(([dom, cnt]) => {
+              const li = document.createElement('li');
+              li.textContent = `${dom}: ${cnt}`;
+              td.appendChild(li);
+            });
+          }
+        }
+
+        // After 2s, if extension not detected, show setup instructions
+        setTimeout(()=>{
+          if (!extDetected) {
+            const el = document.getElementById('ext-state');
+            if (el) { el.textContent = 'Not detected'; el.className = 'stat warn'; }
+            const inst = document.getElementById('ext-setup');
+            if (inst) inst.style.display = 'block';
+          } else {
+            const inst = document.getElementById('ext-setup');
+            if (inst) inst.style.display = 'none';
+          }
+        }, 2000);
 
       } catch(e){ console.warn('dash init failed', e); }
     }
@@ -96,9 +176,10 @@
 
       <div class="card">
         <h2>Live Checks</h2>
-        <p>Ledger: <span id="ledger-state" class="stat">—</span></p>
-        <p>Records: <span id="ledger-count" class="stat">0</span></p>
+        <p>API: <span id="api-health" class="stat">—</span> · Routes: <span id="route-count" class="stat">—</span></p>
+        <p>Ledger: <span id="ledger-state" class="stat">—</span> · Records: <span id="ledger-count" class="stat">0</span></p>
         <div class="row">
+          <a href="/healthz">Health</a>
           <a href="/api/provenance/verify">Verify</a>
           <a href="/api/provenance/records?limit=50">Recent</a>
           <a href="/api/provenance/download">Download</a>
@@ -133,6 +214,42 @@
           <li><b>How is provenance tracked?</b> HMAC‑chained JSONL ledger with verification and download endpoints.</li>
           <li><b>Optional deps?</b> dlib/MediaPipe/face_recognition improve quality but have fallbacks.</li>
         </ul>
+      </div>
+
+      <div class="card" style="grid-column: span 2;">
+        <h2>Optional Dependencies</h2>
+        <ul>
+          <li>face_recognition: <span id="dep-face">—</span></li>
+          <li>dlib: <span id="dep-dlib">—</span></li>
+          <li>MediaPipe: <span id="dep-mediapipe">—</span></li>
+          <li>scikit-image: <span id="dep-skimage">—</span></li>
+          <li>SciPy: <span id="dep-scipy">—</span></li>
+        </ul>
+      </div>
+
+      <div class="card" style="grid-column: span 2;">
+        <h2>Last Model Saved</h2>
+        <p>Name: <span id="last-model-name">—</span></p>
+        <p>When: <span id="last-model-time">—</span></p>
+        <p>Size: <span id="last-model-size">—</span></p>
+      </div>
+
+      <div class="card" style="grid-column: span 2;">
+        <h2>Extension Health</h2>
+        <p>Status: <span id="ext-state" class="stat">—</span></p>
+        <p id="ext-usage">Events: 0 · Domains: 0 · Last used: —</p>
+        <ul id="ext-top-domains" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;list-style:none;padding:0;margin:0;"></ul>
+        <div id="ext-setup" style="display:none; margin-top:6px;">
+          <p><b>Setup:</b></p>
+          <ol style="margin-left:16px;">
+            <li>Open Chrome → go to <code>chrome://extensions</code></li>
+            <li>Enable “Developer mode” (top-right)</li>
+            <li>Click “Load unpacked” and select <code>tools/mymark_chrome_extension</code></li>
+            <li>Click the extension icon → enable protection</li>
+            <li>Visit a camera site and verify overlay</li>
+          </ol>
+          <p style="margin-top:4px;">Telemetry auto‑config: When you visit this app, the extension detects the backend origin and uses it automatically. If needed, override by visiting the app on your target host once, or set <code>localStorage.mymark_api_base = 'https://your-host:port'</code> as a fallback.</p>
+        </div>
       </div>
     </div>
   </div>

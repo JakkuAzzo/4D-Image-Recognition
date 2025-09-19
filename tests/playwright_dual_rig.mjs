@@ -19,6 +19,8 @@ const FAKE_VIDEO = process.env.FAKE_VIDEO || '';
 
 const outDir = path.join('exports', 'ui-e2e', 'dual-rig');
 fs.mkdirSync(outDir, { recursive: true });
+const videoDir = path.join(outDir, 'videos');
+fs.mkdirSync(videoDir, { recursive: true });
 
 function logLine(msg) {
   const line = `${now()} ${msg}`;
@@ -30,7 +32,12 @@ async function gotoDualRig(page) {
   const url = new URL('/dual-rig', BASE_URL).toString();
   await page.goto(url, { waitUntil: 'domcontentloaded' });
   // Basic sanity
-  await page.waitForSelector('text=Dual Rig Live Viewer, #start', { timeout: 20000 });
+  // Wait for either the title text or the Start button to appear
+  try {
+    await page.waitForSelector('#start', { timeout: 20000 });
+  } catch {
+    await page.waitForSelector('text=Dual Rig Live Viewer', { timeout: 10000 });
+  }
 }
 
 async function ensureVideoReady(page) {
@@ -52,7 +59,11 @@ async function main() {
     if (FAKE_VIDEO) args.push(`--use-file-for-fake-video-capture=${FAKE_VIDEO}`);
   }
   const browser = await chromium.launch({ headless: HEADLESS, channel: CHANNEL, slowMo: SLOWMO, args });
-  const context = await browser.newContext({ ignoreHTTPSErrors: true });
+  const context = await browser.newContext({
+    ignoreHTTPSErrors: true,
+    recordVideo: { dir: videoDir, size: { width: 1280, height: 720 } },
+  });
+  try { await context.tracing.start({ screenshots: true, snapshots: true, sources: true }); } catch {}
   await context.grantPermissions(['camera'], { origin: BASE_URL });
 
   const page = await context.newPage();
@@ -90,9 +101,10 @@ async function main() {
 
   // Optional: try puppet flow if control exists and sample image is available
   const puppetControl = await page.$('#puppet-file');
-  const sampleImg = path.join('tests', 'test_images', 'external', 'Jane_01.jpg');
+  const envPuppet = process.env.PUPPET_IMAGE || '';
+  const sampleImg = envPuppet || path.join('tests', 'test_images', 'external', 'Jane_01.jpg');
   if (puppetControl && fs.existsSync(sampleImg)) {
-    logLine('[dual] Trying puppet upload + send');
+    logLine(`[dual] Trying puppet upload (${sampleImg}) + send`);
     await page.selectOption('#filter-preset', 'puppet').catch(() => {});
     await page.setInputFiles('#puppet-file', sampleImg).catch(() => {});
     const post2 = page.waitForResponse(r => r.url().includes('/api/identity-filter/config') && r.request().method() === 'POST', { timeout: 10000 }).catch(() => {});
@@ -105,8 +117,15 @@ async function main() {
   await page.screenshot({ path: outPng, fullPage: true }).catch(() => {});
   logLine(`[dual] Saved screenshot to ${outPng}`);
 
-  await context.close();
-  await browser.close();
+  const video = page.video();
+  try { await page.close(); } catch {}
+  if (video) {
+    const vidOut = path.join(videoDir, `dual_rig_${Date.now()}.webm`);
+    try { await video.saveAs(vidOut); logLine(`[dual] Saved video to ${vidOut}`); } catch {}
+  }
+  try { await context.tracing.stop({ path: path.join(outDir, 'dual_rig_trace.zip') }); logLine('[dual] Saved trace to exports/ui-e2e/dual-rig/dual_rig_trace.zip'); } catch {}
+  try { await context.close(); } catch {}
+  try { await browser.close(); } catch {}
   logLine('[dual] Done');
 }
 

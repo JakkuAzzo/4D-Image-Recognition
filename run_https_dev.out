@@ -32,3 +32,4 @@ The HTTPS connection enables webcam access for:
 Logs are written to: fastapi.log
 Press Ctrl+C to stop the server
 ====================================================
+Stopping FastAPI server...

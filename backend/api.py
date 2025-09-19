@@ -21,6 +21,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Request
 from fastapi.responses import JSONResponse, FileResponse, HTMLResponse, RedirectResponse
+from collections import Counter
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -43,13 +44,25 @@ facial_pipeline = FacialPipeline()
 app = FastAPI()
 
 # Add CORS middleware
+_allowed = os.environ.get("ALLOWED_ORIGINS", "*")
+_allowed_list = [o.strip() for o in _allowed.split(",") if o.strip()] if _allowed != "*" else ["*"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify allowed origins
+    allow_origins=_allowed_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- Basic health endpoint for CI/monitoring -------------------------------
+@app.get("/healthz")
+async def healthz_get():
+    return JSONResponse({"status": "ok"})
+
+@app.head("/healthz")
+async def healthz_head():
+    # Explicit HEAD handler to ensure 200 OK for HEAD checks
+    return JSONResponse(status_code=200, content=None)
 
 # --- Lightweight provenance ledger ------------------------------------------
 _LEDGER_INSTANCE = None
@@ -117,7 +130,12 @@ async def provenance_records(limit: int = 200):
 
 
 @app.get("/api/provenance/download")
-async def provenance_download():
+async def provenance_download(request: Request):
+    # Simple admin gate via API key header
+    admin_key = os.environ.get("API_ADMIN_KEY")
+    if admin_key:
+        if request.headers.get("x-api-key") != admin_key:
+            return JSONResponse({"error": "forbidden"}, status_code=403)
     """Download the raw provenance ledger JSONL for external auditing."""
     try:
         persist = Path("provenance_ledger.jsonl")
@@ -130,6 +148,160 @@ async def provenance_download():
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to download ledger: {e}")
+
+
+@app.get("/api/status/runtime")
+async def runtime_status():
+    """Report quick runtime health: optional dependency liveness and last model saved."""
+    try:
+        # Optional dependencies checks
+        deps = {
+            'face_recognition': False,
+            'dlib': False,
+            'mediapipe': False,
+            'skimage': False,
+            'scipy': False,
+        }
+        try:
+            import face_recognition  # type: ignore
+            deps['face_recognition'] = True
+        except Exception:
+            pass
+        try:
+            import dlib  # type: ignore
+            deps['dlib'] = True
+        except Exception:
+            pass
+        try:
+            import mediapipe  # type: ignore
+            deps['mediapipe'] = True
+        except Exception:
+            pass
+        try:
+            import skimage  # type: ignore
+            deps['skimage'] = True
+        except Exception:
+            pass
+        try:
+            import scipy  # type: ignore
+            deps['scipy'] = True
+        except Exception:
+            pass
+
+        # Last model saved
+        last_model = None
+        try:
+            models_dir = Path('4d_models')
+            if models_dir.exists():
+                files = sorted(models_dir.glob('*.json'), key=lambda p: p.stat().st_mtime, reverse=True)
+                if files:
+                    f = files[0]
+                    last_model = {
+                        'file': f.name,
+                        'path': str(f),
+                        'modified': datetime.fromtimestamp(f.stat().st_mtime, tz=timezone.utc).isoformat(),
+                        'size': f.stat().st_size,
+                    }
+        except Exception:
+            last_model = None
+
+        return JSONResponse({
+            'status': 'ok',
+            'time': datetime.now(timezone.utc).isoformat(),
+            'dependencies': deps,
+            'last_model': last_model,
+        })
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Status check failed: {e}")
+
+
+# --- Extension usage telemetry (optional) ------------------------------------
+_EXT_USAGE_FILE = Path('extension_usage.jsonl')
+
+@app.post("/api/extension/usage/report")
+async def extension_usage_report(payload: Dict[str, Any]):
+    """Accept usage telemetry from the browser extension (optional).
+
+    Expected JSON:
+      { "domain": str, "url": str, "timestamp": float (epoch seconds), "action": str? }
+    """
+    try:
+        domain = str(payload.get('domain') or '')
+        url = str(payload.get('url') or '')
+        ts = payload.get('timestamp')
+        action = payload.get('action') or 'use'
+        if not domain and url:
+            try:
+                from urllib.parse import urlparse
+                domain = urlparse(url).hostname or ''
+            except Exception:
+                domain = ''
+        if not ts:
+            ts = time.time()
+        rec = {
+            'domain': domain,
+            'url': url,
+            'timestamp': float(ts),
+            'action': str(action),
+        }
+        # append to JSONL
+        with _EXT_USAGE_FILE.open('a') as f:
+            f.write(json.dumps(rec, sort_keys=True) + "\n")
+        return JSONResponse({'status': 'ok'})
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"invalid usage payload: {e}")
+
+
+@app.get("/api/extension/usage/stats")
+async def extension_usage_stats(request: Request, limit: int = 1000):
+    admin_key = os.environ.get("API_ADMIN_KEY")
+    if admin_key:
+        if request.headers.get("x-api-key") != admin_key:
+            return JSONResponse({"error": "forbidden"}, status_code=403)
+    try:
+        if not _EXT_USAGE_FILE.exists():
+            return {
+                'installed': None,
+                'total_events': 0,
+                'unique_domains': 0,
+                'top_domains': [],
+                'last_used': None,
+                'recent': [],
+            }
+        rows = []
+        with _EXT_USAGE_FILE.open('r') as f:
+            for i, line in enumerate(f):
+                if not line.strip():
+                    continue
+                try:
+                    rows.append(json.loads(line))
+                except Exception:
+                    continue
+        if not rows:
+            return {
+                'installed': None,
+                'total_events': 0,
+                'unique_domains': 0,
+                'top_domains': [],
+                'last_used': None,
+                'recent': [],
+            }
+        # aggregate
+        domains = [r.get('domain') or '' for r in rows if r.get('domain')]
+        counts = Counter(domains)
+        last_ts = max((float(r.get('timestamp') or 0) for r in rows), default=0.0)
+        top = counts.most_common(5)
+        recent = sorted(rows[-min(len(rows), 10):], key=lambda r: r.get('timestamp') or 0, reverse=True)
+        return {
+            'installed': True,
+            'total_events': len(rows),
+            'unique_domains': len(counts),
+            'top_domains': top,
+            'last_used': datetime.fromtimestamp(last_ts, tz=timezone.utc).isoformat() if last_ts else None,
+            'recent': recent,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"failed to compute usage stats: {e}")
 
 # In-memory identity filter configuration used by browser extension and native app
 _identity_filter_cfg = {

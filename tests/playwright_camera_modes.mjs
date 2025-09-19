@@ -21,6 +21,8 @@ const FAKE_VIDEO = process.env.FAKE_VIDEO || '';
 
 const outDir = path.join('exports', 'ui-e2e');
 fs.mkdirSync(outDir, { recursive: true });
+const videoDir = path.join(outDir, 'videos');
+fs.mkdirSync(videoDir, { recursive: true });
 
 function logLine(msg) {
   const line = `${now()} ${msg}`;
@@ -63,7 +65,10 @@ async function main() {
   const browser = await chromium.launch({ headless: HEADLESS, channel: CHANNEL, slowMo: SLOWMO, args });
   const context = await browser.newContext({
     ignoreHTTPSErrors: true, // allow self-signed localhost
+    recordVideo: { dir: videoDir, size: { width: 1280, height: 720 } },
   });
+  // Start Playwright tracing for deeper debug (snapshots + screenshots)
+  try { await context.tracing.start({ screenshots: true, snapshots: true, sources: true }); } catch {}
   await context.grantPermissions(['camera'], { origin: BASE_URL });
 
   const page = await context.newPage();
@@ -150,8 +155,16 @@ async function main() {
   await page.screenshot({ path: outPng, fullPage: true }).catch(() => {});
   logLine(`[cam] Saved screenshot to ${outPng}`);
 
-  await context.close();
-  await browser.close();
+  // Save video and trace artifacts
+  const video = page.video();
+  try { await page.close(); } catch {}
+  if (video) {
+    const vidOut = path.join(videoDir, `camera_modes_${Date.now()}.webm`);
+    try { await video.saveAs(vidOut); logLine(`[cam] Saved video to ${vidOut}`); } catch {}
+  }
+  try { await context.tracing.stop({ path: path.join(outDir, 'camera_modes_trace.zip') }); logLine('[cam] Saved trace to exports/ui-e2e/camera_modes_trace.zip'); } catch {}
+  try { await context.close(); } catch {}
+  try { await browser.close(); } catch {}
   logLine('[cam] Done');
 }
 
