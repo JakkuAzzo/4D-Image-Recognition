@@ -5,6 +5,28 @@ embedding and extraction plus basic imperceptibility metrics (PSNR / SSIM).
 
 This is an MVP to satisfy dissertation architectural claims; robustness
 against geometric attacks and advanced masking are future enhancements.
+
+Usage example
+-------------
+Embed and extract a short bitstring using OpenCV DCT:
+
+    import numpy as np
+    import cv2
+    from modules.watermarking import embed_with_metrics, extract_watermark
+
+    # Create a dummy RGB image (uint8)
+    img = (np.random.rand(256, 256, 3) * 255).astype(np.uint8)
+    bits = "1011001110001111"
+
+    # Embed watermark and compute metrics
+    result = embed_with_metrics(img, bits, strength=0.05)
+    print("PSNR:", result.psnr, "SSIM:", result.ssim)
+
+    # Extract back
+    recovered = extract_watermark(result.watermarked, bit_length=len(bits))
+    print("Recovered bits:", recovered)
+
+Note: This module requires OpenCV (`cv2`) for DCT operations.
 """
 from __future__ import annotations
 
@@ -177,3 +199,19 @@ __all__ = [
     "psnr",
     "ssim",
 ]
+
+
+if __name__ == "__main__":  # Simple inline demo
+    try:
+        if cv2 is None:
+            raise RuntimeError("OpenCV not available; demo skipped.")
+        rng = np.random.default_rng(123)
+        demo_img = (rng.random((128, 128, 3)) * 255).astype(np.uint8)
+        demo_bits = "1011001110001111"
+        out = embed_with_metrics(demo_img, demo_bits, strength=0.05)
+        rec = extract_watermark(out.watermarked, len(demo_bits))
+        print("PSNR:", out.psnr, "SSIM:", out.ssim)
+        print("Embedded:", demo_bits)
+        print("Recovered:", rec)
+    except Exception as e:
+        print("Demo error:", e)

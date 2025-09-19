@@ -8,6 +8,7 @@
 	},
 	"scripts": {
 		"test:ui:camera": "BASE_URL=https://localhost:8000 HEADLESS=1 node tests/playwright_camera_modes.mjs",
-		"test:ui:smoke": "BASE_URL=https://localhost:8000 HEADLESS=1 node tests/playwright_ui_smoke.mjs"
+		"test:ui:smoke": "BASE_URL=https://localhost:8000 HEADLESS=1 node tests/playwright_ui_smoke.mjs",
+		"test:ui:dual-rig": "BASE_URL=https://localhost:8000 HEADLESS=1 node tests/playwright_dual_rig.mjs"
 	}
 }

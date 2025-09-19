@@ -1,39 +1,37 @@
-Setup: dlib 68‑point face landmark model
----------------------------------------
+# 4D Image Recognition System
 
-This repository expects the dlib facial landmark model `shape_predictor_68_face_landmarks.dat` to be present in the project root (file is large and not tracked in Git).
+An advanced facial analysis and intelligence pipeline with 3D/4D reconstruction and OSINT capabilities.
 
-Quick fetch (macOS/Linux):
+## Quick Start
+- Create and activate a Python virtual environment (Python 3.10+).
+- Install dependencies per your environment.
+- Start the HTTPS FastAPI backend:
+  - `./run_https_dev.sh`
+- Open the app: `https://localhost:8000/` (self‑signed cert; proceed anyway).
 
-```
-scripts/fetch_dlib_model.sh
-```
+## Directory Structure
+- `backend/` — FastAPI app and API endpoints (serves frontend assets).
+- `modules/` — Core modules (watermarking, perceptual hashing, ledger, pipelines, etc.).
+- `frontend/` — Static HTML/JS for the pipeline UIs and visualization.
+- `docs/` — Project reports, analysis, and reference documents (index below).
+- `tests/` — Minimal tests (watermark round‑trip and pHash robustness).
+- `4d_models/` — Saved final 4D model JSONs from pipeline runs.
 
-What the script does:
-- Downloads `http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2`
-- Decompresses it with `bunzip2`
-- Places `shape_predictor_68_face_landmarks.dat` in the repo root
+## Provenance Ledger
+- The API appends provenance records for pipeline steps and final model saves.
+- Environment configuration:
+  - `LEDGER_SECRET_HEX`: hex‑encoded secret key bytes (preferred).
+  - `LEDGER_SECRET`: UTF‑8 string secret (fallback).
+  - Ledger persistence file: `provenance_ledger.jsonl` (project root).
+- Endpoints:
+  - `GET /api/provenance/verify` — verifies chain integrity, returns `{ok, records}`.
+  - `GET /api/provenance/records?limit=N` — returns most recent ledger records.
 
-Manual steps (if you prefer):
+## Docs Index
+See `docs/README.md` for links to assessment reports and analyses.
 
-1. Download the archive:
-	- Using curl: `curl -L -o shape_predictor_68_face_landmarks.dat.bz2 http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2`
-	- Or wget: `wget -O shape_predictor_68_face_landmarks.dat.bz2 http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2`
-2. Decompress: `bunzip2 shape_predictor_68_face_landmarks.dat.bz2`
-3. Ensure the file `shape_predictor_68_face_landmarks.dat` is in the project root directory.
-
-Note: If `bunzip2` is missing on macOS, install it via Homebrew: `brew install bzip2`.
-
-Git hygiene (optional but recommended)
--------------------------------------
-
-This repo includes a pre-commit hook at `.githooks/pre-commit` to block large or unwanted files (venv, ssl, logs, >50MB, binary-like files, root `.dat`, etc.).
-
-Enable it locally:
-
-```
-git config core.hooksPath .githooks
-```
-
-You can disable it with `git config --unset core.hooksPath` if needed.
-
+## Tests
+- Run: `python -m unittest -q tests/test_watermark_and_phash.py`
+- Tests:
+  - Watermark: round‑trip extraction similarity and PSNR bound.
+  - pHash: Hamming similarity remains high under mild blur.

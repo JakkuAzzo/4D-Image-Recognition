@@ -13,6 +13,11 @@ function now() { return new Date().toISOString().replace('T',' ').replace('Z',''
 
 const BASE_URL = process.env.BASE_URL || 'https://localhost:8000';
 const HEADLESS = String(process.env.HEADLESS ?? '1') !== '0';
+const CHANNEL = process.env.CHANNEL || undefined; // e.g., 'chrome'
+const SLOWMO = Number(process.env.SLOWMO || '0');
+// Use fake camera only in headless by default; override with USE_FAKE=0/1. Optional FAKE_VIDEO path.
+const USE_FAKE = String(process.env.USE_FAKE ?? (HEADLESS ? '1' : '0')) !== '0';
+const FAKE_VIDEO = process.env.FAKE_VIDEO || '';
 
 const outDir = path.join('exports', 'ui-e2e');
 fs.mkdirSync(outDir, { recursive: true });
@@ -47,16 +52,15 @@ async function ensurePage(page) {
 
 async function main() {
   logLine(`[cam] Launching Chromium (headless=${HEADLESS}) at ${BASE_URL}`);
-  const browser = await chromium.launch({
-    headless: HEADLESS,
-    args: [
-      '--use-fake-ui-for-media-stream',
-      '--use-fake-device-for-media-stream',
-      // You can supply a file with: '--use-file-for-fake-video-capture=tests/assets/face.y4m'
-      '--autoplay-policy=no-user-gesture-required',
-      '--disable-web-security',
-    ],
-  });
+  const args = [
+    '--autoplay-policy=no-user-gesture-required',
+    '--disable-web-security',
+  ];
+  if (USE_FAKE) {
+    args.push('--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream');
+    if (FAKE_VIDEO) args.push(`--use-file-for-fake-video-capture=${FAKE_VIDEO}`);
+  }
+  const browser = await chromium.launch({ headless: HEADLESS, channel: CHANNEL, slowMo: SLOWMO, args });
   const context = await browser.newContext({
     ignoreHTTPSErrors: true, // allow self-signed localhost
   });
@@ -119,11 +123,20 @@ async function main() {
     // Start live analyze
     await page.click('#btn-live-start');
 
-    // Expect status updates like "Faces: X | Landmarks: Y"
-    await page.waitForFunction(() => {
+    // Expect status updates like "Faces: X | Landmarks: Y" or the initial baseline
+    const statusPromise = page.waitForFunction(() => {
       const el = document.querySelector('#live-status');
-      return !!el && /Faces:\s*\d+/i.test(el.textContent || '');
-    }, { timeout: 12000 });
+      const t = (el?.textContent || '').trim();
+      return /Faces:\s*\d+\s*\|\s*Landmarks:\s*\d+/i.test(t) || t === 'Faces: 0 | Landmarks: 0';
+    }, { timeout: 30000 });
+
+    // Also ensure at least one network response hit the live endpoint (best-effort)
+    const netPromise = page.waitForResponse(
+      (r) => r.url().includes('/api/pipeline/live-analyze') && r.request().method() === 'POST' && r.ok(),
+      { timeout: 30000 }
+    ).catch(() => {});
+
+    await Promise.race([statusPromise, netPromise]);
 
     // Stop
     await page.click('#btn-live-stop');

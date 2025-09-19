@@ -20,7 +20,7 @@ This directory contains all test-based, implementation-based, and update documen
 
 ### System Documentation
 - `HTTPS_README.md` - HTTPS development setup documentation
-- `TEST_ORGANIZATION_COMPLETE.md` - Test infrastructure organization
+- `../docs/TEST_ORGANIZATION_COMPLETE.md` - Test infrastructure organization
 
 ## Organization
 

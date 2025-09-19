@@ -9,6 +9,7 @@ import cv2
 import numpy as np
 import base64
 import time
+import hashlib
 # face_recognition imported conditionally to avoid startup crashes
 
 # Configure logging
@@ -34,6 +35,7 @@ from modules.genuine_osint_engine import genuine_osint_engine
 from modules.advanced_face_tracker import advanced_face_tracker
 from modules import face_crop, reconstruct3d, align_compare, fuse_mesh
 from modules.facial_pipeline import FacialPipeline
+from modules.ledger import Ledger
 
 # Initialize facial pipeline
 facial_pipeline = FacialPipeline()
@@ -49,6 +51,86 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# --- Lightweight provenance ledger ------------------------------------------
+_LEDGER_INSTANCE = None
+
+def _get_ledger() -> Ledger | None:
+    """Return a process-wide Ledger instance. Uses env vars for secret key.
+
+    Env:
+      - LEDGER_SECRET_HEX: hex-encoded key bytes (preferred)
+      - LEDGER_SECRET: UTF-8 string key (fallback)
+    Persists to provenance_ledger.jsonl in project root.
+    """
+    global _LEDGER_INSTANCE
+    if _LEDGER_INSTANCE is not None:
+        return _LEDGER_INSTANCE
+    try:
+        key_hex = os.environ.get("LEDGER_SECRET_HEX")
+        key_str = os.environ.get("LEDGER_SECRET")
+        if key_hex:
+            key_bytes = bytes.fromhex(key_hex.strip())
+        elif key_str:
+            key_bytes = key_str.encode("utf-8")
+        else:
+            key_bytes = os.urandom(32)
+            logger.warning("Ledger secret not set; using ephemeral key. Chain resets on restart.")
+        persist = Path("provenance_ledger.jsonl")
+        _LEDGER_INSTANCE = Ledger(secret_key=key_bytes, persist_path=str(persist))
+        return _LEDGER_INSTANCE
+    except Exception as e:
+        logger.warning(f"Ledger unavailable: {e}")
+        return None
+
+
+# --- Ledger inspection endpoints --------------------------------------------
+@app.get("/api/provenance/verify")
+async def provenance_verify():
+    try:
+        ledger = _get_ledger()
+        if ledger is None:
+            return JSONResponse({"ok": False, "error": "ledger_unavailable"}, status_code=503)
+        try:
+            ledger.verify_chain()
+            return {"ok": True, "records": len(ledger.records())}
+        except ValueError as ve:
+            return JSONResponse({"ok": False, "error": str(ve), "records": len(ledger.records())}, status_code=409)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ledger verify failed: {e}")
+
+
+@app.get("/api/provenance/records")
+async def provenance_records(limit: int = 200):
+    try:
+        ledger = _get_ledger()
+        if ledger is None:
+            return JSONResponse({"error": "ledger_unavailable"}, status_code=503)
+        recs = ledger.records()
+        # trim to last N to avoid huge payloads
+        if isinstance(limit, int) and limit > 0:
+            recs = recs[-limit:]
+        # convert dataclasses to dicts
+        payload = [r.__dict__ for r in recs]
+        return {"records": payload, "count": len(payload)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch ledger records: {e}")
+
+
+@app.get("/api/provenance/download")
+async def provenance_download():
+    """Download the raw provenance ledger JSONL for external auditing."""
+    try:
+        persist = Path("provenance_ledger.jsonl")
+        if not persist.exists():
+            return JSONResponse({"error": "ledger_file_not_found"}, status_code=404)
+        return FileResponse(
+            path=str(persist),
+            media_type="application/json",
+            filename="provenance_ledger.jsonl",
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to download ledger: {e}")
+
 # In-memory identity filter configuration used by browser extension and native app
 _identity_filter_cfg = {
     "type": "grayscale",  # placeholder: grayscale, pixelate, avatar, mesh_mask
@@ -63,6 +145,10 @@ avatars_dir = Path(__file__).parent.parent / "avatars"
 avatars_dir.mkdir(exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(frontend_dir)), name="static")
 app.mount("/avatars", StaticFiles(directory=str(avatars_dir)), name="avatars")
+# Serve docs as static for easy viewing from the frontend
+docs_dir = Path(__file__).parent.parent / "docs"
+if docs_dir.exists():
+    app.mount("/docs-static", StaticFiles(directory=str(docs_dir)), name="docs-static")
 
 @app.get("/api/identity-filter/config")
 async def get_identity_filter_config():
@@ -209,6 +295,7 @@ async def api_landing():
                                 <li><a style=\"color:#66ccff;\" href=\"/healthz\">Health check</a></li>
                                 <li>Viewer example: <code>/model-viewer/{user_id}</code></li>
                                 <li>Web app UI: <a style=\"color:#66ccff;\" href=\"/\">/</a></li>
+                                <li><a style=\"color:#66ccff;\" href=\"/static/docs-index.html\">Docs & Provenance</a></li>
                             </ul>
                         </div>
                     </body>
@@ -1519,7 +1606,21 @@ async def step1_scan_ingestion(files: List[UploadFile] = File(...)):
         
         # Process through facial pipeline
         result = facial_pipeline.step1_scan_ingestion(image_files)
-        
+
+        # Provenance: record ingestion summary
+        try:
+            ledger = _get_ledger()
+            if ledger is not None and isinstance(result, dict):
+                ledger.append({
+                    "event": "step1_scan_ingestion_completed",
+                    "endpoint": "/api/pipeline/step1-scan-ingestion",
+                    "timestamp_iso": datetime.now(timezone.utc).isoformat(),
+                    "total_count": result.get("total_count"),
+                    "ingested_count": len(result.get("images", []) or []),
+                })
+        except Exception as le:
+            logger.warning(f"Ledger append failed (step1): {le}")
+
         return {
             "success": True,
             "step": 1,
@@ -1544,6 +1645,22 @@ async def step2_facial_tracking(ingestion_data: dict):
         logger.info("👤 Step 2: Processing facial tracking overlays")
         
         result = facial_pipeline.step2_facial_tracking_overlay(ingestion_data)
+
+        # Provenance: record detection summary
+        try:
+            ledger = _get_ledger()
+            if ledger is not None and isinstance(result, dict):
+                summ = result.get("face_detection_summary", {})
+                ledger.append({
+                    "event": "step2_facial_tracking_completed",
+                    "endpoint": "/api/pipeline/step2-facial-tracking",
+                    "timestamp_iso": datetime.now(timezone.utc).isoformat(),
+                    "faces_detected": summ.get("faces_detected"),
+                    "failed_detections": summ.get("failed_detections"),
+                    "total_images": summ.get("total_images"),
+                })
+        except Exception as le:
+            logger.warning(f"Ledger append failed (step2): {le}")
         
         return {
             "success": True,
@@ -1569,6 +1686,21 @@ async def step3_scan_validation(tracking_data: dict):
         logger.info("🔍 Step 3: Processing scan validation and similarity analysis")
         
         result = facial_pipeline.step3_scan_validation_similarity(tracking_data)
+
+        # Provenance: record validation summary
+        try:
+            ledger = _get_ledger()
+            if ledger is not None and isinstance(result, dict):
+                vsum = result.get("validation_summary", {})
+                ledger.append({
+                    "event": "step3_scan_validation_completed",
+                    "endpoint": "/api/pipeline/step3-scan-validation",
+                    "timestamp_iso": datetime.now(timezone.utc).isoformat(),
+                    "valid_faces": vsum.get("valid_faces"),
+                    "total_comparisons": vsum.get("total_comparisons"),
+                })
+        except Exception as le:
+            logger.warning(f"Ledger append failed (step3): {le}")
         
         return {
             "success": True,
@@ -1594,6 +1726,22 @@ async def step4_scan_filtering(validation_data: dict, tracking_data: dict):
         logger.info("🔧 Step 4: Processing scan filtering and dissimilar face removal")
         
         result = facial_pipeline.step4_scan_validation_filtering(validation_data, tracking_data)
+
+        # Provenance: record filtering summary
+        try:
+            ledger = _get_ledger()
+            if ledger is not None and isinstance(result, dict):
+                fsum = result.get("filtering_summary", {})
+                ledger.append({
+                    "event": "step4_scan_filtering_completed",
+                    "endpoint": "/api/pipeline/step4-scan-filtering",
+                    "timestamp_iso": datetime.now(timezone.utc).isoformat(),
+                    "filtered_count": fsum.get("filtered_count"),
+                    "original_count": fsum.get("original_count"),
+                    "auto_removed_count": fsum.get("auto_removed_count"),
+                })
+        except Exception as le:
+            logger.warning(f"Ledger append failed (step4): {le}")
         
         return {
             "success": True,
@@ -1619,6 +1767,21 @@ async def step5_4d_isolation(filtering_data: dict):
         logger.info("🎭 Step 5: Processing 4D visualization isolation")
         
         result = facial_pipeline.step5_4d_visualization_isolation(filtering_data)
+
+        # Provenance: record isolation summary
+        try:
+            ledger = _get_ledger()
+            if ledger is not None and isinstance(result, dict):
+                isum = result.get("isolation_summary", {})
+                ledger.append({
+                    "event": "step5_4d_isolation_completed",
+                    "endpoint": "/api/pipeline/step5-4d-isolation",
+                    "timestamp_iso": datetime.now(timezone.utc).isoformat(),
+                    "isolated_count": isum.get("isolated_count"),
+                    "processing_errors": isum.get("processing_errors"),
+                })
+        except Exception as le:
+            logger.warning(f"Ledger append failed (step5): {le}")
         
         return {
             "success": True,
@@ -1644,6 +1807,19 @@ async def step6_4d_merging(isolation_data: dict):
         logger.info("🔗 Step 6: Processing 4D visualization merging")
         
         result = facial_pipeline.step6_4d_visualization_merging(isolation_data)
+
+        # Provenance: record merging summary
+        try:
+            ledger = _get_ledger()
+            if ledger is not None and isinstance(result, dict):
+                ledger.append({
+                    "event": "step6_4d_merging_completed",
+                    "endpoint": "/api/pipeline/step6-4d-merging",
+                    "timestamp_iso": datetime.now(timezone.utc).isoformat(),
+                    "merged_landmarks": len(result.get("merged_landmarks", []) or []),
+                })
+        except Exception as le:
+            logger.warning(f"Ledger append failed (step6): {le}")
         
         return {
             "success": True,
@@ -1670,6 +1846,33 @@ async def step7_4d_refinement(merging_data: dict):
         
         result = facial_pipeline.step7_4d_visualization_refinement(merging_data)
         
+        # Append a provenance record for the refinement result (no file saved here)
+        try:
+            ledger = _get_ledger()
+            if ledger is not None and isinstance(result, dict):
+                final_model = result.get("final_4d_model")
+                model_hash = None
+                if final_model:
+                    try:
+                        payload_bytes = json.dumps(final_model, sort_keys=True).encode("utf-8")
+                        model_hash = hashlib.sha256(payload_bytes).hexdigest()
+                    except Exception:
+                        model_hash = None
+                summary = result.get("refinement_summary", {}) if isinstance(result, dict) else {}
+                ledger.append({
+                    "event": "step7_4d_refinement_completed",
+                    "endpoint": "/api/pipeline/step7-4d-refinement",
+                    "sha256": model_hash,
+                    "timestamp_iso": datetime.now(timezone.utc).isoformat(),
+                    "refinement_summary": {
+                        "landmark_count": summary.get("landmark_count"),
+                        "mesh_faces": summary.get("mesh_faces"),
+                        "confidence_score": summary.get("confidence_score"),
+                    },
+                })
+        except Exception as le:
+            logger.warning(f"Ledger append failed (step7): {le}")
+
         return {
             "success": True,
             "step": 7,
@@ -1744,6 +1947,34 @@ async def complete_pipeline_workflow(files: List[UploadFile] = File(...)):
                 "model_id": model_id,
                 "model_path": str(model_path)
             }
+
+            # Append provenance record to ledger
+            try:
+                ledger = _get_ledger()
+                if ledger is not None:
+                    try:
+                        file_bytes = model_path.read_bytes()
+                        file_sha256 = hashlib.sha256(file_bytes).hexdigest()
+                    except Exception:
+                        # Fallback: hash the JSON payload deterministically
+                        payload_bytes = json.dumps(final_model, sort_keys=True).encode("utf-8")
+                        file_sha256 = hashlib.sha256(payload_bytes).hexdigest()
+
+                    summary = step7_result.get("refinement_summary", {}) if isinstance(step7_result, dict) else {}
+                    ledger.append({
+                        "event": "final_4d_model_saved",
+                        "model_id": model_id,
+                        "model_path": str(model_path),
+                        "sha256": file_sha256,
+                        "timestamp_iso": datetime.now(timezone.utc).isoformat(),
+                        "refinement_summary": {
+                            "landmark_count": summary.get("landmark_count"),
+                            "mesh_faces": summary.get("mesh_faces"),
+                            "confidence_score": summary.get("confidence_score"),
+                        },
+                    })
+            except Exception as le:
+                logger.warning(f"Ledger append failed: {le}")
         
         return {
             "success": True,

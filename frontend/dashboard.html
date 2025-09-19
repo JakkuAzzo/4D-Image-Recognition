@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>4DIR • Dashboard</title>
+  <link rel="stylesheet" href="/static/styles.css"/>
+  <script defer src="/static/nav.js"></script>
+  <style>
+    :root { --card:#141414; --fg:#eaeaea; --muted:#9aa4ad; --border:#222; --accent:#1e88e5; }
+    body { margin:0; background:#0b0b0b; color:var(--fg); font-family:-apple-system,system-ui; overflow:hidden; }
+    .wrap { max-width: 1100px; margin: 8px auto; padding: 0 12px; }
+    .grid { display:grid; gap:12px; grid-template-columns: repeat(4, 1fr); }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px; min-height: 150px; }
+    h1 { font-size: 22px; margin:8px 0 12px; }
+    h2 { font-size: 16px; margin:6px 0 10px; color:#d9f; }
+    p, li { font-size: 13px; line-height: 1.35; color: var(--fg); margin: 4px 0; }
+    small { color: var(--muted); }
+    ul { margin: 6px 0 0 16px; padding: 0; }
+    a { color:#66ccff; text-decoration:none; }
+    .stat { font-weight: 700; font-size: 18px; }
+    .ok { color:#8fdd8f; }
+    .warn { color:#ffb86c; }
+    .bad { color:#ff7a7a; }
+    .btn { display:inline-block; padding:6px 10px; background:var(--accent); border-radius:10px; color:#fff; font-weight:600; }
+    .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .no-scroll { height: calc(100vh - 80px); display:flex; flex-direction:column; justify-content:space-between; }
+    @media (max-width: 1280px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 1000px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  </style>
+  <script>
+    async function loadDashboard(){
+      const id = (x)=>document.getElementById(x);
+      try {
+        const [stepsR, ledgerR, recsR] = await Promise.all([
+          fetch('/api/pipeline/steps-info'),
+          fetch('/api/provenance/verify'),
+          fetch('/api/provenance/records?limit=5')
+        ]);
+        const steps = stepsR.ok ? await stepsR.json() : null;
+        const ledger = ledgerR.ok ? await ledgerR.json() : null;
+        const recs = recsR.ok ? await recsR.json() : null;
+
+        // Project status
+        id('steps-total').textContent = steps?.total_steps ?? '—';
+        id('steps-name').textContent = steps?.pipeline_name ?? '—';
+
+        // Ledger status
+        if (ledger?.ok) {
+          id('ledger-state').textContent = 'OK';
+          id('ledger-state').className = 'stat ok';
+          id('ledger-count').textContent = ledger.records ?? 0;
+        } else {
+          id('ledger-state').textContent = 'ISSUE';
+          id('ledger-state').className = 'stat warn';
+          id('ledger-count').textContent = ledger?.records ?? 0;
+        }
+        const list = id('ledger-recent');
+        if (list) {
+          list.innerHTML = '';
+          (recs?.records ?? []).forEach(r => {
+            const li = document.createElement('li');
+            li.textContent = `${r.index ?? '?'} • ${r.payload?.event ?? 'event'} • ${new Date((r.timestamp||0)*1000).toLocaleTimeString()}`;
+            list.appendChild(li);
+          });
+        }
+
+      } catch(e){ console.warn('dash init failed', e); }
+    }
+    document.addEventListener('DOMContentLoaded', loadDashboard);
+  </script>
+</head>
+<body>
+  <div class="wrap no-scroll">
+    <div class="row" style="justify-content:space-between;align-items:center;">
+      <h1>📊 4D Image Recognition • Dashboard</h1>
+      <a class="btn" href="/static/docs-index.html">📚 Docs & Provenance</a>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Overview</h2>
+        <p>An end‑to‑end pipeline for facial analysis: 7 steps from ingestion to a final 4D model with OSINT metadata. Built on FastAPI, OpenCV/NumPy, optional dlib/MediaPipe, and a lightweight HMAC‑chained provenance ledger.</p>
+        <p><small id="steps-name">—</small> · Steps: <span class="stat" id="steps-total">—</span></p>
+      </div>
+
+      <div class="card">
+        <h2>How To Use</h2>
+        <ul>
+          <li>Upload 3–6 varied face photos on Home</li>
+          <li>Run 7‑step pipeline or Enhanced flow</li>
+          <li>Review overlays, similarity, merged landmarks</li>
+          <li>Export final 4D model and OSINT summary</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Live Checks</h2>
+        <p>Ledger: <span id="ledger-state" class="stat">—</span></p>
+        <p>Records: <span id="ledger-count" class="stat">0</span></p>
+        <div class="row">
+          <a href="/api/provenance/verify">Verify</a>
+          <a href="/api/provenance/records?limit=50">Recent</a>
+          <a href="/api/provenance/download">Download</a>
+        </div>
+        <ul id="ledger-recent" style="margin-top:6px; list-style:none; padding:0;">
+          <li style="color:var(--muted)">No recent entries</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Quick Links</h2>
+        <ul>
+          <li><a href="/static/index.html">Home</a> · <a href="/static/enhanced-pipeline.html">Enhanced</a></li>
+          <li><a href="/docs-static/COMPREHENSIVE_4D_PIPELINE_ASSESSMENT.md">Assessment Report</a></li>
+          <li><a href="/docs-static/UNIFIED_PIPELINE_REPORT.md">Unified Pipeline Report</a></li>
+          <li><a href="/docs-static/DISSERTATION_ALIGNMENT.md">Dissertation Alignment</a></li>
+        </ul>
+      </div>
+
+      <div class="card" style="grid-column: span 2;">
+        <h2>Test Results</h2>
+        <p>Unit: Watermark round‑trip similarity ≥ 0.9; pHash similarity > 0.7 under blur.</p>
+        <p>Run locally: <code>python -m unittest -q tests/test_watermark_and_phash.py</code></p>
+        <p>Endpoints healthy if Steps Info loads and Ledger verifies (left cards).</p>
+      </div>
+
+      <div class="card" style="grid-column: span 2;">
+        <h2>FAQ</h2>
+        <ul>
+          <li><b>Why HTTPS?</b> Enforces secure transport; self‑signed in dev.</li>
+          <li><b>Where are models?</b> Saved as JSON in <code>4d_models/</code>.</li>
+          <li><b>How is provenance tracked?</b> HMAC‑chained JSONL ledger with verification and download endpoints.</li>
+          <li><b>Optional deps?</b> dlib/MediaPipe/face_recognition improve quality but have fallbacks.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

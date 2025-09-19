@@ -8,9 +8,11 @@ import path from 'path';
 async function run() {
   const base = process.env.BASE_URL || 'https://localhost:8000';
   const headless = process.env.HEADLESS !== '0';
+  const channel = process.env.CHANNEL || undefined; // e.g., 'chrome'
+  const slowMo = Number(process.env.SLOWMO || '0');
   console.log(`[ui-smoke] Launching Chromium headless=${headless} base=${base}`);
 
-  const browser = await chromium.launch({ headless });
+  const browser = await chromium.launch({ headless, channel, slowMo });
   const ctx = await browser.newContext({ ignoreHTTPSErrors: true });
   const page = await ctx.newPage();
 
@@ -44,7 +46,15 @@ async function run() {
     await page.waitForSelector('#file-input, #start-pipeline', { timeout: 15000 });
     console.log('[ui-smoke] Homepage selector found');
   } catch (e) {
-    console.warn('[ui-smoke] Homepage selector not found:', e?.message || e);
+    console.warn('[ui-smoke] Homepage selector not found on root:', e?.message || e);
+    // Try unified pipeline page under /static as a fallback
+    try {
+      await page.goto(new URL('/static/unified-pipeline.html', base).toString(), { waitUntil: 'domcontentloaded' });
+      await page.waitForSelector('#mode-upload, #mode-snapshot, #mode-live', { timeout: 15000 });
+      console.log('[ui-smoke] Unified pipeline selectors found');
+    } catch (e2) {
+      console.warn('[ui-smoke] Unified pipeline selectors not found:', e2?.message || e2);
+    }
   }
 
   await browser.close();

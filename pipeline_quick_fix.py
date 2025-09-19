@@ -164,7 +164,7 @@ def main():
     # Generate summary
     generate_quick_fix_summary()
     
-    print(f"\n💾 Assessment report saved: COMPREHENSIVE_4D_PIPELINE_ASSESSMENT.md")
+    print(f"\n💾 Assessment report saved: docs/COMPREHENSIVE_4D_PIPELINE_ASSESSMENT.md")
 
 if __name__ == "__main__":
     main()

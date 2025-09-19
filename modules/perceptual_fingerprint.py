@@ -15,6 +15,26 @@ Future enhancements:
   - Robustness evaluation (noise, blur, crop).
   - Locality Sensitive Hashing index.
   - Adaptive threshold using ROC analysis.
+
+Usage example
+-------------
+Compute pHash and compare to a slightly perturbed version:
+
+    from PIL import Image, ImageFilter
+    import numpy as np
+    from modules.perceptual_fingerprint import phash, hamming_similarity
+
+    # Create a synthetic grayscale image
+    arr = np.tile(np.linspace(0, 255, 256, dtype=np.uint8), (256, 1))
+    img = Image.fromarray(arr, mode="L")
+
+    # Perturb with light blur
+    img_blur = img.filter(ImageFilter.GaussianBlur(radius=1.0))
+
+    h1 = phash(img)
+    h2 = phash(img_blur)
+    sim = hamming_similarity(h1, h2)
+    print("Hamming similarity:", sim)
 """
 from __future__ import annotations
 
@@ -197,3 +217,19 @@ __all__ = [
     "cosine_similarity",
     "calibrate_hamming_threshold",
 ]
+
+
+if __name__ == "__main__":  # Simple inline demo
+    try:
+        from PIL import ImageFilter
+        base = Image.fromarray(
+            (np.tile(np.linspace(0, 255, 256, dtype=np.uint8), (256, 1))),
+            mode="L",
+        )
+        pert = base.filter(ImageFilter.GaussianBlur(radius=1.0))
+        h1 = phash(base)
+        h2 = phash(pert)
+        print("Length:", len(h1))
+        print("Similarity:", hamming_similarity(h1, h2))
+    except Exception as e:
+        print("Demo error:", e)

@@ -1706,10 +1706,12 @@
                 <div id="camera-area" style="display:none; margin-top:16px; background:#111; padding:12px; border-radius:10px; color:#eee;">
                     <video id="live-video" autoplay playsinline muted style="max-width:100%; border-radius:8px; background:#000"></video>
                     <div style="margin-top:10px; display:flex; gap:10px; align-items:center;">
+                        <button class="btn btn-secondary" id="btn-enable-camera" title="Request camera access">Enable Camera</button>
                         <button class="btn btn-primary" id="btn-capture">Capture Snapshot</button>
                         <button class="btn btn-secondary" id="btn-live-start">Start Live Analyze</button>
                         <button class="btn btn-danger" id="btn-live-stop" disabled>Stop</button>
                         <span id="live-status" style="font-size:12px;color:#9ad"></span>
+                        <span id="cam-permission" style="font-size:12px;color:#f9a;display:none"></span>
                     </div>
                     <canvas id="snap-canvas" style="display:none"></canvas>
                 </div>
@@ -2084,10 +2086,12 @@
             const uploadArea = document.getElementById('upload-area');
             const camArea = document.getElementById('camera-area');
             const video = document.getElementById('live-video');
+            const enableBtn = document.getElementById('btn-enable-camera');
             const liveStart = document.getElementById('btn-live-start');
             const liveStop = document.getElementById('btn-live-stop');
             const captureBtn = document.getElementById('btn-capture');
             const liveStatus = document.getElementById('live-status');
+            const permHint = document.getElementById('cam-permission');
             let liveTimer = null;
             let stream = null;
 
@@ -2099,16 +2103,49 @@
                 uploadArea.style.display = (mode==='upload') ? 'block' : 'none';
                 camArea.style.display = (mode==='snapshot' || mode==='live') ? 'block' : 'none';
                 if (camArea.style.display==='block' && !stream) {
-                    startCamera().catch(err=>{ liveStatus.textContent = 'Camera error: '+err; });
+                    ensureCameraReady();
                 }
                 if (mode!=='live') stopLive();
             }
 
+            function insecureContext(){
+                try { return location.protocol !== 'https:' && location.hostname !== 'localhost'; } catch { return false; }
+            }
+
             async function startCamera(){
                 if (stream) return;
-                stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:false });
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    liveStatus.textContent = 'Camera API not available';
+                    return;
+                }
+                if (insecureContext()) {
+                    permHint.style.display = 'inline';
+                    permHint.textContent = 'Enable HTTPS to use camera';
+                    return;
+                }
+                const constraints = { video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' }, audio: false };
+                try {
+                    console.info('[cam] requesting getUserMedia');
+                    stream = await navigator.mediaDevices.getUserMedia(constraints);
+                } catch (e) {
+                    permHint.style.display = 'inline';
+                    permHint.textContent = 'Camera blocked or unavailable';
+                    liveStatus.textContent = 'Camera error';
+                    console.warn('[cam] getUserMedia error', e);
+                    throw e;
+                }
                 video.srcObject = stream;
-                await video.play().catch(()=>{});
+                video.onloadedmetadata = () => {
+                    console.info('[cam] video metadata', video.videoWidth, video.videoHeight);
+                };
+                video.onplaying = () => {
+                    console.info('[cam] video playing');
+                    permHint.style.display = 'none';
+                };
+                video.onerror = (e) => {
+                    console.warn('[cam] video error', e);
+                };
+                await video.play().catch((e)=>{ console.warn('[cam] play failed', e); });
             }
             function stopCamera(){
                 if (!stream) return;
@@ -2123,7 +2160,37 @@
                 canvas.getContext('2d').drawImage(video, 0, 0, w, h);
                 return canvas.toDataURL('image/jpeg', 0.9);
             }
+            async function waitForVideoReady(timeoutMs=5000){
+                const start = Date.now();
+                while ((video.videoWidth||0) < 2 || (video.videoHeight||0) < 2) {
+                    if (Date.now() - start > timeoutMs) break;
+                    await new Promise(r=>setTimeout(r,100));
+                }
+            }
+            async function ensureCameraReady(){
+                // Try Permissions API (best-effort)
+                try {
+                    if (navigator.permissions && navigator.permissions.query) {
+                        const status = await navigator.permissions.query({ name: 'camera' });
+                        if (status.state === 'denied') {
+                            permHint.style.display = 'inline';
+                            permHint.textContent = 'Camera permission denied — click Enable Camera';
+                        }
+                    }
+                } catch {}
+                try {
+                    await startCamera();
+                    await waitForVideoReady(4000);
+                    if ((video.videoWidth||0) < 2) {
+                        liveStatus.textContent = 'Waiting for camera…';
+                    }
+                } catch {}
+                // Show the enable button if we still have no stream
+                enableBtn.style.display = stream ? 'none' : 'inline-block';
+            }
             async function sendSnapshot(){
+                await ensureCameraReady();
+                await waitForVideoReady(2000);
                 const dataUrl = captureFrame();
                 const fd = new FormData(); fd.append('image', dataUrl);
                 const r = await fetch('/api/pipeline/snapshot-ingestion', { method:'POST', body: fd });
@@ -2134,8 +2201,10 @@
             }
             async function startLive(){
                 if (liveTimer) return;
-                liveStatus.textContent = 'Live analyzing…';
+                // Show immediate baseline status so UI reflects camera readiness quickly
+                liveStatus.textContent = 'Faces: 0 | Landmarks: 0';
                 liveStart.disabled = true; liveStop.disabled = false;
+                await ensureCameraReady();
                 liveTimer = setInterval(async ()=>{
                     try{
                         const dataUrl = captureFrame();
@@ -2156,6 +2225,7 @@
             uploadBtn.addEventListener('click', ()=> setMode('upload'));
             snapBtn.addEventListener('click', ()=> setMode('snapshot'));
             liveBtn.addEventListener('click', ()=> setMode('live'));
+            enableBtn.addEventListener('click', ()=> { startCamera().catch(()=>{}); });
             captureBtn.addEventListener('click', ()=> sendSnapshot().catch(err=>{ liveStatus.textContent = String(err); }));
             liveStart.addEventListener('click', ()=> startLive());
             liveStop.addEventListener('click', ()=> stopLive());

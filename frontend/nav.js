@@ -10,9 +10,11 @@
 
     var links = [
       { href: '/static/index.html', label: '🏠 Home' },
+      { href: '/static/dashboard.html', label: '📊 Dashboard' },
       { href: '/static/enhanced-pipeline.html', label: '🚀 Enhanced' },
       { href: '/static/snapchat/index.html', label: '👻 Snapchat' },
       { href: '/dual-rig', label: '🎮 Dual Rig' },
+      { href: '/static/docs-index.html', label: '📚 Docs' },
       { href: '/api', label: '🧩 API' }
     ];
 

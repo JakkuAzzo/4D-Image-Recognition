@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project Docs & Provenance</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <style>
+    body { font-family: -apple-system, system-ui; background:#0b0b0b; color:#eaeaea; margin:0; }
+    .wrap { max-width: 860px; margin: 32px auto; padding: 0 16px; }
+    .card { background:#141414; border:1px solid #222; border-radius:12px; padding:16px; margin-bottom:16px; }
+    a { color:#66ccff; text-decoration: none; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:12px; }
+    .btn { display:inline-block; padding:8px 12px; border-radius:10px; background:#1e88e5; color:#fff; }
+    h1, h2 { margin: 0 0 12px; }
+    ul { margin:0; padding-left: 20px; }
+  </style>
+  <script>
+    async function checkLedger() {
+      try {
+        const r = await fetch('/api/provenance/verify');
+        const data = await r.json();
+        const el = document.getElementById('ledger-status');
+        if (data.ok) {
+          el.textContent = `Ledger OK • ${data.records} records`;
+          el.style.color = '#8fdd8f';
+        } else {
+          el.textContent = `Ledger issue • ${data.error || 'unknown'}`;
+          el.style.color = '#ff9d7a';
+        }
+      } catch (e) {
+        console.warn('Ledger check failed', e);
+      }
+    }
+    window.addEventListener('DOMContentLoaded', checkLedger);
+  </script>
+  </head>
+<body>
+  <div class="wrap">
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <h1 style="margin:0;">📚 Project Docs & Provenance</h1>
+      <a class="btn" href="/">🏠 Home</a>
+    </div>
+
+    <div class="card">
+      <h2>Documentation</h2>
+      <div class="grid">
+        <a href="/docs-static/COMPREHENSIVE_4D_PIPELINE_ASSESSMENT.md">COMPREHENSIVE_4D_PIPELINE_ASSESSMENT.md</a>
+        <a href="/docs-static/UNIFIED_PIPELINE_REPORT.md">UNIFIED_PIPELINE_REPORT.md</a>
+        <a href="/docs-static/COMPREHENSIVE_TEST_ANALYSIS.md">COMPREHENSIVE_TEST_ANALYSIS.md</a>
+        <a href="/docs-static/COMPREHENSIVE_PLAYWRIGHT_TEST_REPORT.md">COMPREHENSIVE_PLAYWRIGHT_TEST_REPORT.md</a>
+        <a href="/docs-static/DISSERTATION_ALIGNMENT.md">DISSERTATION_ALIGNMENT.md</a>
+        <a href="/docs-static/TEST_ORGANIZATION_COMPLETE.md">TEST_ORGANIZATION_COMPLETE.md</a>
+        <a href="/docs-static/MyMark-%20A%20Decentralised%20Media%20Fingerprinting%20Framework%20Integrating%20Invisible%20Watermarking,%20Perceptual%20Hashing,%20Blockchain%20Provenance,%20and%204D%20Biometric%20Verification.txt">MyMark Whitepaper (txt)</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Provenance Ledger</h2>
+      <p id="ledger-status" style="color:#9ad;">Checking ledger…</p>
+      <ul>
+        <li><a href="/api/provenance/verify">Verify Chain</a></li>
+        <li><a href="/api/provenance/records?limit=200">View Recent Records (JSON)</a></li>
+        <li><a href="/api/provenance/download">Download Ledger (JSONL)</a></li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>
