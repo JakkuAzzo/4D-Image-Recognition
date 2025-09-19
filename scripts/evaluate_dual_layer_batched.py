@@ -48,33 +48,49 @@ def load_batch(files: List[Path]) -> List[Image.Image]:
     return out
 
 
-def make_positive_pairs(imgs: List[Image.Image]) -> List[Tuple[Image.Image, Image.Image]]:
+def make_positive_pairs(imgs: List[Image.Image]) -> List[Tuple[int, int]]:
     pairs: List[Tuple[Image.Image, Image.Image]] = []
-    for im in imgs:
-        pert_blur = im.filter(ImageFilter.GaussianBlur(radius=1.0))
-        small = im.resize((max(8, im.width // 2), max(8, im.height // 2)), Image.BICUBIC).resize((im.width, im.height), Image.BICUBIC)
-        pairs.append((im, pert_blur))
-        pairs.append((im, small))
+    for i, im in enumerate(imgs):
+        pairs.append((i, i))  # placeholder; actual variants handled via cache
     return pairs
 
 
-def make_negative_pairs(imgs: List[Image.Image], max_pairs: int = 400) -> List[Tuple[Image.Image, Image.Image]]:
+def make_negative_pairs(imgs: List[Image.Image], max_pairs: int = 400) -> List[Tuple[int, int]]:
     pairs: List[Tuple[Image.Image, Image.Image]] = []
     n = len(imgs)
     for i in range(n):
         for j in range(i + 1, n):
-            pairs.append((imgs[i], imgs[j]))
+            pairs.append((i, j))
             if len(pairs) >= max_pairs:
                 return pairs
     return pairs
 
 
-def compute_scores(a: Image.Image, b: Image.Image) -> Tuple[float, Optional[float]]:
-    ha = phash(a)
-    hb = phash(b)
+def precompute(imgs: List[Image.Image]):
+    # Precompute phash and clip embeddings for originals and two variants
+    originals = imgs
+    blurs = [im.filter(ImageFilter.GaussianBlur(radius=1.0)) for im in imgs]
+    smalls = [im.resize((max(8, im.width // 2), max(8, im.height // 2)), Image.BICUBIC).resize((im.width, im.height), Image.BICUBIC) for im in imgs]
+    def phash_list(lst):
+        return [phash(im) for im in lst]
+    def clip_list(lst):
+        embs = []
+        for im in lst:
+            e = clip_embedding(im)
+            embs.append(e)
+        return embs
+    H_orig = phash_list(originals)
+    H_blur = phash_list(blurs)
+    H_small = phash_list(smalls)
+    E_orig = clip_list(originals)
+    E_blur = clip_list(blurs)
+    E_small = clip_list(smalls)
+    return (H_orig, H_blur, H_small, E_orig, E_blur, E_small)
+
+def score_pair(idx: int, H1, H2, E1, E2) -> Tuple[float, Optional[float]]:
+    ha = H1[idx]; hb = H2[idx]
     ph_sim = 1.0 - (hamming_distance(ha, hb) / float(len(ha)))
-    ea = clip_embedding(a)
-    eb = clip_embedding(b)
+    ea = E1[idx]; eb = E2[idx]
     if ea is None or eb is None:
         return ph_sim, None
     cos = cosine_similarity(ea, eb)
@@ -125,17 +141,29 @@ def main(argv=None) -> int:
     for i in range(0, len(files), args.batch_size):
         batch_files = files[i:i+args.batch_size]
         imgs = load_batch(batch_files)
-        pos_pairs = make_positive_pairs(imgs)
-        neg_pairs = make_negative_pairs(imgs)
-        for a, b in pos_pairs:
-            p, c = compute_scores(a, b)
-            if c is not None:
-                clip_avail = True
-                all_pos.append((p, c))
-        for a, b in neg_pairs:
-            p, c = compute_scores(a, b)
-            if c is not None:
-                all_neg.append((p, c))
+        if not imgs:
+            continue
+        pos_indices = make_positive_pairs(imgs)
+        neg_indices = make_negative_pairs(imgs)
+        H_orig, H_blur, H_small, E_orig, E_blur, E_small = precompute(imgs)
+        # Positive: original vs blur and original vs small
+        for idx, _ in pos_indices:
+            p1, c1 = score_pair(idx, H_orig, H_blur, E_orig, E_blur)
+            p2, c2 = score_pair(idx, H_orig, H_small, E_orig, E_small)
+            if c1 is not None:
+                clip_avail = True; all_pos.append((p1, c1))
+            if c2 is not None:
+                clip_avail = True; all_pos.append((p2, c2))
+        # Negative: use originals only
+        for i_idx, j_idx in neg_indices:
+            ha = H_orig[i_idx]; hb = H_orig[j_idx]
+            ph_sim = 1.0 - (hamming_distance(ha, hb) / float(len(ha)))
+            ea = E_orig[i_idx]; eb = E_orig[j_idx]
+            if ea is None or eb is None:
+                continue
+            cos = cosine_similarity(ea, eb)
+            cos01 = float((cos + 1.0) / 2.0)
+            all_neg.append((ph_sim, cos01))
 
     outdir = Path("docs/metrics"); outdir.mkdir(parents=True, exist_ok=True)
     result = {
@@ -169,4 +197,3 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
