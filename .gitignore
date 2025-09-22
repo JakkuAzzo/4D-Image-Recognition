@@ -140,3 +140,6 @@ provenance_ledger.jsonl
 **/segmentation_platform/
 **/Local State
 **/Last Version
+
+# Ignore local PRNet checkout (not tracked)
+PRNet/

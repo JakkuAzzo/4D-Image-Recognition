@@ -1,9 +1,11 @@
 [submodule "repos/captcha_test_toolkit"]
 	path = repos/captcha_test_toolkit
 	url = https://github.com/teal33t/captcha_bypass.git
+	ignore = all
 [submodule "repos/cintruder"]
 	path = repos/cintruder
 	url = https://github.com/epsylon/cintruder.git
+	ignore = all
 [submodule "repos/captcha-testing-examples"]
 	path = repos/captcha-testing-examples
 	url = https://github.com/MoterHaker/bypass-captcha-examples.git
