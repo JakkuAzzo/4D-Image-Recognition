@@ -146,6 +146,42 @@
             display: block;
         }
 
+        .step-skeletons {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .step-skeletons.skeleton-grid {
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        }
+
+        .step-skeletons.skeleton-bar {
+            grid-template-columns: 1fr;
+        }
+
+        .skeleton-card,
+        .skeleton-bar {
+            border-radius: 14px;
+            background: linear-gradient(90deg, rgba(230, 233, 239, 0.4), rgba(245, 247, 250, 0.9), rgba(230, 233, 239, 0.4));
+            background-size: 200% 100%;
+            height: 200px;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+        }
+
+        .skeleton-bar {
+            height: 24px;
+        }
+
+        .skeleton-shimmer {
+            animation: skeletonShimmer 1.2s ease-in-out infinite;
+        }
+
+        @keyframes skeletonShimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
         .upload-area {
             border: 3px dashed #bdc3c7;
             border-radius: 15px;
@@ -236,6 +272,51 @@
 
         .metadata-label {
             font-weight: 600;
+        }
+
+        /* Step 1 summary styles */
+        .step1-summary .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 10px;
+            background: #f4f6fb;
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-size: 0.9em;
+        }
+        .step1-summary .badge.error {
+            background: #e74c3c;
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .step1-summary .warn-text { color: #e67e22; font-weight:600; }
+        .step1-summary .ok-text { color: #27ae60; font-weight:600; }
+
+        .compliance-notice {
+            margin: 10px 0;
+            padding: 12px 16px;
+            background: #fff5e6;
+            border-left: 4px solid #e67e22;
+            border-radius: 8px;
+            color: #6d4c41;
+        }
+
+        .compliance-notice.success {
+            background: #e9f7ef;
+            border-left-color: #27ae60;
+            color: #1e7d3b;
+        }
+
+        .compliance-notice h4 {
+            margin-bottom: 6px;
+        }
+
+        .compliance-notice ul {
+            margin: 0;
+            padding-left: 18px;
         }
 
         .similarity-matrix {
@@ -480,6 +561,8 @@
                     <button class="upload-button" onclick="document.getElementById('file-input').click()">Select Images</button>
                     <input type="file" id="file-input" multiple accept="image/*" style="display: none;">
                 </div>
+                <div id="step1-summary" class="step1-summary" style="margin-bottom:15px;"></div>
+                <div id="compliance-events" class="compliance-notice" style="display:none;"></div>
                 <div class="image-grid" id="ingested-images"></div>
             </div>
         </div>

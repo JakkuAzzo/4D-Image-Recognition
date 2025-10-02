@@ -2739,6 +2739,16 @@ async function startIntegratedVisualization() {
                             <p><strong>Files Processed:</strong> ${files.length}</p>
                         </div>
                         ${orientationInfo}
+                        
+                        <!-- Pipeline Results Data for Validation -->
+                        <div class="pipeline-results-data">
+                            <div class="pipeline-data-content">
+                                Pipeline results: ${result.pipeline_results ? 'Available' : 'Not available'}
+                                Faces detected: ${result.total_faces_detected || 0}
+                                Processing time: ${result.processing_time || 'N/A'}
+                                Files processed: ${result.files_processed || 0}
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Enhanced 3D Model Preview with Step Navigation -->
@@ -3368,495 +3378,495 @@ function fileToBase64(file) {
 
 // Show pipeline step content
 function showPipelineStep(stepNumber) {
-    // Update navigation buttons
-    document.querySelectorAll('.step-nav-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    document.querySelector(`[data-step="${stepNumber}"]`).classList.add('active');
+    // Hide all step containers
+    for (let i = 1; i <= 7; i++) {
+        const container = document.getElementById(`step${i}-container`);
+        if (container) {
+            container.style.display = 'none';
+        }
+    }
     
-    // Update content display
-    document.querySelectorAll('.step-content').forEach(content => {
-        content.classList.remove('active');
-    });
-    document.querySelector(`.step-content[data-step="${stepNumber}"]`).classList.add('active');
-}
-
-// Generate similarity matrix
-function generateSimilarityMatrix(imageCount) {
-    let matrix = '<div class="matrix-grid">';
-    for (let i = 0; i < imageCount; i++) {
-        for (let j = 0; j < imageCount; j++) {
-            const similarity = i === j ? 100 : Math.floor(Math.random() * 15 + 85);
-            const cellClass = i === j ? 'matrix-self' : similarity > 90 ? 'matrix-high' : 'matrix-medium';
-            matrix += `<div class="matrix-cell ${cellClass}">${similarity}%</div>`;
-        }
+    // Show selected step
+    const selectedContainer = document.getElementById(`step${stepNumber}-container`);
+    if (selectedContainer) {
+        selectedContainer.style.display = 'block';
     }
-    matrix += '</div>';
-    return matrix;
-}
-
-// Generate wireframe face
-function generateWireframeFace() {
-    return `
-        <div class="wireframe-lines">
-            ${Array.from({length: 20}, (_, i) => `
-                <div class="wireframe-line" style="
-                    transform: rotate(${i * 18}deg);
-                    animation-delay: ${i * 0.1}s;
-                "></div>
-            `).join('')}
-        </div>
-    `;
-}
-
-// Get random orientation for demo
-function getRandomOrientation() {
-    const orientations = ['Frontal', 'Left Profile', 'Right Profile', 'Left Quarter', 'Right Quarter'];
-    return orientations[Math.floor(Math.random() * orientations.length)];
-}
-
-// --- Snapchat compare integration ---
-async function triggerSnapchatCompare(userId){
-    const el = document.getElementById('snapchat-matches');
-    if (!el) return;
-    try {
-        el.textContent = 'Querying /api/snapchat/compare…';
-        const res = await fetch(`/api/snapchat/compare?user_id=${encodeURIComponent(userId)}`);
-        if(!res.ok){
-            el.textContent = `Compare error: HTTP ${res.status}`;
-            return;
-        }
-        const data = await res.json();
-        renderSnapMatches(data.matches || []);
-    } catch(err){
-        console.warn('Snapchat compare error:', err);
-        el.textContent = 'Unable to fetch Snapchat matches.';
+    
+    const selectedBtn = document.getElementById(`step-btn-${stepNumber}`);
+    if (selectedBtn) {
+        selectedBtn.classList.add('active');
+    }
+    
+    // Execute step-specific logic
+    switch(stepNumber) {
+        case 1:
+            if (window.currentProcessingData) {
+                renderStep1ScanIngestion(window.currentProcessingData);
+            }
+            break;
+        case 2:
+            proceedToStep2();
+            break;
+        case 3:
+            proceedToStep3();
+            break;
+        case 4:
+            proceedToStep4();
+            break;
+        // Add cases for steps 5-7
     }
 }
 
-function renderSnapMatches(matches){
-    const el = document.getElementById('snapchat-matches');
-    if (!el) return;
-    if(!matches || matches.length === 0){
-        el.textContent = 'No pointer matches found.';
+// ===========================
+// CRITICAL MISSING FUNCTION - MAIN ENTRY POINT
+// ===========================
+
+/**
+ * Main function called when user clicks "Process Images" button
+ * This is the critical missing function that was breaking the frontend
+ */
+function startProcessing() {
+    console.log('🚀 START PROCESSING CALLED - This function was missing!');
+    
+    const fileInput = document.getElementById('scan-files');
+    const selectedFiles = document.getElementById('selected-files');
+    const processingIndicator = document.getElementById('processing-indicator');
+    
+    // Validate that files are selected
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        alert('❌ Please select at least 2 images to process');
         return;
     }
-    el.innerHTML = matches.map(m => `
-        <div class="match-item">
-            <div class="match-score">Score: ${(m.score*100).toFixed(0)}%</div>
-            <div class="match-meta">
-                <span class="badge">Region: ${m.region || 'N/A'}</span>
-                <span class="badge">Location: ${m.location || 'unknown'}</span>
-                <span class="badge">Time: ${m.timestamp || ''}</span>
-            </div>
-        </div>
-    `).join('');
-}
-
-// Model control functions
-function rotateModel() {
-    const model = document.querySelector('.rotating-3d-model');
-    if (model) {
-        model.style.transform = `rotateY(${Math.random() * 360}deg) rotateX(${Math.random() * 30 - 15}deg)`;
-    }
-}
-
-function zoomModel() {
-    const model = document.querySelector('.rotating-3d-model');
-    if (model) {
-        const currentScale = model.style.transform.includes('scale') ? 
-            parseFloat(model.style.transform.match(/scale\(([\d.]+)\)/)?.[1] || 1) : 1;
-        const newScale = currentScale === 1 ? 1.5 : 1;
-        model.style.transform = `scale(${newScale})`;
-    }
-}
-
-function analyzeModel() {
-    // Trigger OSINT analysis update
-    const osintSection = document.getElementById('osintSection');
-    if (osintSection) {
-        osintSection.classList.add('analyzing');
-        
-        // Simulate analysis progress
-        setTimeout(() => {
-            osintSection.classList.remove('analyzing');
-            
-            // Update intelligence data
-            const statusElement = osintSection.querySelector('.status-active');
-            const confidenceElement = osintSection.querySelector('.confidence-high');
-            
-            if (statusElement) statusElement.textContent = 'Deep Analysis Complete';
-            if (confidenceElement) confidenceElement.textContent = '98.9%';
-            
-            // Add new intelligence findings
-            const intelGrid = osintSection.querySelector('.intelligence-grid');
-            if (intelGrid && !intelGrid.querySelector('.intel-new')) {
-                const newIntel = document.createElement('div');
-                newIntel.className = 'intel-category intel-new';
-                newIntel.innerHTML = `
-                    <h7>🆕 Advanced Analysis</h7>
-                    <ul>
-                        <li>Deep neural pattern recognition complete</li>
-                        <li>Behavioral prediction models updated</li>
-                        <li>Cross-platform identity verification enabled</li>
-                    </ul>
-                `;
-                intelGrid.appendChild(newIntel);
-            }
-        }, 2000);
-    }
-}
-
-// Helper function to extract image metadata
-async function extractImageMetadata(file) {
-    const metadata = {
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        lastModified: new Date(file.lastModified),
-        deviceInfo: navigator.userAgent,
-        uploadTime: new Date(),
-        dimensions: null,
-        orientation: null,
-        colorProfile: null
-    };
     
-    // Try to extract EXIF data if available
-    try {
-        const base64 = await fileToBase64(file);
-        const img = new Image();
-        img.onload = () => {
-            metadata.dimensions = {
-                width: img.naturalWidth,
-                height: img.naturalHeight,
-                aspectRatio: (img.naturalWidth / img.naturalHeight).toFixed(2)
-            };
-        };
-        img.src = base64;
-    } catch (error) {
-        console.warn('Could not extract image dimensions:', error);
+    const files = Array.from(fileInput.files);
+    console.log(`📁 Processing ${files.length} files:`, files.map(f => f.name));
+    
+    // Show processing UI
+    if (selectedFiles) {
+        selectedFiles.style.display = 'none';
     }
     
-    return metadata;
-}
-
-// Step 1: Render actual uploaded images with metadata
-async function renderStep1ScanIngestion(processingData) {
-    console.log('Rendering Step 1: Scan Ingestion with actual uploaded images');
-    
-    const canvas = document.getElementById('model-canvas');
-    const container = document.querySelector('.visualization-container');
-    
-    // Clear the canvas and create custom Step 1 display
-    canvas.style.display = 'none';
-    
-    // Create Step 1 visualization container
-    let step1Container = document.getElementById('step1-container');
-    if (!step1Container) {
-        step1Container = document.createElement('div');
-        step1Container.id = 'step1-container';
-        step1Container.className = 'step-visualization-container';
-        container.appendChild(step1Container);
+    if (processingIndicator) {
+        processingIndicator.style.display = 'block';
     }
     
-    step1Container.style.display = 'block';
-    step1Container.innerHTML = `
-        <div class="step1-header">
-            <h3>Step 1: Scan Ingestion - Processing ${processingData.uploadedImages.length} Images</h3>
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: 100%"></div>
-            </div>
-        </div>
-        <div class="images-grid" id="step1-images-grid"></div>
-        <div class="step1-summary" id="step1-summary"></div>
-    `;
+    // Show all processing sections
+    showProcessingSections();
     
-    // Display each uploaded image with metadata
-    const imagesGrid = document.getElementById('step1-images-grid');
-    processingData.uploadedImages.forEach((imageData, index) => {
-        const imageCard = document.createElement('div');
-        imageCard.className = 'image-card';
-        imageCard.innerHTML = `
-            <div class="image-preview">
-                <img src="${imageData.base64}" alt="${imageData.name}" />
-                <div class="image-overlay">
-                    <span class="image-index">#${index + 1}</span>
-                </div>
-            </div>
-            <div class="image-metadata">
-                <h4>${imageData.name}</h4>
-                <div class="metadata-grid">
-                    <div class="metadata-item">
-                        <label>Size:</label>
-                        <span>${(imageData.size / 1024).toFixed(1)} KB</span>
-                    </div>
-                    <div class="metadata-item">
-                        <label>Type:</label>
-                        <span>${imageData.type}</span>
-                    </div>
-                    <div class="metadata-item">
-                        <label>Uploaded:</label>
-                        <span>${imageData.metadata.uploadTime.toLocaleTimeString()}</span>
-                    </div>
-                    <div class="metadata-item">
-                        <label>Dimensions:</label>
-                        <span id="dimensions-${index}">Loading...</span>
-                    </div>
-                    <div class="metadata-item">
-                        <label>Device:</label>
-                        <span>${getBrowserInfo()}</span>
-                    </div>
-                    <div class="metadata-item">
-                        <label>Location:</label>
-                        <span id="location-${index}">Detecting...</span>
-                    </div>
-                    <div class="metadata-item">
-                        <label>Face Detection:</label>
-                        <span class="processing">Processing...</span>
-                    </div>
-                    <div class="metadata-item">
-                        <label>Quality Score:</label>
-                        <span class="processing">Analyzing...</span>
-                    </div>
-                </div>
-            </div>
-        `;
-        imagesGrid.appendChild(imageCard);
-        
-        // Load image to get dimensions
-        const img = new Image();
-        img.onload = () => {
-            document.getElementById(`dimensions-${index}`).textContent = 
-                `${img.naturalWidth} × ${img.naturalHeight}`;
-        };
-        img.src = imageData.base64;
-        
-        // Try to get location (if available)
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    document.getElementById(`location-${index}`).textContent = 
-                        `${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`;
-                },
-                () => {
-                    document.getElementById(`location-${index}`).textContent = 'Not available';
-                }
-            );
-        } else {
-            document.getElementById(`location-${index}`).textContent = 'Not supported';
-        }
+    // Start the integrated 4D visualization pipeline
+    startIntegratedVisualization();
+}
+
+/**
+ * Setup file input handling
+ */
+function setupFileHandling() {
+    const fileInput = document.getElementById('scan-files');
+    const selectedFiles = document.getElementById('selected-files');
+    const previewGrid = document.getElementById('preview-grid');
+    const fileCount = document.getElementById('file-count');
+    const processBtn = document.getElementById('start-processing-btn');
+    
+    if (!fileInput) {
+        console.error('❌ File input not found');
+        return;
+    }
+    
+    console.log('✅ Setting up file input handling');
+    
+    fileInput.addEventListener('change', function(e) {
+        const files = Array.from(e.target.files);
+        updateFilePreview(files);
     });
     
-    // Display summary
-    const summaryEl = document.getElementById('step1-summary');
-    summaryEl.innerHTML = `
-        <div class="summary-stats">
-            <div class="stat-item">
-                <span class="stat-number">${processingData.uploadedImages.length}</span>
-                <span class="stat-label">Images Uploaded</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-number" id="total-size">${getTotalSize(processingData.uploadedImages)}</span>
-                <span class="stat-label">Total Size</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-number">Processing</span>
-                <span class="stat-label">Face Detection</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-number">Ready</span>
-                <span class="stat-label">For Step 2</span>
-            </div>
-        </div>
-        <div class="step-actions">
-            <button onclick="proceedToStep2()" class="btn-primary">Proceed to Step 2: Facial Tracking</button>
-        </div>
-    `;
-    
-    // Simulate processing completion after a moment
-    setTimeout(() => {
-        // Update face detection results
-        document.querySelectorAll('.processing').forEach((el, index) => {
-            if (el.parentElement.textContent.includes('Face Detection')) {
-                el.textContent = '1 face detected';
-                el.className = 'success';
-            } else if (el.parentElement.textContent.includes('Quality')) {
-                el.textContent = '85%';
-                el.className = 'success';
-            }
+    // Start processing button click handler
+    if (processBtn) {
+        processBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            console.log('Start processing clicked');
+            
+            // Show processing sections
+            showProcessingSections();
+            
+            // Start the main processing pipeline
+            await startIntegratedVisualization();
         });
-    }, 2000);
-}
-
-// Helper functions
-function getBrowserInfo() {
-    const ua = navigator.userAgent;
-    if (ua.includes('Chrome')) return 'Chrome';
-    if (ua.includes('Firefox')) return 'Firefox';
-    if (ua.includes('Safari')) return 'Safari';
-    return 'Unknown';
-}
-
-function getTotalSize(images) {
-    const total = images.reduce((sum, img) => sum + img.size, 0);
-    return (total / (1024 * 1024)).toFixed(1) + ' MB';
-}
-
-// Step 2: Facial Tracking Overlay
-async function proceedToStep2() {
-    console.log('Proceeding to Step 2: Facial Tracking Overlay');
-    
-    const step1Container = document.getElementById('step1-container');
-    const canvas = document.getElementById('model-canvas');
-    const container = document.querySelector('.visualization-container');
-    
-    // Hide Step 1, prepare for Step 2
-    if (step1Container) step1Container.style.display = 'none';
-    
-    // Create Step 2 container
-    let step2Container = document.getElementById('step2-container');
-    if (!step2Container) {
-        step2Container = document.createElement('div');
-        step2Container.id = 'step2-container';
-        step2Container.className = 'step-visualization-container';
-        container.appendChild(step2Container);
     }
-    
-    step2Container.style.display = 'block';
-    step2Container.innerHTML = `
-        <div class="step2-header">
-            <h3>Step 2: Facial Tracking Overlay - Detecting Landmarks</h3>
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: 100%"></div>
-            </div>
-        </div>
-        <div class="facial-tracking-grid" id="step2-images-grid"></div>
-        <div class="step2-actions">
-            <button onclick="proceedToStep3()" class="btn-primary">Proceed to Step 3: Validation</button>
-        </div>
-    `;
-    
-    // Process each image and add facial tracking overlays
-    const imagesGrid = document.getElementById('step2-images-grid');
-    window.currentProcessingData.uploadedImages.forEach((imageData, index) => {
-        const trackingCard = document.createElement('div');
-        trackingCard.className = 'tracking-card';
-        trackingCard.innerHTML = `
-            <div class="image-with-overlay">
-                <canvas id="tracking-canvas-${index}" width="400" height="300"></canvas>
-            </div>
-            <div class="tracking-info">
-                <h4>${imageData.name}</h4>
-                <div class="landmarks-detected">
-                    <span class="landmark-count">68 landmarks detected</span>
-                    <span class="confidence">Confidence: 94%</span>
-                </div>
-            </div>
-        `;
-        imagesGrid.appendChild(trackingCard);
-        
-        // Draw image with facial landmarks overlay
-        const canvas = document.getElementById(`tracking-canvas-${index}`);
-        const ctx = canvas.getContext('2d');
-        const img = new Image();
-        img.onload = () => {
-            // Draw original image
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            
-            // Draw mock facial landmarks
-            drawFacialLandmarks(ctx, canvas.width, canvas.height);
-        };
-        img.src = imageData.base64;
-    });
 }
 
-// Step 3: Scan Validation (Similarity)
-async function proceedToStep3() {
-    console.log('Proceeding to Step 3: Scan Validation (Similarity)');
+/**
+ * Show all processing sections when workflow starts
+ */
+function showProcessingSections() {
+    console.log('📱 Showing processing sections...');
     
-    const step2Container = document.getElementById('step2-container');
-    const container = document.querySelector('.visualization-container');
-    
-    if (step2Container) step2Container.style.display = 'none';
-    
-    let step3Container = document.getElementById('step3-container');
-    if (!step3Container) {
-        step3Container = document.createElement('div');
-        step3Container.id = 'step3-container';
-        step3Container.className = 'step-visualization-container';
-        container.appendChild(step3Container);
-    }
-    
-    step3Container.style.display = 'block';
-    step3Container.innerHTML = `
-        <div class="step3-header">
-            <h3>Step 3: Scan Validation (Similarity) - Finding Person Groups</h3>
-        </div>
-        <div class="similarity-analysis" id="step3-analysis"></div>
-        <div class="step3-actions">
-            <button onclick="proceedToStep4()" class="btn-primary">Proceed to Step 4: Filtering</button>
-        </div>
-    `;
-    
-    // Show similarity network visualization
-    const analysisDiv = document.getElementById('step3-analysis');
-    analysisDiv.innerHTML = `
-        <canvas id="similarity-canvas" width="800" height="400"></canvas>
-        <div class="similarity-results">
-            <h4>Similarity Analysis Results:</h4>
-            <p>✅ All images show the same person (95% similarity)</p>
-            <p>📊 FaceNet embedding comparison complete</p>
-        </div>
-    `;
-    
-    // Draw similarity network
-    const canvas = document.getElementById('similarity-canvas');
-    const ctx = canvas.getContext('2d');
-    drawSimilarityNetwork(ctx, canvas.width, canvas.height);
-}
-
-// Continue with other step functions...
-async function proceedToStep4() {
-    // Step 4: Filtering implementation
-    console.log('Step 4: Scan Validation (Filtering)');
-    // Implementation for filtering step
-}
-
-// Helper function to draw facial landmarks
-function drawFacialLandmarks(ctx, width, height) {
-    ctx.strokeStyle = '#00ff00';
-    ctx.fillStyle = '#00ff00';
-    ctx.lineWidth = 2;
-    
-    // Mock 68 facial landmarks
-    const landmarks = [
-        // Jaw line
-        [0.2, 0.8], [0.25, 0.85], [0.3, 0.88], [0.35, 0.9], [0.4, 0.91], [0.5, 0.92], [0.6, 0.91], [0.65, 0.9], [0.7, 0.88], [0.75, 0.85], [0.8, 0.8],
-        // Eyebrows
-        [0.3, 0.4], [0.35, 0.38], [0.4, 0.37], [0.45, 0.38], [0.5, 0.39], [0.55, 0.38], [0.6, 0.37], [0.65, 0.38], [0.7, 0.4],
-        // Eyes
-        [0.35, 0.5], [0.4, 0.48], [0.45, 0.5], [0.4, 0.52], [0.55, 0.48], [0.6, 0.5], [0.65, 0.48], [0.6, 0.52],
-        // Nose
-        [0.5, 0.6], [0.48, 0.65], [0.5, 0.68], [0.52, 0.65],
-        // Mouth
-        [0.4, 0.75], [0.45, 0.73], [0.5, 0.74], [0.55, 0.73], [0.6, 0.75], [0.55, 0.77], [0.5, 0.78], [0.45, 0.77]
+    // List of section IDs to show during processing
+    const sections = [
+        'processing-indicator',
+        'step-indicator',
+        'progress-indicator',
+        'results-section',
+        'visualization-section'
     ];
     
-    landmarks.forEach(([x, y]) => {
-        ctx.beginPath();
-        ctx.arc(x * width, y * height, 3, 0, 2 * Math.PI);
-        ctx.fill();
+    sections.forEach(sectionId => {
+        const section = document.getElementById(sectionId);
+        if (section) {
+            section.style.display = 'block';
+            console.log(`✅ Showing section: ${sectionId}`);
+        } else {
+            console.log(`⚠️ Section not found: ${sectionId}`);
+        }
     });
 }
 
-// Helper function to draw similarity network
-function drawSimilarityNetwork(ctx, width, height) {
-    ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(0, 0, width, height);
+/**
+ * Start integrated 4D visualization pipeline
+ */
+function startLegacyProcessing() {
+    console.log('🚀 Starting integrated 4D visualization pipeline...');
     
-    // Draw nodes representing images
-    const nodes = [
-        {x: 150, y: 150, label: 'Image 1'},
+    // Initialize 3D visualization if not already done
+    if (!isVisualizationActive) {
+        if (typeof init3DVisualization === 'function') {
+            init3DVisualization();
+        }
+    }
+    
+    // Start the actual processing pipeline
+    processSelectedImages();
+}
+
+/**
+ * Process selected images through the 7-step pipeline
+ */
+async function processSelectedImages() {
+    const fileInput = document.getElementById('scan-files');
+    
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        console.error('❌ No files selected for processing');
+        return;
+    }
+    
+    const files = Array.from(fileInput.files);
+    console.log(`🔄 Processing ${files.length} images through 7-step pipeline...`);
+    
+    try {
+        // Prepare form data
+        const formData = new FormData();
+        files.forEach((file, index) => {
+            formData.append('files', file);
+        });
+        
+        // Update step indicator
+        updateStepIndicator('Uploading images...', 1);
+        
+        // Send to backend API
+        const response = await fetch('/process-pipeline', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Processing failed: ${response.statusText}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ Processing completed:', result);
+        
+        // Update UI with results
+        displayProcessingResults(result);
+        
+        // Load 4D model if available
+        if (result.user_id) {
+            await fetchAndRender4DModel(result.user_id);
+        }
+        
+    } catch (error) {
+        console.error('❌ Processing error:', error);
+        updateStepIndicator(`Error: ${error.message}`, 0);
+        
+        // Show error message to user
+        alert(`Processing failed: ${error.message}`);
+    }
+}
+
+/**
+ * Update step indicator with current progress
+ */
+function updateStepIndicator(message, step) {
+    const stepIndicator = document.getElementById('step-indicator');
+    const stepText = document.querySelector('.step-text');
+    const progressBar = document.querySelector('.progress-bar');
+    
+    if (stepIndicator) {
+        stepIndicator.style.display = 'block';
+    }
+    
+    if (stepText) {
+        stepText.textContent = message;
+    }
+    
+    if (progressBar) {
+        const progress = (step / 7) * 100;
+        progressBar.style.width = `${progress}%`;
+    }
+    
+    console.log(`📊 Step ${step}/7: ${message}`);
+}
+
+/**
+ * Display processing results in the UI
+ */
+function displayProcessingResults(results) {
+    console.log('📊 Displaying processing results:', results);
+    
+    const resultsSection = document.getElementById('results-section');
+    if (resultsSection) {
+        resultsSection.style.display = 'block';
+        
+        // Update results content
+        const resultsContent = resultsSection.querySelector('.results-content');
+        if (resultsContent && results) {
+            resultsContent.innerHTML = `
+                <h3>✅ Processing Complete</h3>
+                <div class="result-item">
+                    <strong>User ID:</strong> ${results.user_id || 'Not generated'}
+                </div>
+                <div class="result-item">
+                    <strong>Images Processed:</strong> ${results.images_processed || 0}
+                </div>
+                <div class="result-item">
+                    <strong>Faces Detected:</strong> ${results.faces_detected || 0}
+                </div>
+                <div class="result-item">
+                    <strong>4D Model Generated:</strong> ${results.model_generated ? 'Yes' : 'No'}
+                </div>
+                <div class="result-item">
+                    <strong>OSINT Results:</strong> ${results.osint_results ? 'Available' : 'None'}
+                </div>
+            `;
+        }
+    }
+    
+    updateStepIndicator('Processing complete!', 7);
+}
+
+// OSINT and Audit Log functions
+async function refreshOSINT() {
+    console.log('Refreshing OSINT data...');
+    
+    try {
+        const userId = document.getElementById('user-id')?.value || 'current_user';
+        
+        const response = await fetch(`/osint-data?user_id=${userId}&source=all`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const osintData = await response.json();
+        
+        // Display OSINT results
+        const osintElement = document.getElementById('osint-results');
+        if (osintElement) {
+            let html = '<h3>🔍 OSINT Intelligence Report</h3>';
+            
+            if (osintData.sources) {
+                Object.entries(osintData.sources).forEach(([source, data]) => {
+                    html += `
+                        <div class="osint-source">
+                            <h4>${source.toUpperCase()} Sources</h4>
+                            <p><strong>Confidence:</strong> ${(data.confidence * 100).toFixed(1)}%</p>
+                    `;
+                    
+                    if (data.records && data.records.length > 0) {
+                        html += '<ul>';
+                        data.records.forEach(record => {
+                            html += `<li>${record}</li>`;
+                        });
+                        html += '</ul>';
+                    }
+                    
+                    html += '</div>';
+                });
+            }
+            
+            if (osintData.risk_assessment) {
+                html += `
+                    <div class="risk-assessment">
+                        <h4>⚠️ Risk Assessment</h4>
+                        <p><strong>Overall Risk:</strong> ${osintData.risk_assessment.overall_risk}</p>
+                        <p><strong>Identity Confidence:</strong> ${(osintData.risk_assessment.identity_confidence * 100).toFixed(1)}%</p>
+                    </div>
+                `;
+            }
+            
+            osintElement.innerHTML = html;
+        }
+        
+    } catch (error) {
+        console.error('Error refreshing OSINT:', error);
+        alert('Error refreshing OSINT data: ' + error.message);
+    }
+}
+
+async function exportOSINT() {
+    console.log('Exporting OSINT report...');
+    
+    try {
+        const userId = document.getElementById('user-id')?.value || 'current_user';
+        
+        const response = await fetch(`/osint-data?user_id=${userId}&source=all`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const osintData = await response.json();
+        
+        // Create downloadable file
+        const dataStr = JSON.stringify(osintData, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        
+        const downloadLink = document.createElement('a');
+        downloadLink.href = URL.createObjectURL(dataBlob);
+        downloadLink.download = `osint-report-${userId}-${new Date().toISOString().split('T')[0]}.json`;
+        
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        
+        alert('OSINT report exported successfully!');
+        
+    } catch (error) {
+        console.error('Error exporting OSINT report:', error);
+        alert('Error exporting OSINT report: ' + error.message);
+    }
+}
+
+// Audit log functions
+async function loadAuditLog() {
+    console.log('Loading audit log...');
+    
+    try {
+        const response = await fetch('/audit-log');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const auditData = await response.json();
+        
+        // Display audit log
+        const auditElement = document.getElementById('audit-log');
+        if (auditElement) {
+            let html = '<h3>📋 System Audit Log</h3>';
+            
+            if (auditData.entries && auditData.entries.length > 0) {
+                html += '<div class="audit-entries">';
+                auditData.entries.slice(-50).reverse().forEach((entry, index) => {
+                    html += `
+                        <div class="audit-entry">
+                            <span class="timestamp">${entry.timestamp}</span>
+                            <span class="action">${entry.action}</span>
+                            <span class="user">${entry.user_id || 'System'}</span>
+                            <span class="details">${entry.details || ''}</span>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            } else {
+                html += '<p>No audit entries found.</p>';
+            }
+            
+            auditElement.innerHTML = html;
+        }
+        
+    } catch (error) {
+        console.error('Error loading audit log:', error);
+        alert('Error loading audit log: ' + error.message);
+    }
+}
+
+async function clearAuditLog() {
+    if (!confirm('Are you sure you want to clear the audit log? This action cannot be undone.')) {
+        return;
+    }
+    
+    console.log('Clearing audit log...');
+    
+    try {
+        const response = await fetch('/audit-log', {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        alert('Audit log cleared successfully.');
+        
+        // Refresh the display
+        const auditElement = document.getElementById('audit-log');
+        if (auditElement) {
+            auditElement.innerHTML = '<h3>📋 System Audit Log</h3><p>Audit log cleared.</p>';
+        }
+        
+    } catch (error) {
+        console.error('Error clearing audit log:', error);
+        alert('Error clearing audit log: ' + error.message);
+    }
+}
+
+async function exportAuditLog() {
+    console.log('Exporting audit log...');
+    
+    try {
+        const response = await fetch('/audit-log');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const auditData = await response.json();
+        
+        // Create downloadable file
+        const dataStr = JSON.stringify(auditData, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        
+        const downloadLink = document.createElement('a');
+        downloadLink.href = URL.createObjectURL(dataBlob);
+        downloadLink.download = `audit-log-${new Date().toISOString().split('T')[0]}.json`;
+        
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        
+        alert('Audit log exported successfully!');
+        
+    } catch (error) {
+        console.error('Error exporting audit log:', error);
+        alert('Error exporting audit log: ' + error.message);
+    }
+}
+
+// Integrated 4D visualization with scan ingestion as Step 1
+async function startIntegratedVisualization() {
+    console.log('Starting integrated 4D visualization with scan ingestion...');
+    
+    const fileInput = document.getElementById('scan-files');
+    const userIdInput = document.getElementById('user-id');
+    const resultElement = document.getElementById('integrated_result') || document.getElementById('result');
+    const startBtn = document.getElementById('start-processing-btn');
+    
+    if (!fileInput || !fileInput.files.length) {
+        // Show user-friendly error
+        if (resultElement) {
+            resultElement.innerHTML = `
+                <div class="error-message">
+                    <div class="error-icon">⚠️</div>
+                    <h3>No Images Selected</h3>
         {x: 350, y: 100, label: 'Image 2'}, 
         {x: 550, y: 150, label: 'Image 3'},
         {x: 450, y: 250, label: 'Image 4'},
@@ -4197,32 +4207,21 @@ function updateSliderValues() {
 }
 
 function updateStepProgress(currentStep, totalSteps = 7) {
-    const progressFill = document.getElementById('progress-fill');
-    const stepProgress = document.getElementById('step-progress');
-    const stepDots = document.querySelectorAll('.step-dot');
+    // Update step indicators using the existing step-item elements
+    const stepItems = document.querySelectorAll('.step-item');
     
-    // Show progress section
-    if (stepProgress) {
-        stepProgress.style.display = 'block';
-    }
-    
-    // Update progress bar
-    if (progressFill) {
-        const percentage = (currentStep / totalSteps) * 100;
-        progressFill.style.width = percentage + '%';
-    }
-    
-    // Update step indicators
-    stepDots.forEach((dot, index) => {
+    stepItems.forEach((item, index) => {
         const stepNumber = index + 1;
-        dot.classList.remove('active', 'completed');
+        item.classList.remove('active', 'completed');
         
         if (stepNumber < currentStep) {
-            dot.classList.add('completed');
+            item.classList.add('completed');
         } else if (stepNumber === currentStep) {
-            dot.classList.add('active');
+            item.classList.add('active');
         }
     });
+    
+    console.log(`Updated step progress to step ${currentStep}`);
 }
 
 function setupFileInput() {

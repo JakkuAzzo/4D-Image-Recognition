@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import json
 import sys
 import os
@@ -37,10 +37,22 @@ from modules.advanced_face_tracker import advanced_face_tracker
 from modules import face_crop, reconstruct3d, align_compare, fuse_mesh
 from modules.facial_pipeline import FacialPipeline
 from modules.ledger import Ledger
+from modules.provenance_registry import get_registry
 from hashlib import sha256
 
 # Initialize facial pipeline
 facial_pipeline = FacialPipeline()
+try:
+    provenance_registry = get_registry()
+except Exception as registry_err:
+    logger.warning(f"Provenance registry unavailable in API: {registry_err}")
+    provenance_registry = None
+
+
+class ProvenancePrivacyRequest(BaseModel):
+    pointer: str
+    pointer_type: Optional[str] = None
+    include_evidence: bool = False
 
 app = FastAPI()
 
@@ -190,6 +202,7 @@ async def provenance_anchor(request: Request, force: bool = False):
     admin_key = os.environ.get("API_ADMIN_KEY")
     if admin_key and request.headers.get("x-api-key") != admin_key:
         return JSONResponse({"error": "forbidden"}, status_code=403)
+    ledger = None  # ensure bound for exception paths
     try:
         ledger = _get_ledger()
         if ledger is None:
@@ -210,7 +223,7 @@ async def provenance_anchor(request: Request, force: bool = False):
             f.write(json.dumps(anchor, sort_keys=True) + "\n")
         return {"ok": True, **anchor}
     except ValueError as ve:
-        if force:
+        if force and ledger is not None:
             # Even if verification fails, compute a best-effort root over current HMACs
             try:
                 recs = ledger.records()
@@ -242,6 +255,46 @@ async def provenance_list_anchors(limit: int = 50):
         return {"anchors": anchors, "count": len(anchors)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to read anchors: {e}")
+
+
+@app.post("/api/provenance/privacy-verify")
+async def provenance_privacy_verify(payload: ProvenancePrivacyRequest):
+    if provenance_registry is None:
+        return JSONResponse({"ok": False, "error": "registry_unavailable"}, status_code=503)
+
+    record = provenance_registry.lookup_pointer(payload.pointer, payload.pointer_type)
+    if record is None:
+        return {"ok": True, "status": "not_found"}
+
+    record_type, rec = record
+    consent = rec.get("consent", "unknown")
+    status = "restricted" if consent == "revoked" else "registered"
+
+    response: Dict[str, Any] = {
+        "ok": True,
+        "status": status,
+        "pointer_type": record_type,
+        "consent": consent,
+        "registered_at": rec.get("registered_at"),
+        "last_seen": rec.get("last_seen"),
+    }
+
+    if payload.include_evidence:
+        evidence: Dict[str, Any] = {}
+        if record_type == "image":
+            for field in ("sha256", "perceptual_hash", "watermark_hash"):
+                if rec.get(field):
+                    evidence[field] = rec.get(field)
+        elif record_type == "mask":
+            if rec.get("mask_hash"):
+                evidence["mask_hash"] = rec.get("mask_hash")
+        elif record_type == "model":
+            if rec.get("model_hash"):
+                evidence["model_hash"] = rec.get("model_hash")
+        if evidence:
+            response["evidence"] = evidence
+
+    return response
 
 
 @app.get("/api/status/runtime")
@@ -1872,17 +1925,39 @@ async def step1_scan_ingestion(files: List[UploadFile] = File(...)):
         
         # Process through facial pipeline
         result = facial_pipeline.step1_scan_ingestion(image_files)
+        # Immediate debug validation
+        try:
+            if result is None:
+                logger.error("step1_scan_ingestion returned None (unexpected)")
+                raise ValueError("step1_scan_ingestion returned None")
+            if not isinstance(result, dict):
+                logger.error(f"step1_scan_ingestion returned non-dict type: {type(result)}")
+                raise TypeError("Invalid return type from step1_scan_ingestion")
+            missing = [k for k in ["images", "total_count"] if k not in result]
+            if missing:
+                logger.error(f"step1_scan_ingestion missing keys: {missing}; keys present: {list(result.keys())}")
+                raise KeyError(f"Missing keys in step1_scan_ingestion result: {missing}")
+            if result.get("images") is None:
+                logger.error("step1_scan_ingestion 'images' value is None")
+                raise ValueError("'images' is None in step1 result")
+        except Exception as debug_e:
+            # Re-raise to let outer except capture full traceback
+            raise
 
         # Provenance: record ingestion summary
         try:
             ledger = _get_ledger()
             if ledger is not None and isinstance(result, dict):
+                compliance = result.get("compliance_summary", {}) if isinstance(result, dict) else {}
                 ledger.append({
                     "event": "step1_scan_ingestion_completed",
                     "endpoint": "/api/pipeline/step1-scan-ingestion",
                     "timestamp_iso": datetime.now(timezone.utc).isoformat(),
                     "total_count": result.get("total_count"),
                     "ingested_count": len(result.get("images", []) or []),
+                    "accepted": compliance.get("accepted"),
+                    "dropped": compliance.get("dropped"),
+                    "drop_reasons": compliance.get("drop_reasons"),
                 })
         except Exception as le:
             logger.warning(f"Ledger append failed (step1): {le}")
@@ -1896,7 +1971,8 @@ async def step1_scan_ingestion(files: List[UploadFile] = File(...)):
         }
         
     except Exception as e:
-        logger.error(f"❌ Error in step 1 scan ingestion: {str(e)}")
+        # Log full traceback to aid debugging intermittent AttributeError ('NoneType' object has no attribute get)
+        logger.exception(f"❌ Error in step 1 scan ingestion: {str(e)}")
         return {
             "success": False,
             "step": 1,
@@ -1909,6 +1985,32 @@ async def step2_facial_tracking(ingestion_data: dict):
     """Step 2: Overlay facial tracking pointers using FaceNet and MediaPipe"""
     try:
         logger.info("👤 Step 2: Processing facial tracking overlays")
+        # Defensive validation of ingestion_data structure
+        if not isinstance(ingestion_data, dict):
+            raise ValueError("ingestion_data must be a JSON object")
+        images = ingestion_data.get("images") or ingestion_data.get("data", {}).get("images")
+        if images is None:
+            raise ValueError("ingestion_data missing 'images' list (expected Step 1 output)")
+        if not isinstance(images, list):
+            raise ValueError("'images' must be a list in ingestion_data")
+        # Fast path: if empty list, short-circuit gracefully
+        if len(images) == 0:
+            empty_result = {
+                "images_with_tracking": [],
+                "face_detection_summary": {
+                    "total_images": 0,
+                    "faces_detected": 0,
+                    "failed_detections": 0,
+                    "warning": "No images provided to step2"
+                }
+            }
+            return {
+                "success": True,
+                "step": 2,
+                "step_name": "facial_tracking",
+                "data": empty_result,
+                "message": "No images to process in step2"
+            }
         
         result = facial_pipeline.step2_facial_tracking_overlay(ingestion_data)
 
@@ -1937,12 +2039,13 @@ async def step2_facial_tracking(ingestion_data: dict):
         }
         
     except Exception as e:
-        logger.error(f"❌ Error in step 2 facial tracking: {str(e)}")
+        logger.exception(f"❌ Error in step 2 facial tracking: {str(e)}")
         return {
             "success": False,
             "step": 2,
             "error": str(e),
-            "message": "Failed to process facial tracking"
+            "message": "Failed to process facial tracking",
+            "ingestion_keys": list(ingestion_data.keys()) if isinstance(ingestion_data, dict) else None
         }
 
 @app.post("/api/pipeline/step3-scan-validation")
@@ -1985,45 +2088,44 @@ async def step3_scan_validation(tracking_data: dict):
             "message": "Failed to process scan validation"
         }
 
-@app.post("/api/pipeline/step4-scan-filtering")
-async def step4_scan_filtering(validation_data: dict, tracking_data: dict):
-    """Step 4: Automatically filter dissimilar faces and allow manual removal"""
+@app.post("/api/pipeline/step4-orientation-filtering")
+async def step4_orientation_filtering(validation_data: dict):
+    """Step 4: Filter frames by pose/orientation and return metrics."""
     try:
-        logger.info("🔧 Step 4: Processing scan filtering and dissimilar face removal")
-        
-        result = facial_pipeline.step4_scan_validation_filtering(validation_data, tracking_data)
+        logger.info("🧭 Step 4: Processing orientation filtering metrics")
 
-        # Provenance: record filtering summary
+        result = facial_pipeline.step4_orientation_filtering(validation_data)
+
         try:
             ledger = _get_ledger()
             if ledger is not None and isinstance(result, dict):
-                fsum = result.get("filtering_summary", {})
+                osum = result.get("orientation_summary", {})
                 ledger.append({
-                    "event": "step4_scan_filtering_completed",
-                    "endpoint": "/api/pipeline/step4-scan-filtering",
+                    "event": "step4_orientation_filtering_completed",
+                    "endpoint": "/api/pipeline/step4-orientation-filtering",
                     "timestamp_iso": datetime.now(timezone.utc).isoformat(),
-                    "filtered_count": fsum.get("filtered_count"),
-                    "original_count": fsum.get("original_count"),
-                    "auto_removed_count": fsum.get("auto_removed_count"),
+                    "accepted_frames": osum.get("accepted_frames"),
+                    "dropped_frames": osum.get("dropped_frames"),
+                    "average_yaw": osum.get("average_yaw"),
                 })
         except Exception as le:
-            logger.warning(f"Ledger append failed (step4): {le}")
-        
+            logger.warning(f"Ledger append failed (step4-orientation): {le}")
+
         return {
             "success": True,
             "step": 4,
-            "step_name": "scan_filtering",
+            "step_name": "orientation_filtering",
             "data": result,
-            "message": f"Filtered to {result['filtering_summary']['filtered_count']} images"
+            "message": "Orientation filtering completed"
         }
-        
+
     except Exception as e:
-        logger.error(f"❌ Error in step 4 scan filtering: {str(e)}")
+        logger.error(f"❌ Error in step 4 orientation filtering: {str(e)}")
         return {
             "success": False,
             "step": 4,
             "error": str(e),
-            "message": "Failed to process scan filtering"
+            "message": "Failed to process orientation filtering"
         }
 
 @app.post("/api/pipeline/step5-4d-isolation")
@@ -2031,10 +2133,9 @@ async def step5_4d_isolation(filtering_data: dict):
     """Step 5: Remove background images, show only facial tracking and masks"""
     try:
         logger.info("🎭 Step 5: Processing 4D visualization isolation")
-        
+
         result = facial_pipeline.step5_4d_visualization_isolation(filtering_data)
 
-        # Provenance: record isolation summary
         try:
             ledger = _get_ledger()
             if ledger is not None and isinstance(result, dict):
@@ -2048,15 +2149,15 @@ async def step5_4d_isolation(filtering_data: dict):
                 })
         except Exception as le:
             logger.warning(f"Ledger append failed (step5): {le}")
-        
+
         return {
             "success": True,
             "step": 5,
             "step_name": "4d_isolation",
             "data": result,
-            "message": f"Isolated {result['isolation_summary']['isolated_count']} facial regions"
+            "message": f"Isolated {result['isolation_summary'].get('isolated_count', 0)} facial regions"
         }
-        
+
     except Exception as e:
         logger.error(f"❌ Error in step 5 4D isolation: {str(e)}")
         return {
@@ -2071,30 +2172,31 @@ async def step6_4d_merging(isolation_data: dict):
     """Step 6: Merge facial tracking points accounting for depth and overlap"""
     try:
         logger.info("🔗 Step 6: Processing 4D visualization merging")
-        
+
         result = facial_pipeline.step6_4d_visualization_merging(isolation_data)
 
-        # Provenance: record merging summary
         try:
             ledger = _get_ledger()
             if ledger is not None and isinstance(result, dict):
+                msum = result.get("merging_summary", {})
                 ledger.append({
                     "event": "step6_4d_merging_completed",
                     "endpoint": "/api/pipeline/step6-4d-merging",
                     "timestamp_iso": datetime.now(timezone.utc).isoformat(),
-                    "merged_landmarks": len(result.get("merged_landmarks", []) or []),
+                    "merged_landmarks": msum.get("merged_landmarks"),
+                    "average_confidence": msum.get("average_confidence"),
                 })
         except Exception as le:
             logger.warning(f"Ledger append failed (step6): {le}")
-        
+
         return {
             "success": True,
             "step": 6,
             "step_name": "4d_merging",
             "data": result,
-            "message": f"Merged {len(result['merged_landmarks'])} facial landmarks"
+            "message": "4D merging completed"
         }
-        
+
     except Exception as e:
         logger.error(f"❌ Error in step 6 4D merging: {str(e)}")
         return {
@@ -2109,10 +2211,9 @@ async def step7_4d_refinement(merging_data: dict):
     """Step 7: Refine into final 4D mask for visualization and OSINT"""
     try:
         logger.info("✨ Step 7: Processing final 4D model refinement")
-        
+
         result = facial_pipeline.step7_4d_visualization_refinement(merging_data)
-        
-        # Append a provenance record for the refinement result (no file saved here)
+
         try:
             ledger = _get_ledger()
             if ledger is not None and isinstance(result, dict):
@@ -2124,16 +2225,16 @@ async def step7_4d_refinement(merging_data: dict):
                         model_hash = hashlib.sha256(payload_bytes).hexdigest()
                     except Exception:
                         model_hash = None
-                summary = result.get("refinement_summary", {}) if isinstance(result, dict) else {}
+                rsum = result.get("refinement_summary", {}) if isinstance(result, dict) else {}
                 ledger.append({
                     "event": "step7_4d_refinement_completed",
                     "endpoint": "/api/pipeline/step7-4d-refinement",
                     "sha256": model_hash,
                     "timestamp_iso": datetime.now(timezone.utc).isoformat(),
                     "refinement_summary": {
-                        "landmark_count": summary.get("landmark_count"),
-                        "mesh_faces": summary.get("mesh_faces"),
-                        "confidence_score": summary.get("confidence_score"),
+                        "landmark_count": rsum.get("landmark_count"),
+                        "mesh_faces": rsum.get("mesh_faces"),
+                        "confidence_score": rsum.get("confidence_score"),
                     },
                 })
         except Exception as le:
@@ -2144,9 +2245,9 @@ async def step7_4d_refinement(merging_data: dict):
             "step": 7,
             "step_name": "4d_refinement",
             "data": result,
-            "message": f"Created final 4D model with {result['refinement_summary']['landmark_count']} landmarks"
+            "message": "4D refinement completed"
         }
-        
+
     except Exception as e:
         logger.error(f"❌ Error in step 7 4D refinement: {str(e)}")
         return {
@@ -2183,8 +2284,8 @@ async def complete_pipeline_workflow(files: List[UploadFile] = File(...)):
         step3_result = facial_pipeline.step3_scan_validation_similarity(step2_result)
         workflow_results["step3"] = step3_result
         
-        # Step 4: Scan Filtering
-        step4_result = facial_pipeline.step4_scan_validation_filtering(step3_result, step2_result)
+        # Step 4: Orientation Filtering
+        step4_result = facial_pipeline.step4_orientation_filtering(step3_result)
         workflow_results["step4"] = step4_result
         
         # Step 5: 4D Isolation
@@ -2648,6 +2749,13 @@ async def integrated_4d_visualization_main(scan_files: List[UploadFile] = File(.
     """
     try:
         logger.info(f"Starting integrated 4D visualization for user {user_id} with {len(scan_files)} files")
+        # Entry diagnostics
+        if not scan_files:
+            logger.warning("[IntegratedPipeline][ENTRY] No files received")
+        else:
+            first_names = [getattr(f, 'filename', 'unknown') for f in scan_files[:3]]
+            logger.info(f"[IntegratedPipeline][ENTRY] First files: {first_names} (showing up to 3)")
+        logger.info(f"[IntegratedPipeline][ENTRY] user_id length={len(user_id) if user_id else 0}")
         
         # Face orientation detection and processing
         processed_files = []
@@ -2782,24 +2890,59 @@ async def integrated_4d_visualization_main(scan_files: List[UploadFile] = File(.
             # Run through the 7-step pipeline
             logger.info("Step 1: Scan Ingestion")
             step1_results = facial_pipeline.step1_scan_ingestion(image_files)
+            if step1_results is None or not isinstance(step1_results, dict):
+                logger.error(f"[IntegratedPipeline][Step1] Invalid result: type={type(step1_results)}")
+                raise ValueError("Step1 returned invalid result (None or non-dict)")
+            else:
+                logger.info(f"[IntegratedPipeline][Step1] keys={list(step1_results.keys())}")
             
             logger.info("Step 2: Facial Tracking")
             step2_results = facial_pipeline.step2_facial_tracking_overlay(step1_results)
+            if step2_results is None or not isinstance(step2_results, dict):
+                logger.error(f"[IntegratedPipeline][Step2] Invalid result: type={type(step2_results)}")
+                raise ValueError("Step2 returned invalid result (None or non-dict)")
+            else:
+                logger.info(f"[IntegratedPipeline][Step2] summary_keys={list(step2_results.keys())}")
             
             logger.info("Step 3: Scan Validation")
             step3_results = facial_pipeline.step3_scan_validation_similarity(step2_results)
+            if step3_results is None or not isinstance(step3_results, dict):
+                logger.error(f"[IntegratedPipeline][Step3] Invalid result: type={type(step3_results)}")
+                raise ValueError("Step3 returned invalid result (None or non-dict)")
+            else:
+                logger.info(f"[IntegratedPipeline][Step3] summary_keys={list(step3_results.keys())}")
             
             logger.info("Step 4: Scan Filtering")
-            step4_results = facial_pipeline.step4_scan_validation_filtering(step3_results, step2_results)
+            step4_results = facial_pipeline.step4_orientation_filtering(step3_results)
+            if step4_results is None or not isinstance(step4_results, dict):
+                logger.error(f"[IntegratedPipeline][Step4] Invalid result: type={type(step4_results)}")
+                raise ValueError("Step4 returned invalid result (None or non-dict)")
+            else:
+                logger.info(f"[IntegratedPipeline][Step4] summary_keys={list(step4_results.keys())}")
             
             logger.info("Step 5: 4D Isolation")
             step5_results = facial_pipeline.step5_4d_visualization_isolation(step4_results)
+            if step5_results is None or not isinstance(step5_results, dict):
+                logger.error(f"[IntegratedPipeline][Step5] Invalid result: type={type(step5_results)}")
+                raise ValueError("Step5 returned invalid result (None or non-dict)")
+            else:
+                logger.info(f"[IntegratedPipeline][Step5] summary_keys={list(step5_results.keys())}")
             
             logger.info("Step 6: 4D Merging")
             step6_results = facial_pipeline.step6_4d_visualization_merging(step5_results)
+            if step6_results is None or not isinstance(step6_results, dict):
+                logger.error(f"[IntegratedPipeline][Step6] Invalid result: type={type(step6_results)}")
+                raise ValueError("Step6 returned invalid result (None or non-dict)")
+            else:
+                logger.info(f"[IntegratedPipeline][Step6] summary_keys={list(step6_results.keys())}")
             
             logger.info("Step 7: 4D Refinement")
             step7_results = facial_pipeline.step7_4d_visualization_refinement(step6_results)
+            if step7_results is None or not isinstance(step7_results, dict):
+                logger.error(f"[IntegratedPipeline][Step7] Invalid result: type={type(step7_results)}")
+                raise ValueError("Step7 returned invalid result (None or non-dict)")
+            else:
+                logger.info(f"[IntegratedPipeline][Step7] summary_keys={list(step7_results.keys())}")
             
             pipeline_results = {
                 "step1": step1_results,
@@ -2857,7 +3000,8 @@ async def integrated_4d_visualization_main(scan_files: List[UploadFile] = File(.
                     pass
 
         except Exception as pipeline_error:
-            logger.error(f"Error in facial pipeline: {pipeline_error}")
+            # Use exception() to capture full stack trace for intermittent NoneType 'get' errors
+            logger.exception(f"Error in facial pipeline: {pipeline_error}")
             # Continue with basic processing even if pipeline fails
             pipeline_results = {
                 "step1": {"images": processed_files, "faces_found": len([f for f in face_orientations if f["landmarks_found"] > 0])},

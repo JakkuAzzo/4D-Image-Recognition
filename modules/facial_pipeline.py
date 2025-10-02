@@ -29,6 +29,7 @@ except ImportError:
 
 import json
 import hashlib
+import math
 from datetime import datetime
 from pathlib import Path
 import logging
@@ -50,6 +51,13 @@ except ImportError:
 
 import base64
 import io
+
+from modules.provenance_registry import (
+    RegistryCheck,
+    compute_perceptual_hash,
+    get_registry,
+    hash_watermark_bits,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -122,6 +130,56 @@ class FacialPipeline:
         except (ImportError, AttributeError, Exception):
             self.dlib_predictor = None
             logger.warning("Dlib shape predictor initialization failed")
+
+        # Provenance registry (singleton)
+        try:
+            self.registry = get_registry()
+        except Exception as registry_err:
+            logger.warning(f"Provenance registry unavailable: {registry_err}")
+            self.registry = None
+
+    def _json_safe(self, value: Any) -> Any:
+        """Recursively convert numpy/scalar objects into JSON-serializable structures."""
+        if isinstance(value, np.ndarray):
+            return [self._json_safe(v) for v in value.tolist()]
+        if isinstance(value, (np.generic,)):
+            return value.item()
+
+        if isinstance(value, dict):
+            return {str(k): self._json_safe(v) for k, v in value.items()}
+        if isinstance(value, (list, tuple, set)):
+            return [self._json_safe(v) for v in value]
+        if isinstance(value, (bytes, bytearray)):
+            return value.decode("utf-8", errors="ignore")
+        return value
+
+    # ------------------------------------------------------------------
+    # Compliance helpers
+    # ------------------------------------------------------------------
+    def _extract_watermark_signature(self, image: np.ndarray) -> Optional[Dict[str, Any]]:
+        """Attempt to extract embedded watermark bits from an image.
+
+        Returns a dict with ``bits``, ``bit_length`` and ``hash`` (sha256 of bits)
+        when extraction succeeds, otherwise ``None``. The helper is resilient to
+        missing watermark modules or extraction failures.
+        """
+        try:
+            from modules.watermarking import extract_watermark  # type: ignore
+        except Exception:
+            return None
+
+        for bit_length in (128, 96, 64):
+            try:
+                bits = extract_watermark(image, bit_length=bit_length)
+                if bits and set(bits).issubset({"0", "1"}):
+                    return {
+                        "bits": bits,
+                        "bit_length": bit_length,
+                        "hash": hash_watermark_bits(bits),
+                    }
+            except Exception:
+                continue
+        return None
     
     def step1_scan_ingestion(self, image_files: List[bytes]) -> Dict[str, Any]:
         """
@@ -136,6 +194,18 @@ class FacialPipeline:
             "metadata_summary": {}
         }
         
+        original_len = len(image_files)
+        ingested_data["dropped_images"] = []
+        compliance_summary = {
+            "total_uploaded": original_len,
+            "accepted": 0,
+            "dropped": 0,
+            "duplicates": 0,
+            "drop_reasons": {},
+            "registered_hashes": [],
+            "dropped_entries": [],
+            "duplicate_entries": [],
+        }
         for idx, image_data in enumerate(image_files):
             try:
                 # Convert bytes to PIL Image if available, otherwise use OpenCV
@@ -174,17 +244,158 @@ class FacialPipeline:
                     "original_size": image.size if PIL_AVAILABLE and image and hasattr(image, 'size') else metadata.get("dimensions", (0, 0)),  # type: ignore
                     "processed_at": datetime.now().isoformat()
                 }
-                
+
+                # Compliance + provenance checks
+                check: Optional[RegistryCheck] = None
+                duplicate_info: Optional[Dict[str, Any]] = None
+                if self.registry is not None:
+                    sha256_hash = metadata.get("hash_sha256")
+                    perceptual_hash = compute_perceptual_hash(cv_image)
+                    if perceptual_hash:
+                        metadata["perceptual_hash"] = perceptual_hash
+                    watermark_sig = self._extract_watermark_signature(cv_image)
+                    watermark_hash = None
+                    if watermark_sig:
+                        watermark_hash = watermark_sig.get("hash")
+                        metadata["watermark_hash"] = watermark_hash
+                        metadata["watermark_bits_length"] = watermark_sig.get("bit_length")
+
+                    check: Optional[RegistryCheck] = None
+                    if isinstance(sha256_hash, str):
+                        check = self.registry.check_image(
+                            sha256_hash,
+                            phash=perceptual_hash,
+                            watermark_hash=watermark_hash,
+                        )
+                    drop_image = False
+                    if check:
+                        if check.status in ("restricted", "revoked", "blocked"):
+                            reason = check.reason or "registry_policy"
+                            drop_entry = {
+                                "id": image_info["id"],
+                                "sha256": sha256_hash,
+                                "status": check.status,
+                                "reason": reason,
+                                "registered_at": (check.record or {}).get("registered_at"),
+                            }
+                            ingested_data["dropped_images"].append(drop_entry)
+                            compliance_summary["dropped"] += 1
+                            reason_key = reason or check.status or "registry_policy"
+                            compliance_summary["drop_reasons"][reason_key] = compliance_summary["drop_reasons"].get(reason_key, 0) + 1
+                            compliance_summary["dropped_entries"].append(drop_entry)
+                            logger.info(
+                                "🚫 Dropped image %s due to %s",
+                                image_info["id"],
+                                drop_entry["reason"],
+                            )
+                            drop_image = True
+                        elif check.status == "duplicate":
+                            # Allow duplicates but annotate compliance metadata
+                            duplicate_info = {
+                                "id": image_info["id"],
+                                "sha256": sha256_hash,
+                                "reason": check.reason or "registry_duplicate",
+                                "registered_at": (check.record or {}).get("registered_at"),
+                                "last_seen": (check.record or {}).get("last_seen"),
+                                "consent": (check.record or {}).get("consent"),
+                            }
+                            compliance_summary["duplicates"] += 1
+                            compliance_summary["duplicate_entries"].append(duplicate_info)
+                            image_info.setdefault("compliance", {})
+                            image_info["compliance"].update({
+                                "status": "duplicate",
+                                "registry_pointer": sha256_hash,
+                                "reason": duplicate_info["reason"],
+                                "consent": duplicate_info.get("consent"),
+                            })
+                            if (check.record or {}).get("perceptual_hash"):
+                                image_info["compliance"]["perceptual_hash"] = (check.record or {}).get("perceptual_hash")
+                            if (check.record or {}).get("watermark_hash"):
+                                image_info["compliance"]["watermark_hash"] = (check.record or {}).get("watermark_hash")
+                        else:
+                            image_info.setdefault("compliance", {})
+                            image_info["compliance"].update({
+                                "status": "accepted",
+                                "registry_pointer": sha256_hash,
+                                "watermark_hash": watermark_hash,
+                                "perceptual_hash": perceptual_hash,
+                            })
+
+                    if drop_image:
+                        continue  # Skip adding to pipeline images
+                else:
+                    watermark_sig = None
+                    perceptual_hash = compute_perceptual_hash(cv_image)
+                    if perceptual_hash:
+                        metadata["perceptual_hash"] = perceptual_hash
+
+                if duplicate_info is None:
+                    image_info.setdefault("compliance", {"status": "accepted"})
                 ingested_data["images"].append(image_info)
+                compliance_summary["accepted"] += 1
+                if metadata.get("hash_sha256"):
+                    compliance_summary["registered_hashes"].append(metadata["hash_sha256"])
+                    if self.registry is not None and not (check and check.status == "duplicate"):
+                        try:
+                            self.registry.register_image(
+                                metadata["hash_sha256"],
+                                metadata={
+                                    "filename": metadata.get("filename"),
+                                    "index": idx,
+                                    "dimensions": metadata.get("dimensions"),
+                                },
+                                phash=metadata.get("perceptual_hash"),
+                                watermark_hash=metadata.get("watermark_hash"),
+                            )
+                        except Exception as reg_err:
+                            logger.warning(f"Provenance register failed for {image_info['id']}: {reg_err}")
+
                 logger.info(f"✅ Processed image {idx + 1}/{len(image_files)}: {metadata['filename']}")
                 
             except Exception as e:
                 logger.error(f"❌ Error processing image {idx}: {str(e)}")
+                # Still record a placeholder entry so counts remain consistent
+                error_entry = {
+                    "id": f"img_{idx:03d}",
+                    "index": idx,
+                    "image_data": "",
+                    "metadata": None,
+                    "original_size": (0, 0),
+                    "processed_at": datetime.now().isoformat(),
+                    "error": str(e)
+                }
+                ingested_data["images"].append(error_entry)
+                compliance_summary["dropped"] += 1
+                compliance_summary["drop_reasons"]["processing_error"] = compliance_summary["drop_reasons"].get("processing_error", 0) + 1
+                compliance_summary["dropped_entries"].append({
+                    "id": error_entry["id"],
+                    "status": "error",
+                    "reason": "processing_error",
+                    "error": str(e),
+                })
                 continue
         
-        # Generate metadata summary
-        ingested_data["metadata_summary"] = self._generate_metadata_summary(ingested_data["images"])
-        
+        # Generate metadata summary with defensive fallback
+        try:
+            ingested_data["metadata_summary"] = self._generate_metadata_summary(ingested_data["images"])
+        except Exception as ms_e:
+            logger.exception(f"[Step1] Metadata summary generation failed: {ms_e}")
+            ingested_data["metadata_summary"] = {
+                "total_images": original_len,
+                "error": "metadata_summary_failed",
+                "reason": str(ms_e)
+            }
+
+        # Normalize compliance counters to avoid drift
+        accepted_images = [img for img in ingested_data["images"] if not img.get("error")]
+        error_images = [img for img in ingested_data["images"] if img.get("error")]
+        compliance_summary["accepted"] = len(accepted_images)
+        compliance_summary["dropped"] = len(ingested_data["dropped_images"]) + len(error_images)
+        ingested_data["compliance_summary"] = compliance_summary
+        if isinstance(ingested_data.get("metadata_summary"), dict):
+            ingested_data["metadata_summary"].setdefault("dropped_images", compliance_summary["dropped"])
+            ingested_data["metadata_summary"].setdefault("duplicates_detected", compliance_summary["duplicates"])
+
         logger.info(f"✅ Step 1 Complete: Ingested {len(ingested_data['images'])} images")
         return ingested_data
     
@@ -193,7 +404,21 @@ class FacialPipeline:
         Step 2: Overlay facial tracking pointers using MediaPipe and face_recognition
         """
         logger.info("👤 Step 2: Facial Tracking Overlay - Detecting faces and landmarks")
-        
+        # Defensive structure validation
+        if not isinstance(ingested_data, dict):
+            raise ValueError("ingested_data must be dict for step2")
+        if "images" not in ingested_data or not isinstance(ingested_data.get("images"), list):
+            logger.warning("[Step2] ingested_data missing 'images' list; returning empty tracking result")
+            return {
+                "images_with_tracking": [],
+                "face_detection_summary": {
+                    "total_images": 0,
+                    "faces_detected": 0,
+                    "failed_detections": 0,
+                    "warning": "missing_images_list"
+                }
+            }
+
         tracking_data = {
             "images_with_tracking": [],
             "face_detection_summary": {
@@ -214,6 +439,16 @@ class FacialPipeline:
                     
                     # Detect faces and extract landmarks
                     face_analysis = self._detect_faces_and_landmarks(rgb_image)
+                    face_analysis = self._json_safe(face_analysis)
+                    if face_analysis is None:  # Should never happen, defensive guard
+                        logger.error("[Step2] _detect_faces_and_landmarks returned None (unexpected)")
+                        face_analysis = {"faces_found": 0, "error": "face_analysis_none"}
+                    else:
+                        # Light-weight debug keys (avoid huge logs)
+                        try:
+                            logger.debug(f"[Step2] face_analysis keys: {list(face_analysis.keys())}")
+                        except Exception:
+                            pass
                     
                     if face_analysis["faces_found"] > 0:
                         # Draw tracking overlays
@@ -348,91 +583,158 @@ class FacialPipeline:
             "groups_found": len(groups),
             "largest_group_size": max(len(group) for group in groups) if groups else 0
         }
+
+        validation_data["validated_images"] = valid_images
+        validation_data["tracking_images"] = tracking_data.get("images_with_tracking", [])
+        validation_data["total_images"] = len(tracking_data.get("images_with_tracking", []))
         
         logger.info(f"✅ Step 3 Complete: Found {len(groups)} person groups")
         return validation_data
     
-    def step4_scan_validation_filtering(self, validation_data: Dict[str, Any], tracking_data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Step 4: Automatically filter dissimilar faces and allow manual removal
-        """
-        logger.info("🔧 Step 4: Scan Validation Filtering - Removing dissimilar faces")
-        
-        filtering_data = {
+    def step4_orientation_filtering(self, validation_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Step 4: Filter frames based on facial orientation and tracking quality."""
+        logger.info("🧭 Step 4: Orientation Filtering - Evaluating pose consistency")
+
+        orientation_data = {
+            "accepted_frames": 0,
+            "rejected_frames": 0,
+            "accepted_images": [],
+            "rejected_images": [],
             "filtered_images": [],
-            "removed_images": [],
             "auto_removed": [],
             "manual_removal_candidates": [],
-            "filtering_summary": {}
+            "orientation_summary": {}
         }
-        
-        # Find the largest group (assumed to be the main subject)
-        if not validation_data["same_person_groups"]:
-            logger.warning("⚠️ No person groups found, keeping all images")
-            filtering_data["filtered_images"] = tracking_data["images_with_tracking"]
-            filtering_data["filtering_summary"] = {
-                "status": "no_filtering",
-                "reason": "No person groups identified"
+
+        validated_images = validation_data.get("validated_images") or []
+        tracking_images = validation_data.get("tracking_images") or validated_images
+        images = validated_images
+        similarity_matrix = validation_data.get("similarity_matrix", [])
+        same_person_groups = validation_data.get("same_person_groups", [])
+
+        if not isinstance(images, list) or not images:
+            logger.warning("⚠️ No images available for orientation filtering")
+            orientation_data["orientation_summary"] = {
+                "status": "no_images",
+                "accepted_frames": 0,
+                "dropped_frames": 0,
+                "reason": "No images provided"
             }
-            return filtering_data
-        
-        # Find the largest group
-        largest_group = max(validation_data["same_person_groups"], key=len)
-        main_group_indices = largest_group
-        
-        # Get images with valid face detections
-        valid_images = [img for img in tracking_data["images_with_tracking"] 
-                       if img["face_analysis"]["faces_found"] > 0]
-        
-        # Auto-remove images not in the largest group
-        auto_removal_threshold = 0.4  # Very low similarity = auto remove
-        
-        for i, img_data in enumerate(valid_images):
-            if i in main_group_indices:
-                filtering_data["filtered_images"].append(img_data)
-            else:
-                # Check if this image is very dissimilar to the main group
-                max_similarity_to_main = 0
-                for main_idx in main_group_indices:
-                    if i < len(validation_data["similarity_matrix"]) and main_idx < len(validation_data["similarity_matrix"][i]):
-                        similarity = validation_data["similarity_matrix"][i][main_idx]
-                        max_similarity_to_main = max(max_similarity_to_main, similarity)
-                
-                if max_similarity_to_main < auto_removal_threshold:
-                    # Auto-remove very dissimilar faces
-                    filtering_data["auto_removed"].append({
-                        **img_data,
-                        "removal_reason": "very_low_similarity",
-                        "max_similarity": max_similarity_to_main
-                    })
-                else:
-                    # Mark for manual review
-                    filtering_data["manual_removal_candidates"].append({
-                        **img_data,
-                        "max_similarity": max_similarity_to_main,
-                        "recommendation": "review_recommended" if max_similarity_to_main < 0.6 else "probably_keep"
-                    })
-        
-        # Add images without face detections to removal candidates
-        for img_data in tracking_data["images_with_tracking"]:
-            if img_data["face_analysis"]["faces_found"] == 0:
-                filtering_data["manual_removal_candidates"].append({
+            return orientation_data
+
+        main_group = max(same_person_groups, key=len) if same_person_groups else list(range(len(images)))
+        orientation_scores = []
+        yaw_values: List[float] = []
+        pitch_values: List[float] = []
+        roll_values: List[float] = []
+
+        for idx, img_data in enumerate(images):
+            face_analysis = img_data.get("face_analysis") or {}
+            faces_found = face_analysis.get("faces_found", 0)
+            if faces_found == 0:
+                orientation_data["rejected_frames"] += 1
+                orientation_data["rejected_images"].append({
                     **img_data,
-                    "removal_reason": "no_face_detected",
-                    "recommendation": "remove_recommended"
+                    "rejection_reason": "no_face_detected"
                 })
-        
-        filtering_data["filtering_summary"] = {
-            "status": "completed",
-            "original_count": len(tracking_data["images_with_tracking"]),
-            "filtered_count": len(filtering_data["filtered_images"]),
-            "auto_removed_count": len(filtering_data["auto_removed"]),
-            "manual_candidates_count": len(filtering_data["manual_removal_candidates"]),
-            "main_group_size": len(main_group_indices)
+                continue
+
+            yaw, pitch, roll = self._estimate_head_pose(face_analysis)
+            yaw_values.append(yaw)
+            pitch_values.append(pitch)
+            roll_values.append(roll)
+
+            # Evaluate orientation thresholds
+            orientation_ok = all(abs(angle) <= threshold for angle, threshold in zip(
+                (yaw, pitch, roll),
+                (25.0, 20.0, 30.0)
+            ))
+
+            # Evaluate similarity to main group if available
+            similarity_ok = True
+            if main_group and idx < len(similarity_matrix):
+                similarities = []
+                for main_idx in main_group:
+                    if main_idx < len(similarity_matrix[idx]):
+                        similarities.append(similarity_matrix[idx][main_idx])
+                if similarities:
+                    similarity_score = float(max(similarities))
+                    orientation_scores.append(similarity_score)
+                    similarity_ok = similarity_score >= 0.45
+
+            if orientation_ok and similarity_ok:
+                orientation_data["accepted_frames"] += 1
+                accepted_payload = {
+                    **img_data,
+                    "orientation": {
+                        "yaw": yaw,
+                        "pitch": pitch,
+                        "roll": roll,
+                        "orientation_ok": orientation_ok,
+                        "similarity_ok": similarity_ok
+                    }
+                }
+                orientation_data["accepted_images"].append(accepted_payload)
+                orientation_data["filtered_images"].append(accepted_payload)
+            else:
+                orientation_data["rejected_frames"] += 1
+                rejection_payload = {
+                    **img_data,
+                    "orientation": {
+                        "yaw": yaw,
+                        "pitch": pitch,
+                        "roll": roll,
+                        "orientation_ok": orientation_ok,
+                        "similarity_ok": similarity_ok
+                    },
+                    "rejection_reason": "orientation_out_of_range" if not orientation_ok else "low_similarity"
+                }
+                orientation_data["rejected_images"].append(rejection_payload)
+                orientation_data["auto_removed"].append(rejection_payload)
+
+        # Account for images lacking valid encodings (no faces detected earlier)
+        validated_ids = {img.get("id") for img in images if isinstance(img, dict)}
+        for img_data in tracking_images:
+            img_id = img_data.get("id") if isinstance(img_data, dict) else None
+            if img_id not in validated_ids:
+                orientation_data["rejected_frames"] += 1
+                rejection_payload = {
+                    **img_data,
+                    "rejection_reason": "no_face_detected",
+                    "orientation": {
+                        "yaw": 0.0,
+                        "pitch": 0.0,
+                        "roll": 0.0,
+                        "orientation_ok": False,
+                        "similarity_ok": False
+                    }
+                }
+                orientation_data["rejected_images"].append(rejection_payload)
+                orientation_data["manual_removal_candidates"].append(rejection_payload)
+
+        total_frames = orientation_data["accepted_frames"] + orientation_data["rejected_frames"]
+        orientation_data["orientation_summary"] = {
+            "status": "completed" if total_frames else "no_frames",
+            "accepted_frames": orientation_data["accepted_frames"],
+            "dropped_frames": orientation_data["rejected_frames"],
+            "acceptance_ratio": (orientation_data["accepted_frames"] / total_frames) if total_frames else 0.0,
+            "total_frames": total_frames,
+            "average_yaw": float(np.mean(yaw_values)) if yaw_values else 0.0,
+            "average_pitch": float(np.mean(pitch_values)) if pitch_values else 0.0,
+            "average_roll": float(np.mean(roll_values)) if roll_values else 0.0,
+            "yaw_std": float(np.std(yaw_values)) if yaw_values else 0.0,
+            "pitch_std": float(np.std(pitch_values)) if pitch_values else 0.0,
+            "roll_std": float(np.std(roll_values)) if roll_values else 0.0,
+            "average_similarity": float(np.mean(orientation_scores)) if orientation_scores else None
         }
-        
-        logger.info(f"✅ Step 4 Complete: Filtered to {len(filtering_data['filtered_images'])} images")
-        return filtering_data
+        orientation_data["filtering_summary"] = orientation_data["orientation_summary"]
+
+        logger.info(
+            "✅ Step 4 Complete: %d accepted, %d rejected",
+            orientation_data["accepted_frames"],
+            orientation_data["rejected_frames"]
+        )
+        return orientation_data
     
     def step5_4d_visualization_isolation(self, filtering_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -444,7 +746,16 @@ class FacialPipeline:
             "isolated_faces": [],
             "facial_masks": [],
             "tracking_points_only": [],
-            "isolation_summary": {}
+            "isolation_summary": {},
+            "dropped_masks": [],
+            "compliance_summary": {}
+        }
+
+        compliance_summary = {
+            "isolated": 0,
+            "dropped": 0,
+            "drop_reasons": {},
+            "registered_mask_hashes": [],
         }
         
         for img_data in filtering_data["filtered_images"]:
@@ -457,12 +768,50 @@ class FacialPipeline:
                     # Create isolated visualization
                     isolated_result = self._create_isolated_face_visualization(image, img_data["face_analysis"])
                     
+                    mask_hash = None
+                    try:
+                        mask_bytes = base64.b64decode(isolated_result["mask_b64"])
+                        mask_hash = hashlib.sha256(mask_bytes).hexdigest()
+                    except Exception:
+                        mask_hash = None
+
+                    if self.registry is not None and mask_hash:
+                        mask_check = self.registry.check_mask(mask_hash)
+                        if mask_check.status != "allowed":
+                            drop_entry = {
+                                "id": img_data["id"],
+                                "mask_hash": mask_hash,
+                                "status": mask_check.status,
+                                "reason": mask_check.reason or "mask_policy",
+                            }
+                            isolation_data["dropped_masks"].append(drop_entry)
+                            compliance_summary["dropped"] += 1
+                            reason_key = drop_entry["reason"]
+                            compliance_summary["drop_reasons"][reason_key] = compliance_summary["drop_reasons"].get(reason_key, 0) + 1
+                            logger.info("🚫 Dropped mask for %s due to %s", img_data["id"], drop_entry["reason"])
+                            continue
+                        try:
+                            self.registry.register_mask(
+                                mask_hash,
+                                source_images=[img_data.get("metadata", {}).get("hash_sha256")],
+                                metadata={"face_id": img_data["id"]},
+                            )
+                            compliance_summary["registered_mask_hashes"].append(mask_hash)
+                        except Exception as reg_err:
+                            logger.warning(f"Mask registry update failed for {img_data['id']}: {reg_err}")
+
+                    compliance_summary["isolated"] += 1
                     isolation_data["isolated_faces"].append({
                         **img_data,
                         "isolated_image": isolated_result["isolated_b64"],
                         "face_mask": isolated_result["mask_b64"],
                         "tracking_points": isolated_result["points_b64"],
-                        "facial_region": isolated_result["facial_region"]
+                        "facial_region": isolated_result["facial_region"],
+                        "mask_hash": mask_hash,
+                        "compliance": {
+                            "status": "accepted",
+                            "mask_hash": mask_hash,
+                        }
                 })
                 
             except Exception as e:
@@ -472,8 +821,11 @@ class FacialPipeline:
         isolation_data["isolation_summary"] = {
             "status": "completed",
             "isolated_count": len(isolation_data["isolated_faces"]),
-            "processing_errors": len(filtering_data["filtered_images"]) - len(isolation_data["isolated_faces"])
+            "processing_errors": len(filtering_data["filtered_images"]) - len(isolation_data["isolated_faces"]),
+            "dropped_masks": len(isolation_data["dropped_masks"]),
         }
+
+        isolation_data["compliance_summary"] = compliance_summary
         
         logger.info(f"✅ Step 5 Complete: Isolated {len(isolation_data['isolated_faces'])} facial regions")
         return isolation_data
@@ -486,14 +838,21 @@ class FacialPipeline:
         
         merging_data = {
             "merged_landmarks": [],
-            "depth_map": {},
-            "color_map": {},
-            "confidence_map": {},
+            "depth_map": [],
+            "color_map": [],
+            "confidence_map": [],
             "merging_summary": {}
         }
         
         if not isolation_data["isolated_faces"]:
             logger.warning("⚠️ No isolated faces to merge")
+            merging_data["merging_summary"] = {
+                "status": "no_isolated_faces",
+                "original_landmarks": 0,
+                "merged_landmarks": 0,
+                "compression_ratio": 0.0,
+                "source_frames": 0
+            }
             return merging_data
         
         # Collect all landmarks from all images
@@ -509,12 +868,33 @@ class FacialPipeline:
         
         if not all_landmarks:
             logger.warning("⚠️ No landmarks found for merging")
+            merging_data["merging_summary"] = {
+                "status": "no_landmarks",
+                "original_landmarks": 0,
+                "merged_landmarks": 0,
+                "compression_ratio": 0.0,
+                "source_frames": len(isolation_data["isolated_faces"])
+            }
             return merging_data
         
         # Merge overlapping landmarks and fill gaps
         merged_result = self._merge_facial_landmarks(all_landmarks, landmark_sources, isolation_data["isolated_faces"])
         
         merging_data.update(merged_result)
+        conf_map = merging_data.get("confidence_map", []) or []
+        depth_map = merging_data.get("depth_map", []) or []
+        merged_summary = merging_data.get("merging_summary", {}) or {}
+        merged_summary.update({
+            "status": "completed" if merging_data.get("merged_landmarks") else "no_landmarks",
+            "average_confidence": float(np.mean(conf_map)) if conf_map else 0.0,
+            "confidence_variance": float(np.var(conf_map)) if conf_map else 0.0,
+            "depth_range": {
+                "min": float(np.min(depth_map)) if len(depth_map) else 0.0,
+                "max": float(np.max(depth_map)) if len(depth_map) else 0.0
+            },
+            "source_frames": len(isolation_data["isolated_faces"])
+        })
+        merging_data["merging_summary"] = merged_summary
         
         logger.info(f"✅ Step 6 Complete: Merged {len(merging_data['merged_landmarks'])} facial landmarks")
         return merging_data
@@ -532,20 +912,78 @@ class FacialPipeline:
             "refinement_summary": {}
         }
         
-        if not merging_data["merged_landmarks"]:
+        if not merging_data.get("merged_landmarks"):
             logger.warning("⚠️ No merged landmarks for refinement")
+            refinement_data["refinement_summary"] = {
+                "status": "no_landmarks",
+                "landmark_count": 0,
+                "mesh_faces": 0,
+                "confidence_score": 0.0,
+                "source_landmarks": 0,
+                "model_available": False
+            }
             return refinement_data
         
         # Create final 4D model
         final_model = self._create_final_4d_model(merging_data)
         
         refinement_data["final_4d_model"] = final_model
+        model_hash = hashlib.sha256(json.dumps(final_model, sort_keys=True).encode("utf-8")).hexdigest()
+        vertices = final_model.get("surface_mesh", {}).get("vertices", [])
+        faces = final_model.get("surface_mesh", {}).get("faces", [])
+        source_frames = None
+        merging_summary = merging_data.get("merging_summary") if isinstance(merging_data, dict) else None
+        if isinstance(merging_summary, dict):
+            source_frames = merging_summary.get("source_frames")
+
         refinement_data["refinement_summary"] = {
             "status": "completed",
             "landmark_count": len(final_model.get("facial_points", [])),
-            "mesh_faces": len(final_model.get("surface_mesh", {}).get("faces", [])),
-            "confidence_score": final_model.get("confidence_score", 0.0)
+            "mesh_faces": len(faces),
+            "mesh_vertices": len(vertices),
+            "confidence_score": final_model.get("confidence_score", 0.0),
+            "source_landmarks": len(merging_data.get("merged_landmarks", [])),
+            "model_available": True,
+            "source_frames": source_frames
         }
+        refinement_data["refinement_summary"]["model_hash"] = model_hash
+
+        compliance_summary = {
+            "status": "accepted",
+            "model_hash": model_hash,
+        }
+
+        if self.registry is not None:
+            try:
+                model_check = self.registry.check_model(model_hash)
+            except Exception as check_err:
+                logger.warning(f"Model compliance check failed: {check_err}")
+                model_check = None
+
+            if model_check and model_check.status != "allowed":
+                compliance_summary.update({
+                    "status": model_check.status,
+                    "reason": model_check.reason or "model_policy",
+                })
+                refinement_data["refinement_summary"]["compliance_status"] = model_check.status
+                refinement_data["refinement_summary"]["drop_reason"] = model_check.reason
+                refinement_data["refinement_summary"]["status"] = "withheld"
+                refinement_data["refinement_summary"]["model_available"] = False
+                refinement_data["final_4d_model"] = {}
+                logger.info("🚫 Final 4D model withheld due to %s", model_check.reason)
+            else:
+                try:
+                    self.registry.register_model(
+                        model_hash,
+                        metadata={
+                            "landmark_count": len(final_model.get("facial_points", [])),
+                            "mesh_faces": len(final_model.get("surface_mesh", {}).get("faces", [])),
+                        },
+                    )
+                except Exception as reg_err:
+                    logger.warning(f"Model registry update failed: {reg_err}")
+
+        refinement_data["compliance_summary"] = compliance_summary
         
         logger.info("✅ Step 7 Complete: Final 4D model created")
         return refinement_data
@@ -604,14 +1042,28 @@ class FacialPipeline:
         return metadata
     
     def _generate_metadata_summary(self, images: List[Dict]) -> Dict[str, Any]:
-        """Generate summary of all image metadata"""
+        """Generate summary of all image metadata (robust against malformed entries)"""
         if not images:
             return {}
-        
-        # Filter out images with no metadata
-        valid_images = [img for img in images if img.get("metadata")]
-        
-        if not valid_images:
+
+        sanitized: List[Dict[str, Any]] = []
+        malformed = 0
+        for img in images:
+            meta = img.get("metadata")
+            if isinstance(meta, dict):
+                # Ensure minimal required keys exist
+                if "file_size" not in meta:
+                    meta["file_size"] = 0
+                if "format" not in meta:
+                    meta["format"] = "Unknown"
+                if "dimensions" not in meta or not isinstance(meta.get("dimensions"), dict):
+                    meta["dimensions"] = {"width": 0, "height": 0}
+                sanitized.append(img)
+            else:
+                malformed += 1
+                logger.warning(f"[MetadataSummary] Skipping image with malformed metadata type={type(meta)} id={img.get('id')}")
+
+        if not sanitized:
             return {
                 "total_images": len(images),
                 "total_file_size": 0,
@@ -619,34 +1071,48 @@ class FacialPipeline:
                 "average_dimensions": {"width": 0, "height": 0},
                 "devices_detected": 0,
                 "timestamps_available": 0,
-                "gps_data_available": 0
+                "gps_data_available": 0,
+                "malformed_entries": malformed
             }
-        
-        total_size = sum(img["metadata"]["file_size"] for img in valid_images)
-        formats = list(set(img["metadata"]["format"] for img in valid_images))
-        avg_width = sum(img["metadata"]["dimensions"]["width"] for img in valid_images) / len(valid_images)
-        avg_height = sum(img["metadata"]["dimensions"]["height"] for img in valid_images) / len(valid_images)
-        
+
+        total_size = 0
+        formats_set = set()
+        widths = []
+        heights = []
+        devices = set()
+        ts_count = 0
+        gps_count = 0
+
+        for img in sanitized:
+            meta = img["metadata"]
+            try:
+                total_size += int(meta.get("file_size", 0))
+                formats_set.add(meta.get("format", "Unknown"))
+                dims = meta.get("dimensions", {})
+                widths.append(int(dims.get("width", 0)))
+                heights.append(int(dims.get("height", 0)))
+                device_info = meta.get("device_info") or {}
+                make = device_info.get("make") or device_info.get("model") or "Unknown"
+                devices.add(make)
+                if meta.get("timestamp"):
+                    ts_count += 1
+                if meta.get("estimated_location"):
+                    gps_count += 1
+            except Exception as fe:
+                logger.warning(f"[MetadataSummary] Failed processing one image metadata: {fe}")
+
+        avg_width = round(sum(widths) / len(widths)) if widths else 0
+        avg_height = round(sum(heights) / len(heights)) if heights else 0
+
         return {
             "total_images": len(images),
             "total_file_size": total_size,
-            "formats_used": formats,
-            "average_dimensions": {
-                "width": round(avg_width),
-                "height": round(avg_height)
-            },
-            "devices_detected": len(set(
-                img["metadata"].get("device_info", {}).get("make", "Unknown") 
-                for img in valid_images
-            )),
-            "timestamps_available": sum(
-                1 for img in valid_images 
-                if img["metadata"].get("timestamp")
-            ),
-            "gps_data_available": sum(
-                1 for img in valid_images 
-                if img["metadata"].get("estimated_location")
-            )
+            "formats_used": sorted(list(formats_set)),
+            "average_dimensions": {"width": avg_width, "height": avg_height},
+            "devices_detected": len(devices),
+            "timestamps_available": ts_count,
+            "gps_data_available": gps_count,
+            "malformed_entries": malformed
         }
     
     def _detect_faces_and_landmarks(self, rgb_image: np.ndarray) -> Dict[str, Any]:
@@ -772,6 +1238,67 @@ class FacialPipeline:
             return "acceptable"
         else:
             return "poor"
+
+    def _estimate_head_pose(self, face_analysis: Dict[str, Any]) -> Tuple[float, float, float]:
+        """Approximate head pose angles (yaw, pitch, roll) in degrees."""
+        try:
+            landmarks = face_analysis.get("mediapipe_landmarks") or []
+            if isinstance(landmarks, list) and len(landmarks) >= 3:
+                def _get_point(index: int) -> Tuple[float, float, float]:
+                    safe_index = min(max(index, 0), len(landmarks) - 1)
+                    point = landmarks[safe_index]
+                    if isinstance(point, dict):
+                        x = float(point.get("x", 0.0))
+                        y = float(point.get("y", 0.0))
+                        z = float(point.get("z", 0.0))
+                    else:
+                        x = float(point[0]) if len(point) > 0 else 0.0
+                        y = float(point[1]) if len(point) > 1 else 0.0
+                        z = float(point[2]) if len(point) > 2 else 0.0
+                    return x, y, z
+
+                left_eye = _get_point(33)
+                right_eye = _get_point(263)
+                nose_tip = _get_point(1)
+                chin = _get_point(199 if len(landmarks) > 199 else len(landmarks) - 1)
+                forehead = _get_point(10 if len(landmarks) > 10 else 0)
+
+                face_width = max(abs(right_eye[0] - left_eye[0]), 1e-3)
+                vertical_span = max(abs(chin[1] - forehead[1]), 1e-3)
+
+                mid_eye_x = (left_eye[0] + right_eye[0]) / 2.0
+                mid_eye_y = (left_eye[1] + right_eye[1]) / 2.0
+
+                yaw = ((nose_tip[0] - mid_eye_x) / face_width) * 50.0
+                pitch = ((nose_tip[1] - ((forehead[1] + chin[1]) / 2.0)) / vertical_span) * 40.0
+                roll = math.degrees(math.atan2(right_eye[1] - left_eye[1], face_width))
+
+                return float(yaw), float(pitch), float(roll)
+
+            dlib_landmarks = face_analysis.get("dlib_landmarks") or []
+            if isinstance(dlib_landmarks, list) and len(dlib_landmarks) >= 68:
+                def _dl_point(index: int) -> Tuple[float, float]:
+                    point = dlib_landmarks[index]
+                    if isinstance(point, dict):
+                        return float(point.get("x", 0.0)), float(point.get("y", 0.0))
+                    return float(point[0]), float(point[1])
+
+                left_eye = _dl_point(36)
+                right_eye = _dl_point(45)
+                nose_tip = _dl_point(30)
+                chin_y = _dl_point(8)[1]
+                forehead_y = _dl_point(19)[1]
+                face_width = max(abs(right_eye[0] - left_eye[0]), 1e-3)
+                vertical_span = max(abs(chin_y - forehead_y), 1e-3)
+                yaw = ((nose_tip[0] - ((left_eye[0] + right_eye[0]) / 2.0)) / face_width) * 50.0
+                pitch = ((nose_tip[1] - ((forehead_y + chin_y) / 2.0)) / vertical_span) * 40.0
+                roll = math.degrees(math.atan2(right_eye[1] - left_eye[1], face_width))
+                return float(yaw), float(pitch), float(roll)
+
+        except Exception as pose_err:
+            logger.debug(f"Head pose estimation fallback: {pose_err}")
+
+        return 0.0, 0.0, 0.0
     
     def _group_similar_faces(self, similarity_matrix: List[List[float]], threshold: float) -> List[List[int]]:
         """Group faces based on similarity threshold"""
