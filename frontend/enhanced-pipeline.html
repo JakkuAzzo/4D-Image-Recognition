@@ -6,6 +6,7 @@
     <title>7-Step Facial Recognition & 4D Visualization Pipeline</title>
     <script defer src="nav.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -319,6 +320,57 @@
             padding-left: 18px;
         }
 
+        .fingerprint-panels {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .fingerprint-card {
+            background: white;
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .fingerprint-card h4 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .fingerprint-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85em;
+        }
+
+        .fingerprint-table th,
+        .fingerprint-table td {
+            border-bottom: 1px solid #ecf0f1;
+            padding: 6px 4px;
+            text-align: left;
+            word-break: break-all;
+        }
+
+        .fingerprint-table th {
+            font-weight: 600;
+            color: #7f8c8d;
+            text-transform: uppercase;
+        }
+
+        .hash-monospaced {
+            font-family: 'Fira Code', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+            letter-spacing: 0.03em;
+        }
+
+        .embedding-preview {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8em;
+            color: #34495e;
+        }
+
         .similarity-matrix {
             margin-top: 20px;
         }
@@ -415,15 +467,34 @@
 
         .visualization-container {
             margin-top: 30px;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
             border-radius: 15px;
+            padding: 16px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 16px;
+        }
+
+        .model-viewer-wrapper {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.25), rgba(118, 75, 162, 0.25));
+            border-radius: 12px;
+            padding: 8px;
+        }
+
+        model-viewer {
+            width: 100%;
+            height: 360px;
+            background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1), rgba(0,0,0,0.9));
+            border-radius: 10px;
             overflow: hidden;
         }
 
         #threejs-container {
             width: 100%;
-            height: 500px;
+            height: 360px;
             position: relative;
+            border-radius: 12px;
+            overflow: hidden;
         }
 
         .step-navigation {
@@ -563,6 +634,7 @@
                 </div>
                 <div id="step1-summary" class="step1-summary" style="margin-bottom:15px;"></div>
                 <div id="compliance-events" class="compliance-notice" style="display:none;"></div>
+                <div id="fingerprint-insights" class="fingerprint-panels"></div>
                 <div class="image-grid" id="ingested-images"></div>
             </div>
         </div>
@@ -678,6 +750,16 @@
             </div>
             <div class="step-content" id="step7-content">
                 <div class="visualization-container">
+                    <div class="model-viewer-wrapper">
+                        <model-viewer id="final-model-viewer"
+                                      camera-controls
+                                      auto-rotate
+                                      ar
+                                      shadow-intensity="1"
+                                      exposure="0.85"
+                                      environment-image="neutral">
+                        </model-viewer>
+                    </div>
                     <div id="threejs-container"></div>
                 </div>
                 <div id="final-model-info"></div>

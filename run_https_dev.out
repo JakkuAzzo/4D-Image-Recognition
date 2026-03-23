@@ -1,12 +1,10 @@
-Detected local IPs: 127.0.2.2
-127.0.2.3
-10.154.76.73
-169.254.140.94
-Using IPs for certificate generation:  127.0.2.2 127.0.2.3 10.154.76.73
+Detected local IPs: 192.168.1.50
+169.254.9.219
+Using IPs for certificate generation:  192.168.1.50
 Existing certificate is valid for all IPs.
 Activated virtual environment: venv
 Starting FastAPI backend with HTTPS on port 8000...
-FastAPI backend started with PID 66599 (logs: fastapi.log)
+FastAPI backend started with PID 17171 (logs: fastapi.log)
 Waiting for FastAPI to listen on port 8000...
 FastAPI is running on port 8000.
 
@@ -16,11 +14,9 @@ FastAPI is running on port 8000.
 
 Access your app at:
   Local:    https://localhost:8000
-  Network:  https://127.0.2.2:8000
+  Network:  https://192.168.1.50:8000
 
 Other network interfaces:
-           https://127.0.2.3:8000
-           https://10.154.76.73:8000
 
 Note: You may see security warnings because this uses a self-signed certificate.
 Click 'Advanced' and 'Proceed to localhost/IP' to continue.

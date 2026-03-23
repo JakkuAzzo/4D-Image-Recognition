@@ -548,6 +548,69 @@ function displayStep1Results(data) {
         container.appendChild(card);
     });
 
+    try {
+        const fingerprintHost = document.getElementById('fingerprint-insights');
+        if (fingerprintHost) {
+            fingerprintHost.innerHTML = '';
+            const perImageCard = document.createElement('div');
+            perImageCard.className = 'fingerprint-card';
+            perImageCard.innerHTML = '<h4>Per-Image Fingerprints</h4>';
+
+            const table = document.createElement('table');
+            table.className = 'fingerprint-table';
+            const thead = document.createElement('thead');
+            thead.innerHTML = '<tr><th>Image</th><th>SHA-256</th><th>pHash</th><th>aHash</th><th>dHash</th><th>Watermark</th></tr>';
+            table.appendChild(thead);
+            const tbody = document.createElement('tbody');
+
+            data.images.forEach(img => {
+                const fp = img.fingerprints || {};
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${img.id}</td>
+                    <td><span class="hash-monospaced">${(fp.sha256 || '').toString().slice(0, 16)}${fp.sha256 ? '…' : ''}</span></td>
+                    <td><span class="hash-monospaced">${(fp.perceptual_hash || '—')}</span></td>
+                    <td><span class="hash-monospaced">${(fp.average_hash || '—')}</span></td>
+                    <td><span class="hash-monospaced">${(fp.difference_hash || '—')}</span></td>
+                    <td>${fp.watermark_hash ? `<span class="hash-monospaced">${fp.watermark_hash.slice(0, 12)}…</span>${fp.watermark_bits_length ? ` (${fp.watermark_bits_length} bits)` : ''}` : '—'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            table.appendChild(tbody);
+            if ((data.images || []).length) {
+                perImageCard.appendChild(table);
+            } else {
+                perImageCard.innerHTML += '<p>No fingerprints generated.</p>';
+            }
+
+            const summaryCard = document.createElement('div');
+            summaryCard.className = 'fingerprint-card';
+            summaryCard.innerHTML = '<h4>Fingerprint Summary</h4>';
+            const summaryList = document.createElement('ul');
+            summaryList.style.listStyle = 'none';
+            summaryList.style.padding = '0';
+            const summary = data.compliance_summary || {};
+            const makeItem = (label, value) => {
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${label}:</strong> ${value}`;
+                li.style.marginBottom = '6px';
+                return li;
+            };
+            summaryList.appendChild(makeItem('SHA-256 Registered', (summary.registered_hashes || []).length));
+            summaryList.appendChild(makeItem('Perceptual Hashes', (summary.perceptual_hashes || []).length));
+            summaryList.appendChild(makeItem('Average Hashes', (summary.average_hashes || []).length));
+            summaryList.appendChild(makeItem('Difference Hashes', (summary.difference_hashes || []).length));
+            summaryList.appendChild(makeItem('Watermarks Found', (summary.watermark_hashes || []).length));
+            summaryCard.appendChild(summaryList);
+
+            fingerprintHost.appendChild(perImageCard);
+            fingerprintHost.appendChild(summaryCard);
+        }
+    } catch (fpErr) {
+        console.warn('Fingerprint panel render failed', fpErr);
+    }
+
     console.log(`✅ Step 1: Displayed ${data.images.length} ingested images`);
 }
 
@@ -609,6 +672,16 @@ function displayStep2Results(data) {
                     <span>${analysis.dlib_landmarks.length}</span>
                 </div>
                 ` : ''}
+                ${img.embedding_summary ? `
+                <div class="metadata-item">
+                    <span class="metadata-label">Embedding:</span>
+                    <span>${img.embedding_summary.length} dims · ‖v‖=${img.embedding_summary.norm.toFixed(3)}</span>
+                </div>
+                <div class="metadata-item embedding-preview">
+                    <span class="metadata-label">Preview:</span>
+                    <span>[${img.embedding_summary.preview.map(v => Number.parseFloat(v).toFixed(3)).join(', ')}${img.embedding_summary.length > img.embedding_summary.preview.length ? ', …' : ''}]</span>
+                </div>
+                ` : ''}
             </div>
         `;
         
@@ -668,6 +741,52 @@ function displayStep3Results(data) {
             <p><strong>Person Groups:</strong> ${summary.groups_found}</p>
         </div>
     `;
+
+    const registry = data.registry_similarity;
+    if (registry && Array.isArray(registry.matches) && registry.matches.length) {
+        html += `
+            <div style="margin-top: 24px; padding: 18px; background: #eef2ff; border-radius: 10px;">
+                <h4>Registry Comparison (sample size: ${registry.registry_size})</h4>
+                <p style="color:#3b3b6d;">Top matches from the provenance registry based on perceptual, average, and difference hash distances (lower = closer).</p>
+                <div style="overflow-x:auto;">
+                    <table class="fingerprint-table" style="min-width: 680px;">
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Registry SHA</th>
+                                <th>Consent</th>
+                                <th>pHash Δ</th>
+                                <th>aHash Δ</th>
+                                <th>dHash Δ</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+        `;
+        registry.matches.forEach(match => {
+            const top = Array.isArray(match.top_matches) ? match.top_matches : [];
+            if (!top.length) return;
+            top.forEach((candidate, index) => {
+                html += `
+                    <tr>
+                        <td>${match.image_id || `Face ${match.image_index + 1}`}${index > 0 ? ` <span style="color:#888;">(alt ${index + 1})</span>` : ''}</td>
+                        <td><span class="hash-monospaced">${candidate.registry_sha ? candidate.registry_sha.slice(0, 18) + '…' : '—'}</span></td>
+                        <td>${candidate.consent || 'pending'}</td>
+                        <td>${candidate.perceptual_distance !== undefined ? candidate.perceptual_distance : '—'}</td>
+                        <td>${candidate.average_distance !== undefined ? candidate.average_distance : '—'}</td>
+                        <td>${candidate.difference_distance !== undefined ? candidate.difference_distance : '—'}</td>
+                        <td>${candidate.score !== undefined ? candidate.score : '—'}</td>
+                    </tr>
+                `;
+            });
+        });
+        html += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    }
     
     container.innerHTML = html;
     console.log(`✅ Step 3: Displayed similarity matrix for ${size} faces`);

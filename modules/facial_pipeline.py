@@ -27,6 +27,14 @@ except ImportError:
     PIL_AVAILABLE = False
     print("Warning: PIL not available. Some features may be limited.")
 
+trimesh = None
+try:
+    import trimesh  # type: ignore
+    TRIMESH_AVAILABLE = True
+except ImportError:
+    TRIMESH_AVAILABLE = False
+    print("Warning: trimesh not available. GLTF exports will be skipped.")
+
 import json
 import hashlib
 import math
@@ -54,8 +62,11 @@ import io
 
 from modules.provenance_registry import (
     RegistryCheck,
+    compute_average_hash,
+    compute_difference_hash,
     compute_perceptual_hash,
     get_registry,
+    hamming_distance_hex,
     hash_watermark_bits,
 )
 
@@ -138,6 +149,8 @@ class FacialPipeline:
             logger.warning(f"Provenance registry unavailable: {registry_err}")
             self.registry = None
 
+        self.visualization_output_dir = Path(__file__).resolve().parent.parent / "generated_visualizations"
+
     def _json_safe(self, value: Any) -> Any:
         """Recursively convert numpy/scalar objects into JSON-serializable structures."""
         if isinstance(value, np.ndarray):
@@ -203,6 +216,10 @@ class FacialPipeline:
             "duplicates": 0,
             "drop_reasons": {},
             "registered_hashes": [],
+            "perceptual_hashes": [],
+            "average_hashes": [],
+            "difference_hashes": [],
+            "watermark_hashes": [],
             "dropped_entries": [],
             "duplicate_entries": [],
         }
@@ -251,8 +268,14 @@ class FacialPipeline:
                 if self.registry is not None:
                     sha256_hash = metadata.get("hash_sha256")
                     perceptual_hash = compute_perceptual_hash(cv_image)
+                    average_hash = compute_average_hash(cv_image)
+                    difference_hash = compute_difference_hash(cv_image)
                     if perceptual_hash:
                         metadata["perceptual_hash"] = perceptual_hash
+                    if average_hash:
+                        metadata["average_hash"] = average_hash
+                    if difference_hash:
+                        metadata["difference_hash"] = difference_hash
                     watermark_sig = self._extract_watermark_signature(cv_image)
                     watermark_hash = None
                     if watermark_sig:
@@ -260,12 +283,14 @@ class FacialPipeline:
                         metadata["watermark_hash"] = watermark_hash
                         metadata["watermark_bits_length"] = watermark_sig.get("bit_length")
 
-                    check: Optional[RegistryCheck] = None
+                    check = None
                     if isinstance(sha256_hash, str):
                         check = self.registry.check_image(
                             sha256_hash,
                             phash=perceptual_hash,
                             watermark_hash=watermark_hash,
+                            average_hash=average_hash,
+                            difference_hash=difference_hash,
                         )
                     drop_image = False
                     if check:
@@ -326,11 +351,31 @@ class FacialPipeline:
                 else:
                     watermark_sig = None
                     perceptual_hash = compute_perceptual_hash(cv_image)
+                    average_hash = compute_average_hash(cv_image)
+                    difference_hash = compute_difference_hash(cv_image)
                     if perceptual_hash:
                         metadata["perceptual_hash"] = perceptual_hash
+                    if average_hash:
+                        metadata["average_hash"] = average_hash
+                    if difference_hash:
+                        metadata["difference_hash"] = difference_hash
 
                 if duplicate_info is None:
                     image_info.setdefault("compliance", {"status": "accepted"})
+                fingerprints_payload = {
+                    "sha256": metadata.get("hash_sha256"),
+                    "md5": metadata.get("hash_md5"),
+                    "perceptual_hash": metadata.get("perceptual_hash"),
+                    "average_hash": metadata.get("average_hash"),
+                    "difference_hash": metadata.get("difference_hash"),
+                    "watermark_hash": metadata.get("watermark_hash"),
+                    "watermark_bits_length": metadata.get("watermark_bits_length"),
+                }
+                if watermark_sig and isinstance(watermark_sig, dict):
+                    bits = watermark_sig.get("bits")
+                    if isinstance(bits, str):
+                        fingerprints_payload["watermark_bits_preview"] = bits[:64]
+                image_info["fingerprints"] = {k: v for k, v in fingerprints_payload.items() if v is not None}
                 ingested_data["images"].append(image_info)
                 compliance_summary["accepted"] += 1
                 if metadata.get("hash_sha256"):
@@ -346,9 +391,20 @@ class FacialPipeline:
                                 },
                                 phash=metadata.get("perceptual_hash"),
                                 watermark_hash=metadata.get("watermark_hash"),
+                                average_hash=metadata.get("average_hash"),
+                                difference_hash=metadata.get("difference_hash"),
                             )
                         except Exception as reg_err:
                             logger.warning(f"Provenance register failed for {image_info['id']}: {reg_err}")
+
+                if metadata.get("perceptual_hash"):
+                    compliance_summary["perceptual_hashes"].append(metadata["perceptual_hash"])
+                if metadata.get("average_hash"):
+                    compliance_summary["average_hashes"].append(metadata["average_hash"])
+                if metadata.get("difference_hash"):
+                    compliance_summary["difference_hashes"].append(metadata["difference_hash"])
+                if metadata.get("watermark_hash"):
+                    compliance_summary["watermark_hashes"].append(metadata["watermark_hash"])
 
                 logger.info(f"✅ Processed image {idx + 1}/{len(image_files)}: {metadata['filename']}")
                 
@@ -474,6 +530,22 @@ class FacialPipeline:
                     "face_analysis": face_analysis,
                     "tracking_quality": self._assess_tracking_quality(face_analysis)
                 }
+
+                embedding_vector = face_analysis.get("face_encoding")
+                embedding_summary = None
+                if isinstance(embedding_vector, list) and embedding_vector:
+                    try:
+                        embed_array = np.asarray(embedding_vector, dtype=float)
+                        embedding_summary = {
+                            "length": int(embed_array.size),
+                            "norm": float(np.linalg.norm(embed_array)),
+                            "preview": [float(x) for x in embed_array[:8].tolist()],
+                        }
+                    except Exception as emb_err:
+                        logger.debug(f"[Step2] embedding summary failed: {emb_err}")
+                if embedding_summary:
+                    tracked_image["embedding_summary"] = embedding_summary
+                    tracked_image["embedding_vector"] = embedding_vector
                 
                 tracking_data["images_with_tracking"].append(tracked_image)
                 
@@ -587,6 +659,67 @@ class FacialPipeline:
         validation_data["validated_images"] = valid_images
         validation_data["tracking_images"] = tracking_data.get("images_with_tracking", [])
         validation_data["total_images"] = len(tracking_data.get("images_with_tracking", []))
+
+        if self.registry is not None:
+            try:
+                registry_entries = self.registry.export_images(limit=500)
+                if registry_entries:
+                    matches_report: List[Dict[str, Any]] = []
+                    for idx, img_data in enumerate(valid_images):
+                        fingerprints = img_data.get("fingerprints") if isinstance(img_data, dict) else None
+                        if not isinstance(fingerprints, dict):
+                            fingerprints = img_data.get("metadata", {}) if isinstance(img_data, dict) else {}
+                        image_matches: List[Dict[str, Any]] = []
+                        for rec in registry_entries:
+                            distances: Dict[str, Optional[int]] = {}
+                            local_phash = fingerprints.get("perceptual_hash") if isinstance(fingerprints, dict) else None
+                            reg_phash = rec.get("perceptual_hash")
+                            if local_phash and reg_phash:
+                                distances["perceptual_distance"] = hamming_distance_hex(local_phash, reg_phash)
+                            local_ahash = fingerprints.get("average_hash") if isinstance(fingerprints, dict) else None
+                            reg_ahash = rec.get("average_hash")
+                            if local_ahash and reg_ahash:
+                                distances["average_distance"] = hamming_distance_hex(local_ahash, reg_ahash)
+                            local_dhash = fingerprints.get("difference_hash") if isinstance(fingerprints, dict) else None
+                            reg_dhash = rec.get("difference_hash")
+                            if local_dhash and reg_dhash:
+                                distances["difference_distance"] = hamming_distance_hex(local_dhash, reg_dhash)
+
+                            if not distances:
+                                continue
+
+                            score_components = [val for val in distances.values() if isinstance(val, int)]
+                            score = sum(score_components) if score_components else None
+                            match_payload = {
+                                "registry_sha": rec.get("sha256"),
+                                "consent": rec.get("consent"),
+                                "registered_at": rec.get("registered_at"),
+                                "last_seen": rec.get("last_seen"),
+                                **{k: v for k, v in distances.items() if v is not None},
+                            }
+                            if score is not None:
+                                match_payload["score"] = score
+                            metadata = rec.get("metadata")
+                            if isinstance(metadata, dict) and metadata:
+                                match_payload["metadata"] = metadata
+                            image_matches.append(match_payload)
+
+                        if image_matches:
+                            image_matches.sort(key=lambda m: (m.get("score", 9999), m.get("perceptual_distance", 9999)))
+                            matches_report.append({
+                                "image_index": idx,
+                                "image_id": img_data.get("id"),
+                                "sha256": fingerprints.get("sha256") if isinstance(fingerprints, dict) else None,
+                                "top_matches": image_matches[:3],
+                            })
+
+                    if matches_report:
+                        validation_data["registry_similarity"] = {
+                            "registry_size": len(registry_entries),
+                            "matches": matches_report,
+                        }
+            except Exception as reg_err:
+                logger.warning(f"[Step3] Registry similarity analysis failed: {reg_err}")
         
         logger.info(f"✅ Step 3 Complete: Found {len(groups)} person groups")
         return validation_data
@@ -984,11 +1117,56 @@ class FacialPipeline:
                     logger.warning(f"Model registry update failed: {reg_err}")
 
         refinement_data["compliance_summary"] = compliance_summary
+
+        visualization_assets: Dict[str, Any] = {}
+        if refinement_data["refinement_summary"].get("model_available"):
+            try:
+                gltf_path = self._export_model_to_gltf(final_model, model_hash)
+                if gltf_path:
+                    visualization_assets["gltf_path"] = gltf_path
+                    visualization_assets["model_hash"] = model_hash
+            except Exception as gltf_err:
+                logger.warning(f"GLTF export failed: {gltf_err}")
+
+        refinement_data["visualization_assets"] = visualization_assets
+        refinement_data["refinement_summary"]["gltf_available"] = bool(visualization_assets.get("gltf_path"))
         
         logger.info("✅ Step 7 Complete: Final 4D model created")
         return refinement_data
     
     # Helper methods
+    def _export_model_to_gltf(self, final_model: Dict[str, Any], model_hash: str) -> Optional[str]:
+        """Export final 4D model to glTF/GLB when dependencies are available."""
+        if not TRIMESH_AVAILABLE:
+            logger.info("trimesh not available; skipping glTF export")
+            return None
+
+        assert trimesh is not None
+        surface_mesh = final_model.get("surface_mesh") or {}
+        vertices = np.asarray(surface_mesh.get("vertices") or [])
+        faces = np.asarray(surface_mesh.get("faces") or [])
+
+        if vertices.size == 0 or faces.size == 0:
+            logger.info("Final model missing vertices or faces; skipping glTF export")
+            return None
+
+        # Ensure faces are triangles; convert to int indices
+        if faces.ndim == 1:
+            faces = faces.reshape(-1, 3)
+        if faces.shape[1] > 3:
+            faces = faces[:, :3]
+        faces = faces.astype(int)
+
+        try:
+            self.visualization_output_dir.mkdir(parents=True, exist_ok=True)
+            gltf_path = self.visualization_output_dir / f"{model_hash}.glb"
+            mesh = trimesh.Trimesh(vertices=vertices, faces=faces, process=False)
+            mesh.export(gltf_path, file_type="glb")
+            return str(gltf_path)
+        except Exception as export_err:
+            logger.warning(f"GLTF export error: {export_err}")
+            return None
+
     def _extract_image_metadata(self, image: Optional[Any], image_data: bytes, index: int) -> Dict[str, Any]:
         """Extract comprehensive metadata from image"""
         metadata = {

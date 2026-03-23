@@ -155,6 +155,27 @@ async def provenance_records(limit: int = 200):
         raise HTTPException(status_code=500, detail=f"Failed to fetch ledger records: {e}")
 
 
+@app.get("/api/provenance/registry")
+async def provenance_registry_records(limit: int = 100):
+    if provenance_registry is None:
+        return JSONResponse({"error": "registry_unavailable"}, status_code=503)
+    try:
+        safe_limit = max(1, min(limit, 500))
+        summary = provenance_registry.summarize()
+        images = provenance_registry.export_images(limit=safe_limit)
+        masks = provenance_registry.export_masks(limit=safe_limit)
+        models = provenance_registry.export_models(limit=min(safe_limit, 100))
+        return {
+            "ok": True,
+            "summary": summary,
+            "images": images,
+            "masks": masks,
+            "models": models,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to read registry: {e}")
+
+
 @app.get("/api/provenance/download")
 async def provenance_download(request: Request):
     # Simple admin gate via API key header
@@ -2299,9 +2320,14 @@ async def complete_pipeline_workflow(files: List[UploadFile] = File(...)):
         # Step 7: 4D Refinement
         step7_result = facial_pipeline.step7_4d_visualization_refinement(step6_result)
         workflow_results["step7"] = step7_result
-        
+
         # Save final model
-        final_model = step7_result["final_4d_model"]
+        final_model: Optional[Dict[str, Any]] = None
+        if isinstance(step7_result, dict):
+            fm = step7_result.get("final_4d_model")
+            if isinstance(fm, dict) and fm:
+                final_model = fm
+
         if final_model:
             model_id = f"pipeline_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             model_path = Path("4d_models") / f"{model_id}.json"

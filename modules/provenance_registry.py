@@ -11,7 +11,7 @@ import threading
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -97,6 +97,43 @@ def compute_perceptual_hash(image: np.ndarray) -> Optional[str]:
         return None
 
 
+def compute_average_hash(image: np.ndarray, hash_size: int = 8) -> Optional[str]:
+    """Return average hash (aHash) for an image as hex string."""
+    if not CV2_AVAILABLE or cv2 is None:
+        return None
+    try:
+        if image.ndim == 3:
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # type: ignore[arg-type]
+        else:
+            gray = image
+        gray = cv2.resize(gray, (hash_size, hash_size), interpolation=cv2.INTER_AREA)  # type: ignore[arg-type]
+        avg = float(np.mean(gray))
+        bits = (gray > avg).astype(np.uint8)
+        bitstring = ''.join('1' if bit else '0' for bit in bits.flatten())
+        hex_len = (hash_size * hash_size) // 4
+        return f"{int(bitstring, 2):0{hex_len}x}"
+    except Exception:
+        return None
+
+
+def compute_difference_hash(image: np.ndarray, hash_size: int = 8) -> Optional[str]:
+    """Return difference hash (dHash) for an image as hex string."""
+    if not CV2_AVAILABLE or cv2 is None:
+        return None
+    try:
+        if image.ndim == 3:
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # type: ignore[arg-type]
+        else:
+            gray = image
+        resized = cv2.resize(gray, (hash_size + 1, hash_size), interpolation=cv2.INTER_AREA)  # type: ignore[arg-type]
+        diff = resized[:, 1:] > resized[:, :-1]
+        bitstring = ''.join('1' if bit else '0' for bit in diff.flatten())
+        hex_len = (hash_size * hash_size) // 4
+        return f"{int(bitstring, 2):0{hex_len}x}"
+    except Exception:
+        return None
+
+
 def hamming_distance_hex(a: str, b: str) -> int:
     """Compute Hamming distance between two equal-length hex strings."""
     if len(a) != len(b):
@@ -146,7 +183,12 @@ class ProvenanceRegistry:
         sha256: str,
         phash: Optional[str] = None,
         watermark_hash: Optional[str] = None,
+        *,
+        average_hash: Optional[str] = None,
+        difference_hash: Optional[str] = None,
         phash_threshold: int = 6,
+        average_hash_threshold: int = 10,
+        difference_hash_threshold: int = 10,
     ) -> RegistryCheck:
         images = self._data["images"]
         if sha256 in images:
@@ -174,6 +216,22 @@ class ProvenanceRegistry:
                     status = "restricted" if rec.get("consent") == "revoked" else "duplicate"
                     return RegistryCheck(status=status, reason="perceptual_match", record=rec)
 
+        # Near-duplicate via average hash
+        if average_hash:
+            for other_sha, rec in images.items():
+                other_ahash = rec.get("average_hash")
+                if other_ahash and hamming_distance_hex(average_hash, other_ahash) <= average_hash_threshold:
+                    status = "restricted" if rec.get("consent") == "revoked" else "duplicate"
+                    return RegistryCheck(status=status, reason="average_hash_match", record=rec)
+
+        # Near-duplicate via difference hash
+        if difference_hash:
+            for other_sha, rec in images.items():
+                other_dhash = rec.get("difference_hash")
+                if other_dhash and hamming_distance_hex(difference_hash, other_dhash) <= difference_hash_threshold:
+                    status = "restricted" if rec.get("consent") == "revoked" else "duplicate"
+                    return RegistryCheck(status=status, reason="difference_hash_match", record=rec)
+
         return RegistryCheck(status="allowed")
 
     def register_image(
@@ -183,12 +241,16 @@ class ProvenanceRegistry:
         metadata: Optional[Dict[str, Any]] = None,
         phash: Optional[str] = None,
         watermark_hash: Optional[str] = None,
+        average_hash: Optional[str] = None,
+        difference_hash: Optional[str] = None,
         consent: str = "pending",
     ) -> Dict[str, Any]:
         record = {
             "sha256": sha256,
             "perceptual_hash": phash,
             "watermark_hash": watermark_hash,
+            "average_hash": average_hash,
+            "difference_hash": difference_hash,
             "consent": consent,
             "registered_at": _now_iso(),
             "last_seen": _now_iso(),
@@ -320,3 +382,56 @@ class ProvenanceRegistry:
             "models": len(self._data["models"]),
             "watermarks": len(self._data["watermarks"]),
         }
+
+    def export_images(self, limit: Optional[int] = 100) -> List[Dict[str, Any]]:
+        images = list(self._data["images"].values())
+        images.sort(key=lambda rec: rec.get("last_seen") or rec.get("registered_at") or "", reverse=True)
+        if isinstance(limit, int) and limit > 0:
+            images = images[:limit]
+        sanitized: List[Dict[str, Any]] = []
+        for rec in images:
+            sanitized.append({
+                "sha256": rec.get("sha256"),
+                "perceptual_hash": rec.get("perceptual_hash"),
+                "average_hash": rec.get("average_hash"),
+                "difference_hash": rec.get("difference_hash"),
+                "watermark_hash": rec.get("watermark_hash"),
+                "consent": rec.get("consent"),
+                "registered_at": rec.get("registered_at"),
+                "last_seen": rec.get("last_seen"),
+                "metadata": rec.get("metadata") or {},
+            })
+        return sanitized
+
+    def export_masks(self, limit: Optional[int] = 100) -> List[Dict[str, Any]]:
+        masks = list(self._data["masks"].values())
+        masks.sort(key=lambda rec: rec.get("last_seen") or rec.get("registered_at") or "", reverse=True)
+        if isinstance(limit, int) and limit > 0:
+            masks = masks[:limit]
+        sanitized: List[Dict[str, Any]] = []
+        for rec in masks:
+            sanitized.append({
+                "mask_hash": rec.get("mask_hash"),
+                "consent": rec.get("consent"),
+                "registered_at": rec.get("registered_at"),
+                "last_seen": rec.get("last_seen"),
+                "source_images": rec.get("source_images") or [],
+                "metadata": rec.get("metadata") or {},
+            })
+        return sanitized
+
+    def export_models(self, limit: Optional[int] = 50) -> List[Dict[str, Any]]:
+        models = list(self._data["models"].values())
+        models.sort(key=lambda rec: rec.get("last_seen") or rec.get("registered_at") or "", reverse=True)
+        if isinstance(limit, int) and limit > 0:
+            models = models[:limit]
+        sanitized: List[Dict[str, Any]] = []
+        for rec in models:
+            sanitized.append({
+                "model_hash": rec.get("model_hash"),
+                "consent": rec.get("consent"),
+                "registered_at": rec.get("registered_at"),
+                "last_seen": rec.get("last_seen"),
+                "metadata": rec.get("metadata") or {},
+            })
+        return sanitized
